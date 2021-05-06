@@ -17,7 +17,7 @@
     "@turf/simplify": "^5.1.5",
     "chromedriver": "^90.0.0",
     "geojson2svg": "^1.2.3",
-    "handlebars": "^4.7.6",
+    "handlebars": "^4.7.7",
     "jasmine-core": "^3.3.0",
     "jasmine-jquery": "^2.1.1",
     "jquery": "^3.5.0",
