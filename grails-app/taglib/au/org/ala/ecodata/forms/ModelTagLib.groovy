@@ -150,7 +150,7 @@ class ModelTagLib {
             ctx.out << "</div>\n"
         }
 
-        ctx.out << """<div data-bind=\"attr:{id:'${model.source}-content-'+\$index},expandOnValidate:true\"class="section-content">\n"""
+        ctx.out << """<div data-bind=\"attr:{id:'${model.source}-content-'+\$index},expandOnValidate:true\" class="section-content">\n"""
         viewModelItems(model.items, childContext)
         ctx.out << "</div>\n"
         ctx.out << "</div>\n"
