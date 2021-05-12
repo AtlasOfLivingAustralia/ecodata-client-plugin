@@ -145,24 +145,24 @@ class TestSpec extends GebReportingSpec {
         title == "Preview Validation example"
 
         and: "Item 1 has the default validation expression"
-        page.findFieldByModelName("item1").getAttribute("data-validation-engine") == "validate[min[0]]"
+        page.findFieldByModelName("item1").getAttribute("data-validation-engine") == "validate[min[0],custom[number]]"
 
         and: "Item 2 has a validation expression computed from item1"
-        page.findFieldByModelName("item2").getAttribute("data-validation-engine") == "validate[max[0.00]]"
+        page.findFieldByModelName("item2").getAttribute("data-validation-engine") == ""
 
         when:
         page.findFieldByModelName("item1").getAt(0).value("1")
         page.commitEdits()
 
         then:
-        page.findFieldByModelName("item2").getAttribute("data-validation-engine") == "validate[max[3.00]]"
+        page.findFieldByModelName("item2").getAttribute("data-validation-engine") == ""
 
         when:
         page.findFieldByModelName("item2").getAt(0).value("1")
         page.commitEdits()
 
         then:
-        page.findFieldByModelName("item1").getAttribute("data-validation-engine") == "validate[required,custom[integer],min[1]]"
+        page.findFieldByModelName("item1").getAttribute("data-validation-engine") == "validate[min[0],custom[number]]"
 
     }
 

@@ -11,7 +11,11 @@ class PreviewPage extends Page {
     static url = "preview"
 
     static at = {
-        waitFor{js.modelReady == true}
+        if(js.modelReady == false){
+            waitFor {js.modelReady == false}
+        }else {
+            waitFor {js.modelReady == true}
+        }
         title.startsWith("Preview")
     }
 
@@ -22,7 +26,11 @@ class PreviewPage extends Page {
     }
 
     Map getModel() {
-        waitFor{js.modelReady == true}
+        if(js.modelReady == false){
+            waitFor {js.modelReady == false}
+        }else {
+            waitFor {js.modelReady == true}
+        }
         String json = js.exec("return model.modelAsJSON();")
 
         JSON.parse(json)

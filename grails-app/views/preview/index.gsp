@@ -14,6 +14,7 @@
         saveBookmarkLocationURL: "${createLink(controller:"preview", action:"saveBookmarkLocation")}",
         getBookmarkLocationsURL: "${createLink(controller:"preview", action:"getBookmarkLocations")}"
     };
+    window.modelReady = false;
 
 </script>
 </head>
