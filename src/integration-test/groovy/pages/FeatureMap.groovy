@@ -22,7 +22,7 @@ class FeatureMap extends Module {
 
         polygonDraw.click()
 
-        waitFor{$('.leaflet-draw-actions').getAt(0).displayed}
+        waitFor 10, {$('.leaflet-draw-actions').getAt(0).displayed}
 
         interact {
             moveByOffset(100, 100)
