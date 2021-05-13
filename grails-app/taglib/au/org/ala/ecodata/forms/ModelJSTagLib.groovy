@@ -577,7 +577,7 @@ class ModelJSTagLib {
             extenderJS += ".extend({writableComputed:{expression:'${expression}', context:${ctx.propertyPath}, decimalPlaces:${decimalPlaces}}})"
         }
         if (requiresMetadataExtender(ctx.dataModel)) {
-            extenders.push("{metadata:{metadata:self.dataModel['${ctx.fieldName()}'], context:self.\$context, config:config}}")
+            extenders.add("{metadata:{metadata:self.dataModel['${ctx.fieldName()}'], context:self.\$context, config:config}}")
         }
 
         extenders.each {
