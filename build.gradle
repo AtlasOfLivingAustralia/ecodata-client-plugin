@@ -14,7 +14,7 @@ buildscript {
     }
 }
 
-version "4.0"
+version "4.0-SNAPSHOT"
 group "org.grails.plugins"
 
 apply plugin:"eclipse"
@@ -25,7 +25,7 @@ apply plugin:"org.grails.grails-gsp"
 apply plugin:"asset-pipeline"
 apply plugin:"com.energizedwork.webdriver-binaries"
 apply from: "${project.projectDir}/gradle/clover.gradle"
-apply from: "${project.projectDir}/gradle/publish.gradle"
+
 
 repositories {
     mavenLocal()
