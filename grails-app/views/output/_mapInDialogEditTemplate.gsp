@@ -1,20 +1,22 @@
 <!-- ko stopBinding: true -->
-<div id="map-modal" class="modal modal-fullscreen hide fade large">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-
-        <h3>Mapping Site Activities</h3>
+<div id="map-modal" class="modal modal-fullscreen hide fade large" role="dialog" tabindex="-1">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Mapping Site Activities</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="position:relative;">
+                <g:render template="/output/featureMap"/>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-sm btn-primary" aria-hidden="true">Ok</button>
+            </div>
+        </div>
     </div>
 
-    <div class="modal-body" style="position:relative;">
-
-        <g:render template="/output/featureMap"/>
-    </div>
-
-
-    <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Cancel</button>
-        <button class="btn btn-primary" aria-hidden="true">Ok</button>
-    </div>
 </div>
 <!-- /ko -->

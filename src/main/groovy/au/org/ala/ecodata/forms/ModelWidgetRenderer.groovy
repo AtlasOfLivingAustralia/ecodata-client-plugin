@@ -94,17 +94,17 @@ class WidgetRenderContext {
     }
 
     String getInputSize(width) {
-        if (!width) { return 'input-small' }
+        if (!width) { return 'form-control form-control-sm test1' }
         if (width && width[-1] == '%') {
             width = width - '%'
         }
         switch (width.toInteger()) {
-            case 0..10: return 'input-mini'
-            case 11..20: return 'input-small'
-            case 21..30: return 'input-medium'
-            case 31..40: return 'input-large'
-            case 41..100: return 'input-xlarge'
-            default: return 'input-small'
+            case 0..10: return 'form-control form-control-sm test2'
+            case 11..20: return 'form-control form-control-sm test3'
+            case 21..30: return 'form-control form-control-sm test4'
+            case 31..40: return 'form-control form-control-sm test5'
+            case 41..100: return 'form-control form-control-sm test6'
+            default: return 'form-control form-control-sm testDefault'
         }
     }
 

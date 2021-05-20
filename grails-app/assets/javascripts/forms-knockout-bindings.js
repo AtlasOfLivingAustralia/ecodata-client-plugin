@@ -648,7 +648,7 @@
             var $element = $(element);
             ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
                 if (target.popoverInitialised) {
-                    $element.popover("destroy");
+                    $element.popover("hide");
                 }
             });
 

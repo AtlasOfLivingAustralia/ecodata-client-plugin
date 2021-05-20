@@ -13,13 +13,13 @@
      */
     ko.bindingHandlers.popover = {
 
-        init: function (element, valueAccessor) {
+        init: function(element, valueAccessor) {
             ko.bindingHandlers.popover.initPopover(element, valueAccessor);
         },
-        update: function (element, valueAccessor) {
+        update: function(element, valueAccessor) {
 
             var $element = $(element);
-            $element.popover('destroy');
+            $element.popover('hide');
             var options = ko.bindingHandlers.popover.initPopover(element, valueAccessor);
             if (options.autoShow) {
                 if ($element.data('firstPopover') === false) {
@@ -46,7 +46,7 @@
             }
         },
 
-        initPopover: function (element, valueAccessor) {
+        initPopover: function(element, valueAccessor) {
             var options = ko.utils.unwrapObservable(valueAccessor());
 
             var combinedOptions = ko.utils.extend({}, ko.bindingHandlers.popover.defaultOptions);
@@ -56,8 +56,8 @@
 
             $(element).popover(combinedOptions);
 
-            ko.utils.domNodeDisposal.addDisposeCallback(element, function () {
-                $(element).popover("destroy");
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                $(element).popover("hide");
             });
             return options;
         }
