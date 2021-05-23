@@ -587,12 +587,18 @@ class ModelTagLib {
                     elementAttributes.addSpan('col-sm-2');
                 }
                 if (model.type == "selectOne"){
-                    elementAttributes.addSpan('col-sm-6 form-control form-control-sm');
+                    elementAttributes.addSpan('col-sm-6 form-control form-control-sm')
+                }
+                if (model.type == "date"){
+                    attrs.dateColCss = "col-sm-2"
                 }
                 break
             case 'table':
                 if (model.type == 'boolean') {
                     out << "<label class=\"table-checkbox-label\">"
+                }
+                if (model.type == "date"){
+                    attrs.dateColCss = "col-sm-12"
                 }
                 break
             default:
@@ -609,9 +615,10 @@ class ModelTagLib {
                 }
                 break
             case 'col':
-            default:
                 out << "</div>"
                 break
+            default:
+                out << "</div>"
         }
     }
 

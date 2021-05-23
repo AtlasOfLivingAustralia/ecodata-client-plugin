@@ -1,5 +1,5 @@
-<div id="${context.source}Date" class="pl-0 col-sm-6 input-group">
-    <input class="col-sm-3 form-control form-control-sm pr-0 mr-0" data-provide="datepicker" ${context.attributes.toString()} data-bind="${context.databindAttrs}" type="text" size="12" ${context.validationAttr}/>
+<div id="${context.source}Date" class="pl-0 ${context.tagAttrs.dateColCss.toString()} input-group">
+    <input  class="pr-0 mr-0 form-control form-control-sm" data-provide="datepicker" data-bind="${context.databindAttrs}" type="text" size="12" ${context.validationAttr}/>
     <div class="input-group-prepend mb-2">
         <span class="add-on open-datepicker input-group-text"><i class="fa fa-calendar"></i></span>
     </div>
