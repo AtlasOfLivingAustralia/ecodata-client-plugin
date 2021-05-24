@@ -29,20 +29,23 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     void renderNumber(WidgetRenderContext context) {
         context.attributes.addClass context.getInputWidth()
         context.databindAttrs.add 'value', context.source
-        String modelElementText = "<input${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr} type='number' step='any'/>"
         String units = context.unitsToRender()
+        String modelElementText
+
         if (units) {
+            modelElementText ="<input class='form-control form-control-sm' data-bind='${context.databindAttrs.toString()}'${context.validationAttr} type='number' step='any'/>"
             renderWithAddon(units, modelElementText, context.writer)
         }
         else {
+            modelElementText ="<input${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr} type='number' step='any'/>"
             context.writer << modelElementText
         }
     }
 
     private void renderWithAddon(String addOnText, String modelElementText, writer) {
-        writer << "<div class=\"input-append\">"
+        writer << "<div class=\"col-sm-2 input-group\">"
         writer << modelElementText
-        writer << "<span class=\"add-on\">${addOnText}</span>"
+        writer << "<span class=\"input-group-prepend input-group-text customAddOn\">${addOnText}</span>"
         writer << "</div>"
     }
 
@@ -62,7 +65,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
             context.attributes.add("cols", context.model.cols)
         }
         handleMaxSizeAndPlaceholder(context)
-        context.writer << "<textarea ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></textarea>"
+        context.writer << "<textarea class='form-control form-control-sm' ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></textarea>"
     }
 
     /**
@@ -84,7 +87,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     @Override
     void renderSimpleDate(WidgetRenderContext context) {
         context.databindAttrs.add 'datepicker', context.source + '.date'
-        context.writer << "<input${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr} type='text' class='input-small'/>"
+        context.writer << "<input${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr} type='text' class='col-sm-4 form-control form-control-sm'/>"
     }
 
     @Override
@@ -127,7 +130,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.databindAttrs.add 'optionsText', context.source + '.constraints.text'
 
         context.databindAttrs.add 'select2', context.source + '.displayOptions'
-        context.writer <<  "<div${context.attributes.toString()}><select class=\"select\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
+        context.writer <<  "<div${context.attributes.toString()}><select class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
     }
 
     @Override

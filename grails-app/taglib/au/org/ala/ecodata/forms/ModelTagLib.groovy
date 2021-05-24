@@ -580,34 +580,35 @@ class ModelTagLib {
             case 'col':
                 out << "<div class=\"row\">"
                 labelAttributes.addSpan 'col-sm-4'
-                if (model.type == "text") {
+                if (model.type == "text" || model.type == "select2" || model.type == "select2Many") {
                     elementAttributes.addSpan 'col-sm-6'
                 }
-                if(model.type == "number"){
+                if (model.type == "number") {
                     elementAttributes.addSpan('col-sm-2');
                 }
-                if (model.type == "selectOne"){
+                if (model.type == "selectOne") {
                     elementAttributes.addSpan('col-sm-6 form-control form-control-sm')
                 }
-                if (model.type == "date"){
+                if (model.type == "date") {
                     attrs.dateColCss = "col-sm-2"
                 }
+
                 break
             case 'table':
                 if (model.type == 'boolean') {
                     out << "<label class=\"table-checkbox-label\">"
                 }
-                if (model.type == "date"){
+                if (model.type == "date") {
                     attrs.dateColCss = "col-sm-12"
                 }
-                if (model.type == "text") {
+                if (model.type == "text" || model.type == "number") {
                     elementAttributes.addSpan 'col-sm-12'
                 }
-                if(model.type == "number"){
-                    elementAttributes.addSpan('col-sm-12');
-                }
-                if (model.type == "selectOne"){
+                if (model.type == "selectOne") {
                     elementAttributes.addSpan('col-sm-12 select form-control form-control-sm')
+                }
+                if (model.type == "select2" || model.type == "select2Many") {
+                    elementAttributes.addSpan("col-sm-8")
                 }
                 break
             default:

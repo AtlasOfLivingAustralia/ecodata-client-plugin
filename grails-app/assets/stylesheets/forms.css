@@ -182,3 +182,14 @@ table .select2 {
 .unstyled {
     list-style-type: none !important;
 }
+
+textarea {
+    border: 1px solid #cccccc;
+}
+.customAddOn {
+    height: 31px !important;
+    border-top-left-radius: unset !important;
+    border-bottom-left-radius: unset !important;
+
+
+}

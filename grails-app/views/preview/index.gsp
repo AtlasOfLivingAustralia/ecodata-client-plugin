@@ -227,8 +227,7 @@
                 return '<span class="' + cls + '">' + match + '</span>';
             });
         };
-        // BS tooltip
-        $().tooltip();
+
     });
 
 </script>

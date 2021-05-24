@@ -63,7 +63,9 @@ body {
 }
 input, button, select, optgroup, textarea {
     margin-bottom: 8px !important;
-    margin-right: 8px !important;
+}
+textarea {
+    border: 1px solid #cccccc;
 }
 
 .datepicker {
@@ -89,11 +91,6 @@ input, button, select, optgroup, textarea {
     font-size: 13px;
     font-weight: normal;
     line-height: 20px;
-}
-
-.select2-container--default .select2-selection--single {
-    border-bottom-right-radius: 0 !important;
-    border-top-right-radius: 0 !important;
 }
 
 .customSpecialSelect {
