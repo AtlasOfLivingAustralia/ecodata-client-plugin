@@ -600,6 +600,15 @@ class ModelTagLib {
                 if (model.type == "date"){
                     attrs.dateColCss = "col-sm-12"
                 }
+                if (model.type == "text") {
+                    elementAttributes.addSpan 'col-sm-12'
+                }
+                if(model.type == "number"){
+                    elementAttributes.addSpan('col-sm-12');
+                }
+                if (model.type == "selectOne"){
+                    elementAttributes.addSpan('col-sm-12 select form-control form-control-sm')
+                }
                 break
             default:
                 at.addSpan("col-sm-${layoutContext.span}")

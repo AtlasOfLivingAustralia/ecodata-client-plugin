@@ -1,6 +1,6 @@
 <div class="feature-map">
     <div class="map-container">
-        <m:map id="map-holder" width="100%"></m:map>
+        <m:map id="map-holder" width="100%" height="100%"></m:map>
     </div>
 
     <div class="sites-list-sidebar">
@@ -28,7 +28,7 @@
                 <li class="clearfix site-label"
                     data-bind="event:{mouseover:$root.highlightFeature, mouseout:$root.unhighlightFeature}">
                 <label>
-                    <input type="text" style="width: 90%" data-bind="value:properties.name || 'Unnamed site'">
+                    <input type="text" style="width: 90%" class="form-control form-control-sm" data-bind="value:properties.name || 'Unnamed site'">
                 </label>
                     <div class="btn-container">
                         <button class="btn" data-bind="click:$root.deleteFeature"><i
@@ -44,11 +44,11 @@
             </ul>
         </div>
 
-        <div class="accordion">
+        <div class="accordion card">
             <!-- ko foreach: categories -->
-            <div class="accordion-group" data-bind="if:features && features.length">
+            <div class="accordion-group card-group" data-bind="if:features && features.length">
                 <div class="sites-list-heading">
-                    <a class="accordion-toggle"
+                    <a class="accordion-toggle collapse"
                        data-bind="toggleVisibility:'#sites-category-'+$index()">
 
                     </a>
@@ -63,7 +63,7 @@
                     </div>
                 </div>
 
-                <div data-bind="attr:{id:'sites-category-'+$index()}" class="accordion-body collapse in" style="display: none">
+                <div data-bind="attr:{id:'sites-category-'+$index()}" class="accordion-body card-body collapse in" style="display: none">
                     <div class="accordion-inner">
                         <ul class="sites-category unstyled" data-bind="foreach:features">
                             <li class="clearfix site-label"
@@ -72,10 +72,10 @@
                                         data-bind="text:properties.name || 'Unnamed site'"></span></label>
 
                                 <div class="btn-container">
-                                    <button class="btn" data-bind="click:$root.copyFeature, enable:$root.copyEnabled"
+                                    <button class="btn btn-sm" data-bind="click:$root.copyFeature, enable:$root.copyEnabled"
                                             title="Copy (and edit) this site"><i class="fa fa-copy"></i>
                                     </button>
-                                    <button class="btn" data-bind="click:$root.zoomToFeature"
+                                    <button class="btn btn-sm" data-bind="click:$root.zoomToFeature"
                                             title="Zoom to this site"><i class="fa fa-search"></i>
                                     </button>
                                 </div>

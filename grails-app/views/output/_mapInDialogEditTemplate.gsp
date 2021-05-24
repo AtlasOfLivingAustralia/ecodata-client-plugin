@@ -1,5 +1,5 @@
 <!-- ko stopBinding: true -->
-<div id="map-modal" class="modal modal-fullscreen hide fade large" role="dialog" tabindex="-1">
+<div id="map-modal" class="modal hide fade large" role="dialog" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -8,7 +8,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body" style="position:relative;">
+            <div class="modal-body">
                 <g:render template="/output/featureMap"/>
             </div>
             <div class="modal-footer">

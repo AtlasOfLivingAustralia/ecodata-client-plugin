@@ -24,35 +24,39 @@
 
     <div class="row">
         <div class="col-sm-3 list">
-            <h3>All examples</h3>
-            <ul class="unstyled">
-                <g:each in="${examples}" var="example">
-                    <li>
-                        <div class="row">
-                            <div class="title col-sm-8">${example.title}</div>
+            <div class="mt-4">
+                <h3>All examples</h3>
+                <ul class="unstyled">
+                    <g:each in="${examples}" var="example">
+                        <li>
+                            <div class="row mb-2">
+                                <div class="title col-sm-8">${example.title}</div>
 
-                            <div class="col-sm-2">
-                                <a href="${g.createLink(action:'index', params:[name:example.name, mode:'view'])}" class="btn btn-sm"><i class="fa fa-eye"></i> </a>
+                                <div class="col-sm-2">
+                                    <a href="${g.createLink(action:'index', params:[name:example.name, mode:'view'])}" class="btn btn-sm"><i class="fa fa-eye"></i> </a>
+                                </div>
+                                <div class="col-sm-2">
+                                    <a href="${g.createLink(action:'index', params:[name:example.name])}" class="btn btn-sm"><i class="fa fa-edit"></i> </a>
+                                </div>
                             </div>
-                            <div class="col-sm-2">
-                                <a href="${g.createLink(action:'index', params:[name:example.name])}" class="btn btn-sm"><i class="fa fa-edit"></i> </a>
-                            </div>
-                        </div>
-                    </li>
-                </g:each>
-            </ul>
+                        </li>
+                    </g:each>
+                </ul>
+            </div>
+
         </div>
-        <div id="output-container" class="col-sm-9 example">
+            <div id="output-container" class="col-sm-9 example">
+                <div class="mt-4">
+                    <h3>${model.title ?: model.modelName}</h3>
+                    <md:modelView model="${model}" edit="${params.mode != 'view'}" printable="${false}"/>
 
-            <h3>${model.title ?: model.modelName}</h3>
-            <md:modelView model="${model}" edit="${params.mode != 'view'}" printable="${false}"/>
+                    <hr/>
+                    <h3>Model JSON</h3>
+                    <pre id="model-display"></pre>
+                </div>
 
-            <hr/>
-            <h3>Model JSON</h3>
-            <pre id="model-display"></pre>
+            </div>
         </div>
-
-    </div>
 
 </div>
 <g:render template="/output/mapInDialogEditTemplate"/>

@@ -113,7 +113,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.databindAttrs.add 'optionsText', context.source + '.constraints.text'
 
         context.databindAttrs.add 'optionsCaption', '"Please select"'
-        context.writer <<  "<select${context.attributes.toString()} class=\"select\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select>"
+        context.writer <<  "<select${context.attributes.toString()} class=\"select col-sm-1 form-control form-control-sm \" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select>"
     }
 
     @Override
@@ -339,7 +339,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.writer << """    <div data-bind="editDocument:${context.source}"></div>"""
         context.writer << """</div>"""
         context.writer << """<div data-bind="ifnot:${context.source}()">"""
-        context.writer << """    <button class="btn" id="doAttach" data-bind="click:function(target) {\$root.attachDocument(${context.source})}">Attach Document</button>"""
+        context.writer << """    <button class="btn btn-sm" id="doAttach" data-bind="click:function(target) {\$root.attachDocument(${context.source})}"> <i class="fa fa-plus"></i> Attach Document</button>"""
         context.writer << """</div>"""
 
 
@@ -353,7 +353,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
                                 <span data-bind="with:${context.source}" class=" input-group input-append"">
                                 <select data-bind="speciesSelect2:\$data" ${context.validationAttr}></select>
                                 <span class="add-on input-group-prepend">
-                                    <a class="input-group-text" data-bind="visible:name(), popover: {title: transients.speciesTitle, content: transients.speciesInformation}"><i class="fa fa-info-circle"></i></a>
+                                    <a class="input-group-text customspecialSelect" data-bind="visible:name(), popover: {title: transients.speciesTitle, content: transients.speciesInformation}"><i class="fa fa-info-circle"></i></a>
                                 </span>
                              </span></div>"""
     }
