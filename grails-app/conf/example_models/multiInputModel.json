@@ -15,7 +15,7 @@
   ],
   "viewModel": [
     {
-      "type": "row",
+      "type": "col",
       "items": [
         {
           "columns": [

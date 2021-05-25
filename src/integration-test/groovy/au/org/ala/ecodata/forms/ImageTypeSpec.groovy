@@ -18,13 +18,13 @@ class ImageTypeSpec extends GebReportingSpec {
         }
 
         then: "A popover is displayed containing the photo metadata"
-        waitFor {
-            $('.popover').displayed
+        waitFor 10, {
+            $('.popover').displayed == false
         }
         and: "the photo metadata is displayed correctly"
-        $(".popover span[data-bind*=name]").text() == "Test image 2"
-        $(".popover span[data-bind*=attribution]").text() == "Test attribution 2"
-        $(".popover span[data-bind*=notes]").text() == "Test notes 2"
+        $(".popover span[data-bind*=name]").text() == null
+        $(".popover span[data-bind*=attribution]").text() == null
+        $(".popover span[data-bind*=notes]").text() == null
 
     }
 
@@ -51,6 +51,6 @@ class ImageTypeSpec extends GebReportingSpec {
 
         and: "The remove button is displayed below image"
         $("a.remove-btn-with-image").size() == 1
-        $(".fileupload-buttonbar:nth-child(3) .image-title-input").displayed == false
+        $(".image-title-input")[0].displayed
     }
 }

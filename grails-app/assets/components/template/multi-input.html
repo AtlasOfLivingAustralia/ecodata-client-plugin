@@ -1,6 +1,6 @@
-<div data-bind="foreach: observableValues">
-    <div class="input-append">
-        <span data-bind="template:{nodes:$componentTemplateNodes}"></span><span class="add-on"
+<div class="row" data-bind="foreach: observableValues">
+    <div class="input-group col-sm-1 customMultiInput">
+        <span data-bind="template:{nodes:$componentTemplateNodes}"></span><span class="add-on input-group-append input-group-text customAppend"
                                                                                 data-bind="click:$parent.removeValue"><i
             class="fa fa-remove"></i></span>
     </div>

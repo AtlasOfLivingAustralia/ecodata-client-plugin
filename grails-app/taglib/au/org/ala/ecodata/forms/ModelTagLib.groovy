@@ -681,7 +681,7 @@ class ModelTagLib {
                 def ref = row.pleaseSpecify.source
                 // $ means top-level of data
                 if (ref.startsWith('$')) { ref = 'data.' + ref[1..-1] }
-                out << " (<span data-bind='clickToEdit:${ref}' data-input-class='input-small' data-prompt='specify'></span>)"
+                out << " (<span data-bind='clickToEdit:${ref}' data-input-class='form-control form-control-sm' data-prompt='specify'></span>)"
             }
             // close td
             out << "</td>" << "\n"

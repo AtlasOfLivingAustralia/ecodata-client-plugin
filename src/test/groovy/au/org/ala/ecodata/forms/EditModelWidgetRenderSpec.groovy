@@ -39,7 +39,7 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
         editModelWidgetRenderer.renderNumber(ctx)
 
         then:
-        TestUtils.compareHtml(ctx.writer, """<input type="number" step="any" data-bind="value:myNumber" class="input-small" />""")
+        TestUtils.compareHtml(ctx.writer, """<input class="form-control form-control-sm" data-bind="value:myNumber" type="number" step="any" />""")
     }
 
     def "the textarea renderer should include the html5 maxlength attribute and a placeholder if a maxSize validation rule is defined"() {
@@ -50,7 +50,7 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
         editModelWidgetRenderer.renderTextArea(ctx)
 
         then:
-        TestUtils.compareHtml(ctx.writer, """<textarea data-bind="value:${ctx.model.source}" maxlength="300" placeholder="(maximum 300 characters)" data-validation-engine="validate[${ctx.dataModel.validate}]"></textarea>""")
+        TestUtils.compareHtml(ctx.writer, """<textarea class="form-control form-control-sm" data-bind="value:${ctx.model.source}" maxlength="300" placeholder="(maximum 300 characters)" data-validation-engine="validate[${ctx.dataModel.validate}]"></textarea>""")
     }
 
     def "the textarea renderer will append to the placeholder text if it exists and a maxSize validation attribute is supplied"() {
@@ -62,7 +62,7 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
         editModelWidgetRenderer.renderTextArea(ctx)
 
         then:
-        TestUtils.compareHtml(ctx.writer, """<textarea data-bind="value:${ctx.model.source}" maxlength="300" placeholder="placeholder (maximum 300 characters)" data-validation-engine="validate[${ctx.dataModel.validate}]"></textarea>""")
+        TestUtils.compareHtml(ctx.writer, """<textarea class="form-control form-control-sm" data-bind="value:${ctx.model.source}" maxlength="300" placeholder="placeholder (maximum 300 characters)" data-validation-engine="validate[${ctx.dataModel.validate}]"></textarea>""")
     }
 
     def "the textarea renderer will include rows and cols attributes if supplied in the model"() {
@@ -73,7 +73,7 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
         editModelWidgetRenderer.renderTextArea(ctx)
 
         then:
-        TestUtils.compareHtml(ctx.writer, """<textarea data-bind="value:${ctx.model.source}" rows="3" cols="100"></textarea>""")
+        TestUtils.compareHtml(ctx.writer, """<textarea class="form-control form-control-sm" data-bind="value:${ctx.model.source}" rows="3" cols="100"></textarea>""")
     }
 
     def "the textarea renderer will include placeholder text if included in the model"() {
@@ -85,10 +85,10 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
         editModelWidgetRenderer.renderTextArea(ctx)
 
         then:
-        TestUtils.compareHtml(ctx.writer, """<textarea data-bind="value:${ctx.model.source}" placeholder="${ctx.model.placeholder}"></textarea>""")
+        TestUtils.compareHtml(ctx.writer, """<textarea class="form-control form-control-sm" data-bind="value:${ctx.model.source}" placeholder="${ctx.model.placeholder}"></textarea>""")
     }
 
- /*   def "the input renderer should include the html5 maxlength attribute and a placeholder if a maxSize validation rule is defined"() {
+    def "the input renderer should include the html5 maxlength attribute and a placeholder if a maxSize validation rule is defined"() {
         setup:
         ctx = ctxBuilder().model([source:'myText', type:'text']).validationString("required,maxSize[100]").build()
 
@@ -97,9 +97,9 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
 
         then:
 
-        TestUtils.compareHtml(ctx.writer, """<input type="text" data-bind="value:${ctx.model.source}" class="input-small" maxlength="100" placeholder="(maximum 100 characters)" data-validation-engine="validate[${ctx.dataModel.validate}]"></textarea>""")
+        TestUtils.compareHtml(ctx.writer, """<input maxlength="100" placeholder="(maximum 100 characters)" data-bind='value:myText'  data-validation-engine='validate[required,maxSize[100]]' type='text' class='form-control form-control-sm'/>""")
     }
-*/
+
     def "the readonlyText method renders text in a span"() {
         setup:
         ctx = ctxBuilder().model([source:'myText', type:'readonlyText']).build()

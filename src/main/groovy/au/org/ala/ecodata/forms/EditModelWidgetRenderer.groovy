@@ -22,7 +22,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.databindAttrs.add 'value', context.source
 
         handleMaxSizeAndPlaceholder(context)
-        context.writer << "<input ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}' ${context.validationAttr} type='text' class='input-small'/>"
+        context.writer << "<input ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}' ${context.validationAttr} type='text'/>"
     }
 
     @Override
@@ -161,7 +161,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     @Override
     void renderMultiInput(WidgetRenderContext context) {
         context.writer << """<multi-input params="values: ${context.model.source}, template:'${context.model.source}InputTemplate'">
-                              <input type="text" ${context.attributes.toString()} ${context.validationAttr} data-bind="value:val" class="input-small">
+                              <input type="text" ${context.attributes.toString()} ${context.validationAttr} data-bind="value:val" class="form-control form-control-sm customInput">
                            </multi-input>"""
     }
 
@@ -191,7 +191,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     private void renderSelectManyAsString(WidgetRenderContext context) {
         context.attributes.addClass context.getInputWidth()
         context.databindAttrs.add 'value', '('+context.source+'() || []).join(", ")'
-        context.writer << "<input ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}' ${context.validationAttr} type='text' class='input-small'/>"
+        context.writer << "<input ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}' ${context.validationAttr} type='text' class='form-control form-control-sm'/>"
     }
 
     @Override

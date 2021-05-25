@@ -14,6 +14,7 @@ branches:
   - grails3
   - devg3
   - grails4
+  - grails4-bootstrap
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock

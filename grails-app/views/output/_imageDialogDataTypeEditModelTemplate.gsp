@@ -1,5 +1,5 @@
 <g:set var="modalId" value="${name?.replace('.','')}Modal"></g:set>
-<a role="button" class="btn" data-toggle="modal" data-bind="attr: {href: '#'+ '${modalId}' + $index }"> <i class="icon-plus"></i> View saved photos</a>
+<a role="button" class="btn btn-sm" data-toggle="modal" data-bind="attr: {href: '#'+ '${modalId}' + $index }"> <i class="fa fa-plus"></i> View saved photos</a>
 <div id="" class="modal hide fade large" data-bind="attr:{id: '${modalId}' + $index}">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
