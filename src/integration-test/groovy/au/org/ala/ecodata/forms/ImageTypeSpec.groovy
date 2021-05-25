@@ -19,7 +19,7 @@ class ImageTypeSpec extends GebReportingSpec {
 
         then: "A popover is displayed containing the photo metadata"
         waitFor 10, {
-            $('.popover').displayed == false
+            (!$('.popover').displayed)
         }
         and: "the photo metadata is displayed correctly"
         $(".popover span[data-bind*=name]").text() == null
