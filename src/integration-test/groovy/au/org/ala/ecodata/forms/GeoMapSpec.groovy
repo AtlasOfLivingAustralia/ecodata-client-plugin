@@ -60,10 +60,13 @@ class GeoMapSpec extends GebReportingSpec {
         page.geoMap.drawMarker()
 
         then:
-        page.findById("locationLatitude").displayed == true
-        page.findById("locationLongitude").displayed == true
-        page.findById("locationCentroidLatitude").displayed == false
-        page.findById("locationCentroidLongitude").displayed == false
+        Thread.sleep(8000)
+        waitFor 10, {
+            page.findById("locationLatitude").displayed == true
+            page.findById("locationLongitude").displayed == true
+            page.findById("locationCentroidLatitude").displayed == false
+            page.findById("locationCentroidLongitude").displayed == false
+        }
 
         when:
         page.geoMap.addCoordinatesManually()
