@@ -26,7 +26,6 @@ apply plugin:"asset-pipeline"
 apply plugin:"com.energizedwork.webdriver-binaries"
 apply from: "${project.projectDir}/gradle/clover.gradle"
 apply plugin:"maven-publish"
-// apply from: "${project.projectDir}/gradle/publish.gradle"
 
 
 repositories {
