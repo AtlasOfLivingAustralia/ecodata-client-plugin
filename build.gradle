@@ -152,7 +152,7 @@ publishing {
                     it.replaceNode {}
                 }
             }
-            artifacts components.java
+            from components.java
 
         }
     }
