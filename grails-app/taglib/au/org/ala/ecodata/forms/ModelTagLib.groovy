@@ -592,6 +592,9 @@ class ModelTagLib {
                 if (model.type == "date") {
                     attrs.dateColCss = "col-sm-2"
                 }
+                if (model.type == "image") {
+                    out << "<div class=\"row p-3\">"
+                }
 
                 break
             case 'table':

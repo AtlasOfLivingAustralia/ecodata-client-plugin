@@ -67,7 +67,6 @@ class GeoMapSpec extends GebReportingSpec {
             page.findById("locationCentroidLatitude").displayed == false
             page.findById("locationCentroidLongitude").displayed == false
         }
-
         when:
         page.geoMap.addCoordinatesManually()
 

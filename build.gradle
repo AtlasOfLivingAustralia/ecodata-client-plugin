@@ -25,12 +25,15 @@ apply plugin:"org.grails.grails-gsp"
 apply plugin:"asset-pipeline"
 apply plugin:"com.energizedwork.webdriver-binaries"
 apply from: "${project.projectDir}/gradle/clover.gradle"
+apply plugin:"maven-publish"
 
 
 repositories {
     mavenLocal()
+    maven { url "https://repo.osgeo.org/repository/release/" }
     maven { url "https://repo.grails.org/grails/core" }
     maven { url "https://nexus.ala.org.au/content/groups/public/" }
+    jcenter()
 }
 
 boolean inplace = false
@@ -100,6 +103,9 @@ tasks.withType(Test) {
         exceptionFormat 'full'
     }
 }
+springBoot {
+    buildInfo()
+}
 
 bootRun {
     jvmArgs('-Dspring.output.ansi.enabled=always')
@@ -108,7 +114,10 @@ bootRun {
     systemProperty springProfilesActive, System.getProperty(springProfilesActive)
 }
 // enable if you wish to package this plugin as a standalone application
-bootJar.enabled = false
+bootJar {
+    enabled = false
+
+}
 
 assets {
     packagePlugin = true
