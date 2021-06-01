@@ -41,7 +41,7 @@ script:
 #- grails -Dphantomjs.binary.path=/usr/local/phantomjs/bin/phantomjs -Dgeb.env=chromeHeadless test-app -clover.on --non-interactive --stacktrace
 
 after_success:
-  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && travis_retry ./gradlew publish'
+  - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && ./gradlew clean && travis_retry ./gradlew publish'
 
 env:
   global:

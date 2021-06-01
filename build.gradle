@@ -25,12 +25,15 @@ apply plugin:"org.grails.grails-gsp"
 apply plugin:"asset-pipeline"
 apply plugin:"com.energizedwork.webdriver-binaries"
 apply from: "${project.projectDir}/gradle/clover.gradle"
+apply from: "${project.projectDir}/gradle/publish.gradle"
 
 
 repositories {
     mavenLocal()
+    maven { url "https://repo.osgeo.org/repository/release/" }
     maven { url "https://repo.grails.org/grails/core" }
     maven { url "https://nexus.ala.org.au/content/groups/public/" }
+    jcenter()
 }
 
 boolean inplace = false
@@ -101,6 +104,9 @@ tasks.withType(Test) {
         exceptionFormat 'full'
     }
 }
+springBoot {
+    buildInfo()
+}
 
 bootRun {
     jvmArgs('-Dspring.output.ansi.enabled=always')
@@ -109,44 +115,47 @@ bootRun {
     systemProperty springProfilesActive, System.getProperty(springProfilesActive)
 }
 // enable if you wish to package this plugin as a standalone application
-bootJar.enabled = false
+bootJar {
+    enabled = false
+
+}
 
 assets {
     packagePlugin = true
 }
 
 
-publishing {
-    repositories {
-        maven {
-            name 'Nexus'
-            url "https://nexus.ala.org.au/content/repositories/${project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases' }"
-            credentials {
-                username = System.getenv('TRAVIS_DEPLOY_USERNAME')
-                password = System.getenv('TRAVIS_DEPLOY_PASSWORD')
-            }
-        }
-    }
-    publications {
-        mavenJar(MavenPublication) {
-            pom.withXml {
-                def pomNode = asNode()
-                pomNode.dependencyManagement.replaceNode {}
-
-                // simply remove dependencies without a version
-                // version-less dependencies are handled with dependencyManagement
-                // see https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/8 for more complete solutions
-                pomNode.dependencies.dependency.findAll {
-                    it.version.text().isEmpty()
-                }.each {
-                    it.replaceNode {}
-                }
-            }
-            from components.java
-
-        }
-    }
-}
+//publishing {
+//    repositories {
+//        maven {
+//            name 'Nexus'
+//            url "https://nexus.ala.org.au/content/repositories/${project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases' }"
+//            credentials {
+//                username = System.getenv('TRAVIS_DEPLOY_USERNAME')
+//                password = System.getenv('TRAVIS_DEPLOY_PASSWORD')
+//            }
+//        }
+//    }
+//    publications {
+//        mavenJar(MavenPublication) {
+//            pom.withXml {
+//                def pomNode = asNode()
+//                pomNode.dependencyManagement.replaceNode {}
+//
+//                // simply remove dependencies without a version
+//                // version-less dependencies are handled with dependencyManagement
+//                // see https://github.com/spring-gradle-plugins/dependency-management-plugin/issues/8 for more complete solutions
+//                pomNode.dependencies.dependency.findAll {
+//                    it.version.text().isEmpty()
+//                }.each {
+//                    it.replaceNode {}
+//                }
+//            }
+//            from components.java
+//
+//        }
+//    }
+//}
 
 if (inplace) {
     grails {
