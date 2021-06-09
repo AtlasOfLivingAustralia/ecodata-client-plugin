@@ -5,5 +5,6 @@ module.exports = {
     output: {
         filename: 'feature-bundle.js',
         path: path.resolve(__dirname, './grails-app/assets/javascripts/')
-    }
+    },
+    target: ['web', 'es5']
 };
