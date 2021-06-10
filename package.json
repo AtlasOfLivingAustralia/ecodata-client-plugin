@@ -9,12 +9,12 @@
   },
   "devDependencies": {
     "@metahub/karma-jasmine-jquery": "^2.0.1",
-    "@turf/area": "^6.0.1",
-    "@turf/bbox": "^6.0.1",
-    "@turf/clone": "^6.0.2",
-    "@turf/convex": "^6.0.2",
-    "@turf/length": "^6.0.2",
-    "@turf/simplify": "^5.1.5",
+    "@turf/area": "6.0.1",
+    "@turf/bbox": "6.0.1",
+    "@turf/clone": "6.0.2",
+    "@turf/convex": "6.0.2",
+    "@turf/length": "6.0.2",
+    "@turf/simplify": "5.1.5",
     "chromedriver": "^90.0.0",
     "geojson2svg": "^1.2.3",
     "handlebars": "^4.7.7",
@@ -30,9 +30,7 @@
     "leaflet": "^1.4.0",
     "leaflet-draw": "^1.0.4",
     "lodash": "^4.17.21",
-    "phantomjs-prebuilt": "^2.1.16",
-    "webpack": "^5.38.1",
-    "webpack-cli": "^4.7.2"
+    "phantomjs-prebuilt": "^2.1.16"
   },
   "scripts": {
     "test": "karma start karma.conf.js",
