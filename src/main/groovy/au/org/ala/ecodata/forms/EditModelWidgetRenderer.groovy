@@ -21,7 +21,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.databindAttrs.add 'value', context.source
 
         handleMaxSizeAndPlaceholder(context)
-        context.writer << "<input ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}' ${context.validationAttr} type='text' class='input-small'/>"
+        context.writer << "<input ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}' ${context.validationAttr} type='text' class='form-control form-control-sm'/>"
     }
 
     @Override
@@ -54,6 +54,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     @Override
     void renderTextArea(WidgetRenderContext context) {
         context.databindAttrs.add 'value', context.source
+        context.attributes.addClass("form-control form-control-sm")
         if (context.model.rows) {
             context.attributes.add("rows", context.model.rows)
         }
@@ -83,7 +84,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     @Override
     void renderSimpleDate(WidgetRenderContext context) {
         context.databindAttrs.add 'datepicker', context.source + '.date'
-        context.writer << "<input${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr} type='text' class='input-small'/>"
+        context.writer << "<input${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr} type='text' class='form-control form-control-sm input-small'/>"
     }
 
     @Override
@@ -112,7 +113,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.databindAttrs.add 'optionsText', context.source + '.constraints.text'
 
         context.databindAttrs.add 'optionsCaption', '"Please select"'
-        context.writer <<  "<select${context.attributes.toString()} class=\"select\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select>"
+        context.writer <<  "<select${context.attributes.toString()} class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select>"
     }
 
     @Override
@@ -126,7 +127,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.databindAttrs.add 'optionsText', context.source + '.constraints.text'
 
         context.databindAttrs.add 'select2', context.source + '.displayOptions'
-        context.writer <<  "<div${context.attributes.toString()}><select class=\"select\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
+        context.writer <<  "<div${context.attributes.toString()}><select class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
     }
 
     @Override
@@ -151,13 +152,13 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
             options = "_.extend({value:${context.source}}, ${context.source}.displayOptions)"
         }
         context.databindAttrs.add 'multiSelect2', options
-        context.writer <<  "<div${context.attributes.toString()}><select multiple=\"multiple\" class=\"select\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
+        context.writer <<  "<div${context.attributes.toString()}><select multiple=\"multiple\" class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
     }
 
     @Override
     void renderMultiInput(WidgetRenderContext context) {
         context.writer << """<multi-input params="values: ${context.model.source}, template:'${context.model.source}InputTemplate'">
-                              <input type="text" ${context.attributes.toString()} ${context.validationAttr} data-bind="value:val" class="input-small">
+                              <input type="text" ${context.attributes.toString()} ${context.validationAttr} data-bind="value:val" class="form-control form-control-sm input-small">
                            </multi-input>"""
     }
 
@@ -187,7 +188,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     private void renderSelectManyAsString(WidgetRenderContext context) {
         context.attributes.addClass context.getInputWidth()
         context.databindAttrs.add 'value', '('+context.source+'() || []).join(", ")'
-        context.writer << "<input ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}' ${context.validationAttr} type='text' class='input-small'/>"
+        context.writer << "<input ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}' ${context.validationAttr} type='text' class='form-control form-control-sm input-small'/>"
     }
 
     @Override
@@ -214,7 +215,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.databindAttrs.add 'optionsCaption', '"Please select"'
         context.databindAttrs.add 'value', "${context.source}.addWord"
 
-        context.writer <<  "<div class='row-fluid'><div class='span6'><select${context.attributes.toString()} comboList='${context.source}' data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
+        context.writer <<  "<div class='row'><div class='col-sm-6'><select${context.attributes.toString()} comboList='${context.source}' data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
 
         def tagsBlock = "<div class='span6'><div id='tagsBlock' data-bind='foreach: ${context.source}'>" +
                 " <span class='tag label label-default'>" +
@@ -352,7 +353,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
                                 <span data-bind="with:${context.source}" class="input-append"">
                                 <select data-bind="speciesSelect2:\$data" ${context.validationAttr}></select>
                                 <span class="add-on">
-                                    <a data-bind="visible:name(), popover: {title: transients.speciesTitle, content: transients.speciesInformation}"><i class="icon-info-sign"></i></a>
+                                    <a data-bind="visible:name(), popover: {title: transients.speciesTitle, content: transients.speciesInformation}"><i class="fa fa-info"></i></a>
                                 </span>
                              </span></div>"""
     }

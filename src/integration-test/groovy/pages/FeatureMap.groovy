@@ -21,7 +21,7 @@ class FeatureMap extends Module {
         }
 
         polygonDraw.click()
-
+        Thread.sleep(1000)
         waitFor 10, {$('.leaflet-draw-actions').getAt(0).displayed}
 
         interact {

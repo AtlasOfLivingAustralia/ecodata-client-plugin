@@ -24,7 +24,7 @@
 
                         <div class="control-group">
                             <label class="control-label" for="attribution">
-                                Attribution <i class="icon-question-sign"
+                                Attribution <i class="fa fa-question-circle"
                                                data-bind="popover: {content: 'The name of the individual(s) who recorded the sound', placement: 'top'}">&nbsp;</i>:
                             </label>
 
@@ -37,7 +37,7 @@
                             <label class="control-label" for="notes">Notes:</label>
 
                             <div class="controls">
-                                <textarea rows="4" class="input-xlarge" id="notes"  data-bind="value: notes"></textarea>
+                                <textarea rows="4" class="form-control form-control-sm input-xxlarge" id="notes"  data-bind="value: notes"></textarea>
                                 %{--<input id="notes"  class="input-xxlarge"type="text" data-bind="value: notes">--}%
                             </div>
                         </div>
@@ -83,7 +83,7 @@
     <div data-bind="${databindAttrs}" data-url="${g.createLink(controller: "bioActivity", action: "uploadFile")}">
         <span id="uploadControls">
             <span class="btn fileinput-button float-none">
-                <i class="icon-plus"></i> <input type="file" name="files" accept="audio/*"><span>Attach Audio</span>
+                <i class="fa fa-plus"></i> <input type="file" name="files" accept="audio/*"><span>Attach Audio</span>
             </span>
         </span>
 

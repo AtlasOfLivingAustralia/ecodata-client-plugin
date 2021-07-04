@@ -39,7 +39,7 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
         editModelWidgetRenderer.renderNumber(ctx)
 
         then:
-        TestUtils.compareHtml(ctx.writer, """<input type="number" step="any" data-bind="value:myNumber" class="input-small" />""")
+        TestUtils.compareHtml(ctx.writer, """<input type="number" step="any" data-bind="value:myNumber" class="form-control form-control-sm input-small" />""")
     }
 
     def "the textarea renderer should include the html5 maxlength attribute and a placeholder if a maxSize validation rule is defined"() {

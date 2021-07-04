@@ -157,7 +157,7 @@ class ModelTagLib {
         ctx.out << "<!-- /ko -->\n"
 
         if (model.userAddedRows && ctx.editMode()) {
-            ctx.out << """<button type="button" class="btn btn-success btn-small add-section" data-bind="click:${ctx.property}.addRow"><i class="fa fa-plus"></i> ${model.addRowText ?: 'Add'}</button>\n"""
+            ctx.out << """<button type="button" class="btn btn-success btn-sm add-section" data-bind="click:${ctx.property}.addRow"><i class="fa fa-plus"></i> ${model.addRowText ?: 'Add'}</button>\n"""
         }
     }
 
@@ -500,16 +500,16 @@ class ModelTagLib {
 
         if (model.title && !model.boxed) {
             out << "<h4>${model.title}</h4>"
-            out << "<div class=\"row-fluid output-section\">\n"
+            out << "<div class=\"row output-section\">\n"
         } else if (model.title && model.boxed) {
             out << "<div class=\"boxed-heading\" data-content='${model.title}'>\n"
-            out << "<div class=\"row-fluid\">\n"
+            out << "<div class=\"row\">\n"
         }
         else {
-            out << "<div class=\"row-fluid output-section\">\n"
+            out << "<div class=\"row output-section\">\n"
         }
 
-        out << "<div class=\"span12\">\n"
+        out << "<div class=\"col-sm-12\">\n"
 
         viewModelItems(model.items, ctx)
 
@@ -536,7 +536,7 @@ class ModelTagLib {
         def extraClassAttrs = model.class ?: model.css ?: ""
         def databindAttrs = model.visibility ? "data-bind=\"visible:${model.visibility}\"" : ""
 
-        out << "<div class=\"row-fluid space-after ${extraClassAttrs}\" ${databindAttrs}>\n"
+        out << "<div class=\"row space-after ${extraClassAttrs}\" ${databindAttrs}>\n"
         if (model.align == 'right') {
             out << "<div class=\"pull-right\">\n"
         }
@@ -552,7 +552,7 @@ class ModelTagLib {
         LayoutRenderContext childCtx = ctx.createChildContext(parentView: 'col', dataContext: ctx.dataContext, span: LAYOUT_COLUMNS)
 
         // Use even spacing for columns unless the column model specifies a span.
-        String css = "span${ctx.span}"
+        String css = "col-sm-${ctx.span}"
         if (model.css) {
             if (!model.css.contains("span")) {
                 css += "${css} ${model.css}"
@@ -578,10 +578,10 @@ class ModelTagLib {
 
         switch (layoutContext.parentView) {
             case 'col':
-                out << "<div class=\"row-fluid\">"
-                labelAttributes.addSpan 'span4'
+                out << "<div class=\"row\">"
+                labelAttributes.addSpan 'col-sm-4'
                 if (model.type != "number") {
-                    elementAttributes.addSpan 'span8'
+                    elementAttributes.addSpan 'col-sm-8'
                 }
                 break
             case 'table':
@@ -590,7 +590,7 @@ class ModelTagLib {
                 }
                 break
             default:
-                at.addSpan("span${layoutContext.span}")
+                at.addSpan("col-sm-${layoutContext.span}")
                 out << "<div${at.toString()}>"
         }
 
@@ -610,7 +610,7 @@ class ModelTagLib {
     }
 
     def grid(out, attrs, model) {
-        out << "<div class=\"row-fluid\">\n"
+        out << "<div class=\"row\">\n"
         out << INDENT*3 << "<table class=\"table table-bordered ${model.source?:''}\">\n"
         gridHeader out, attrs, model
         if (attrs.edit) {
@@ -725,7 +725,7 @@ class ModelTagLib {
         def extraClassAttrs = model.class ?: ""
         def tableClass = isprintblankform ? "printed-form-table" : ""
         def validation = model.editableRows && model.source ? "data-bind=\"independentlyValidated:data.${model.source}\"":""
-        out << "<div class=\"row-fluid ${extraClassAttrs}\">\n"
+        out << "<div class=\"row ${extraClassAttrs}\">\n"
         if (model.title) {
             out << model.title
         }
@@ -874,14 +874,14 @@ class ModelTagLib {
         }
         if (model.editableRows) {
                 out << INDENT*5 << "<td>\n"
-                out << INDENT*6 << "<button class='btn btn-mini' data-bind='click:\$root.edit${model.source}Row, enable:!\$root.${model.source}Editing()' title='edit'><i class='icon-edit'></i> Edit</button>\n"
+                out << INDENT*6 << "<button class='btn btn-mini' data-bind='click:\$root.edit${model.source}Row, enable:!\$root.${model.source}Editing()' title='edit'><i class='fa fa-edit'></i> Edit</button>\n"
                 if (allowRowDelete) {
-                    out << INDENT*6 << "<button class='btn btn-mini' data-bind='click:${ctx.property}.removeRow, enable:!\$root.${model.source}Editing()' title='remove'><i class='icon-trash'></i> Remove</button>\n"
+                    out << INDENT*6 << "<button class='btn btn-mini' data-bind='click:${ctx.property}.removeRow, enable:!\$root.${model.source}Editing()' title='remove'><i class='fa fa-trash'></i> Remove</button>\n"
                 }
                 out << INDENT*5 << "</td>\n"
         } else {
             if (edit && model.source && allowRowDelete) {
-                out << INDENT*5 << "<td><i data-bind='click:\$parent.${ctx.property}.removeRow' class='icon-remove'></i></td>\n"
+                out << INDENT*5 << "<td><i data-bind='click:\$parent.${ctx.property}.removeRow' class='fa fa-remove'></i></td>\n"
             }
         }
         out << INDENT*4 << "</tr></script>\n"

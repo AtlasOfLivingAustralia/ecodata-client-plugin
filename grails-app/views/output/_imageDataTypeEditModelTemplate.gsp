@@ -16,8 +16,8 @@
                 <g:if test="${options?.showRemoveButtonWithImage}">
                     <div class="row-fluid">
                         <div class="span12">
-                            <a class="btn btn-danger btn-small margin-top-10 margin-bottom-10 remove-btn-with-image" data-bind="click: remove.bind($data,$parent.${name})"><i
-                                    class="icon-remove icon-white"></i> Remove</a>
+                            <a class="btn btn-danger btn-sm margin-top-10 margin-bottom-10 remove-btn-with-image" data-bind="click: remove.bind($data,$parent.${name})"><i
+                                    class="fa fa-remove"></i> Remove</a>
                         </div>
                     </div>
                 </g:if>
@@ -47,7 +47,7 @@
 
                 <div class="row-fluid">
                     <div class="span4 text-left">
-                        <label class="control-label">Licence: <i class="icon-question-sign"
+                        <label class="control-label">Licence: <i class=fa fa-question-circle
                                                                 data-bind="popover:{content:'Creative Commons Attribution (CC BY), Creative Commons-Noncommercial (CC BY-NC), Creative Commons Attribution-Share Alike (CC BY-SA), Creative Commons Attribution-Noncommercial-Share Alike (CC BY-NC-SA)', placement:'top'}">&nbsp;</i>
                         </label>
                     </div>
@@ -64,7 +64,7 @@
                 <div class="row-fluid">
                     <div class="span4 text-left">
                         <label class="control-label" for="attribution">
-                            Attribution: <i class="icon-question-sign" data-bind="popover:{content:'The name of the photographer', placement:'top'}">&nbsp;</i>
+                            Attribution: <i class=fa fa-question-circle data-bind="popover:{content:'The name of the photographer', placement:'top'}">&nbsp;</i>
                         </label>
                     </div>
                     <div class="span8">
@@ -95,8 +95,8 @@
                     <div class="span4 text-left">
                     </div>
                     <div class="span8">
-                        <a class="btn btn-danger btn-small" data-bind="click: remove.bind($data,$parent.${name})"><i
-                                class="icon-remove icon-white"></i> Remove</a>
+                        <a class="btn btn-danger btn-sm" data-bind="click: remove.bind($data,$parent.${name})"><i
+                                class="fa fa-remove"></i> Remove</a>
                     </div>
                 </div>
 

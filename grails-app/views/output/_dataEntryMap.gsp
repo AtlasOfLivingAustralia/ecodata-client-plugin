@@ -38,7 +38,7 @@
                 <div class="span3">
                     <label for="${source}CentroidLatitude">Centroid Latitude
                         <a href="#" class="helphover" data-bind="popover: {title:'<g:message code="record.edit.map.centroidLatLon"/>', content:'<g:message code="record.edit.map.centroidLatLon.content"/>'}">
-                            <i class="icon-question-sign"></i>
+                            <i class="fa fa-question-circle"></i>
                         </a>
                     </label>
                 </div>
@@ -78,7 +78,7 @@
                 <div class="span3">
                     <label for="${source}Latitude">Latitude
                         <a href="#" class="helphover" data-bind="popover: {title:'<g:message code="record.edit.map.latLon"/>', content:'<g:message code="record.edit.map.latLon.content"/>'}">
-                            <i class="icon-question-sign"></i>
+                            <i class=fa fa-question-circle></i>
                         </a>
                     </label>
                 </div>
@@ -118,7 +118,7 @@
                     <div class="span3">
                         <label for="${source}Latitude">Enter latitude
                             <a href="#" class="helphover" data-bind="popover: {title:'<g:message code="record.edit.map.latLon"/>', content:'<g:message code="record.edit.map.latLon.content"/>'}">
-                                <i class="icon-question-sign"></i>
+                                <i class=fa fa-question-circle></i>
                             </a>
                         </label>
                     </div>
@@ -145,11 +145,11 @@
                     </div>
                     <div class="span9">
                         <!-- ko if: !transients.editCoordinates() -->
-                        <button class="btn btn-default manual-point-add-btn" data-bind="click: transients.showCoordinateFields"><i class="icon-plus"></i> Add coordinates manually</button>
+                        <button class="btn btn-default manual-point-add-btn" data-bind="click: transients.showCoordinateFields"><i class="fa fa-plus"></i> Add coordinates manually</button>
                         <!-- /ko -->
                         <!-- ko if: transients.editCoordinates() -->
-                        <button class="btn btn-default manual-point-save-btn" data-bind="click: transients.saveCoordinates"><i class="icon-hdd" data-bind="visible: !transients.showLoadingOnCoordinateCheck()"></i><span class="fa fa-spin fa-spinner" data-bind="visible: transients.showLoadingOnCoordinateCheck"></span> Save coordinates</button>
-                        <button class="btn btn-default manual-point-cancel-btn" data-bind="click: transients.hideCoordinateFields"><i class="icon-arrow-right"></i> Cancel</button>
+                        <button class="btn btn-default manual-point-save-btn" data-bind="click: transients.saveCoordinates"><i class="fa fa-hdd" data-bind="visible: !transients.showLoadingOnCoordinateCheck()"></i><span class="fa fa-spin fa-spinner" data-bind="visible: transients.showLoadingOnCoordinateCheck"></span> Save coordinates</button>
+                        <button class="btn btn-default manual-point-cancel-btn" data-bind="click: transients.hideCoordinateFields"><i class="fa fa-arrow-right"></i> Cancel</button>
                         <!-- /ko -->
                     </div>
                 </div>
@@ -207,10 +207,10 @@
                         <div class="row-fluid">
                             <div class="span12">
                                 <g:if test="${readonly}">
-                                    <textarea id="${source}Notes" type="text" data-bind="text: data.${source}Notes" readonly class="full-width"></textarea>
+                                    <textarea id="${source}Notes" type="text" data-bind="text: data.${source}Notes" readonly class="form-control form-control-sm"></textarea>
                                 </g:if>
                                 <g:else>
-                                    <textarea id="${source}Notes" type="text" data-bind="value: data.${source}Notes" class="full-width"></textarea>
+                                    <textarea id="${source}Notes" type="text" data-bind="value: data.${source}Notes" class="form-control form-control-sm full-width"></textarea>
                                 </g:else>
                             </div>
                         </div>
@@ -243,11 +243,11 @@
                         <div class="row-fluid">
                             <div class="span12">
                                 <g:if test="${readonly}">
-                                    <textarea id="${source}Locality" type="text" data-bind="value: data.${source}Locality" readonly class=" full-width"></textarea>
+                                    <textarea id="${source}Locality" type="text" data-bind="value: data.${source}Locality" readonly class="form-control form-control-sm full-width"></textarea>
                                 </g:if>
                                 <g:else>
                                     <form class="form-inline">
-                                        <textarea id="${source}Locality" type="text" data-bind="value: data.${source}Locality" class="full-width"></textarea>
+                                        <textarea id="${source}Locality" type="text" data-bind="value: data.${source}Locality" class="form-control form-control-sm full-width"></textarea>
                                         <g:if test="${!autoLocalitySearch}">
                                             <button id="reverseGeocodeLocality" class="btn btn-default margin-top-1">Search for locality match</button>
                                         </g:if>
