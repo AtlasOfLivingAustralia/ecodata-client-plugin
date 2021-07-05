@@ -108,13 +108,13 @@ table .select2-container .select2-selection--single {
 }
 
 /** Emulate bootstrap styling for input fields for the select 2 */
-div.species-select2[class*="span"] {
+div.species-select2[class*="div"] {
     display:inline-block;
     float:none;
     margin-left:0;
     position: relative;
 }
-div.species-select2 > span.input-append {
+div.species-select2 > span.input-group {
     width: 100%;
 }
 

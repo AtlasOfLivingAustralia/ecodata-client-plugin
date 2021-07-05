@@ -114,7 +114,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
 
         context.databindAttrs.add 'optionsCaption', '"Please select"'
 
-        context.writer <<  "<select${context.attributes.toString()} class=\"select\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select>"
+        context.writer <<  "<select${context.attributes.toString()} class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select>"
     }
 
     @Override
@@ -351,22 +351,26 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
 
         context.attributes.addClass("species-select2")
         context.writer << """<div${context.attributes.toString()}>
-                                <span data-bind="with:${context.source}" class="input-append"">
-                                <select data-bind="speciesSelect2:\$data" ${context.validationAttr}></select>
-                                <span class="add-on">
-                                    <a data-bind="visible:name(), popover: {title: transients.speciesTitle, content: transients.speciesInformation}"><i class="fa fa-info"></i></a>
-                                </span>
-                             </span></div>"""
+                                <div data-bind="with:${context.source}" class="input-group"">
+                                <select class="form-control form-control-sm" data-bind="speciesSelect2:\$data" ${context.validationAttr}></select>
+                                <div class="input-group-append">
+                                    <span class="input-group-text" data-bind="visible:name(), popover: {title: transients.speciesTitle, content: transients.speciesInformation}"><i class="fa fa-info-circle"></i></span>
+                                </div>
+                             </div></div>"""
     }
 
     @Override
     void renderCurrency(WidgetRenderContext context) {
         context.databindAttrs.add('value', context.source)
-        context.writer << """<span class="input-prepend input-append currency-input">
-            <span class="add-on">\$</span>
-            <input type="number" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}'>
-            <span class="add-on">.00</span>
-           </span>"""
+        context.writer << """<div class="input-group currency-input">
+            <div class="input-group-prepend customAddOn">
+            <span class="input-group-text">\$</span>
+            </div>
+            <input type="number" class="form-control form-control-sm" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}'>
+            <div class="input-group-append customAddOn">
+            <span class="input-group-text">.00</span>
+            </div>
+           </div>"""
     }
 
     @Override

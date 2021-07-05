@@ -405,7 +405,7 @@ class ModelTagLib {
             }
 
             String labelPlainText = labelContent(model.preLabel)
-            result = "<span ${labelAttributes.toString()}><label>${labelText(attrs, model, labelPlainText)}</label></span>" + dataTag
+            result = "<div ${labelAttributes.toString()}><label>${labelText(attrs, model, labelPlainText)}</label></div>" + dataTag
         }
 
         if (model.postLabel) {
@@ -581,10 +581,11 @@ class ModelTagLib {
                 out << "<div class=\"row\">"
                 labelAttributes.addSpan 'col-sm-4'
                 if (model.type != "number" && model.type != "selectOne") {
-                    elementAttributes.addSpan 'col-sm-8'
+                    elementAttributes.addSpan 'col-sm-6'
                 }
+
                 if (model.type == "selectOne") {
-                    elementAttributes.addSpan("col-sm-8 form-control form-control-sm")
+                    elementAttributes.addSpan("col-sm-8 selectOne form-control form-control-sm")
                 }
                 break
             case 'table':
@@ -731,7 +732,7 @@ class ModelTagLib {
         def extraClassAttrs = model.class ?: ""
         def tableClass = isprintblankform ? "printed-form-table" : ""
         def validation = model.editableRows && model.source ? "data-bind=\"independentlyValidated:data.${model.source}\"":""
-        out << "<div class=\"col-sm-12 ${extraClassAttrs}\">\n"
+        out << "<div class=\"row col-sm-12 ${extraClassAttrs}\">\n"
         if (model.title) {
             out << model.title
         }
