@@ -19,10 +19,12 @@ class FeatureMapSpec extends GebReportingSpec {
         when:
         def button = page.findFeatureMapButtonByModelName("feature").first()
         button.click()
-        waitFor{ page.featureMapDialog.map.displayed }
+        Thread.sleep(1000)
+        waitFor 10, { page.featureMapDialog.map.displayed }
 
         then:
-        page.featureMapDialog.displayed == true
+        Thread.sleep(1000)
+        waitFor 10, { page.featureMapDialog.displayed == true }
 
         when:
         page.featureMapDialog.map.drawPolygon()

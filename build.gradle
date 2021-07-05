@@ -88,10 +88,6 @@ dependencies {
     }
     compile "com.bertramlabs.plugins:asset-pipeline-core:$assetPipelineVersion"
 }
-webdriverBinaries {
-    chromedriver "$chromeDriverVersion"
-    geckodriver "$geckodriverVersion"
-}
 
 tasks.withType(Test) {
     systemProperty 'geb.env', System.getProperty('geb.env') ?: 'chromeHeadless'

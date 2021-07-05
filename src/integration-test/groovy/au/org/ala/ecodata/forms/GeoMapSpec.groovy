@@ -39,6 +39,7 @@ class GeoMapSpec extends GebReportingSpec {
         page.findById("siteLocation").find("option").size() == 2;
 
         when:
+        Thread.sleep(5000)
         page.geoMap.drawPolygon()
 
         then:

@@ -50,7 +50,7 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
         editModelWidgetRenderer.renderTextArea(ctx)
 
         then:
-        TestUtils.compareHtml(ctx.writer, """<textarea data-bind="value:${ctx.model.source}" maxlength="300" placeholder="(maximum 300 characters)" data-validation-engine="validate[${ctx.dataModel.validate}]"></textarea>""")
+        TestUtils.compareHtml(ctx.writer, """<textarea data-bind="value:${ctx.model.source}" maxlength="300" placeholder="(maximum 300 characters)" data-validation-engine="validate[${ctx.dataModel.validate}]" class="form-control form-control-sm"></textarea>""")
     }
 
     def "the textarea renderer will append to the placeholder text if it exists and a maxSize validation attribute is supplied"() {
@@ -62,7 +62,7 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
         editModelWidgetRenderer.renderTextArea(ctx)
 
         then:
-        TestUtils.compareHtml(ctx.writer, """<textarea data-bind="value:${ctx.model.source}" maxlength="300" placeholder="placeholder (maximum 300 characters)" data-validation-engine="validate[${ctx.dataModel.validate}]"></textarea>""")
+        TestUtils.compareHtml(ctx.writer, """<textarea data-bind="value:${ctx.model.source}" maxlength="300" placeholder="placeholder (maximum 300 characters)" class="form-control form-control-sm" data-validation-engine="validate[${ctx.dataModel.validate}]"></textarea>""")
     }
 
     def "the textarea renderer will include rows and cols attributes if supplied in the model"() {
@@ -73,7 +73,7 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
         editModelWidgetRenderer.renderTextArea(ctx)
 
         then:
-        TestUtils.compareHtml(ctx.writer, """<textarea data-bind="value:${ctx.model.source}" rows="3" cols="100"></textarea>""")
+        TestUtils.compareHtml(ctx.writer, """<textarea class="form-control form-control-sm" data-bind="value:${ctx.model.source}" rows="3" cols="100"></textarea>""")
     }
 
     def "the textarea renderer will include placeholder text if included in the model"() {
@@ -85,7 +85,7 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
         editModelWidgetRenderer.renderTextArea(ctx)
 
         then:
-        TestUtils.compareHtml(ctx.writer, """<textarea data-bind="value:${ctx.model.source}" placeholder="${ctx.model.placeholder}"></textarea>""")
+        TestUtils.compareHtml(ctx.writer, """<textarea data-bind="value:${ctx.model.source}" placeholder="${ctx.model.placeholder}" class="form-control form-control-sm"></textarea>""")
     }
 
  /*   def "the input renderer should include the html5 maxlength attribute and a placeholder if a maxSize validation rule is defined"() {
@@ -116,7 +116,7 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
         setup:
         Map options = [tags:false]
         ctx = ctxBuilder().model([source:'mymultioption', type:'select2Many', displayOptions:options]).build()
-        String expected = """<div><select multiple="multiple" class="select" data-bind='options:mymultioption.constraints,optionsValue:mymultioption.constraints.value,optionsText:mymultioption.constraints.text,multiSelect2:_.extend({value:mymultioption}, mymultioption.displayOptions)'></select></div>"""
+        String expected = """<div><select multiple="multiple" class="select form-control form-control-sm" data-bind='options:mymultioption.constraints,optionsValue:mymultioption.constraints.value,optionsText:mymultioption.constraints.text,multiSelect2:_.extend({value:mymultioption}, mymultioption.displayOptions)'></select></div>"""
 
         when:
         editModelWidgetRenderer.renderSelect2Many(ctx)

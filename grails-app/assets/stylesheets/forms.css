@@ -161,3 +161,55 @@ table .select2 {
 .margin-bottom-10 {
     margin-bottom: 10px;
 }
+
+.modal {
+    padding: 0 !important; // override inline padding-right added from js
+}
+.modal .modal-dialog {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    margin: 0;
+}
+.modal .modal-content {
+    height: 100%;
+    border: 0;
+    border-radius: 0;
+}
+.modal .modal-body {
+    overflow-y: auto;
+}
+.unstyled {
+    list-style-type: none !important;
+}
+
+textarea {
+    border: 1px solid #cccccc;
+}
+.customAddOn {
+    height: 31px !important;
+    border-top-left-radius: unset !important;
+    border-bottom-left-radius: unset !important;
+}
+
+img.imageDataTypePreview.margin-bottom-10 {
+    height: auto;
+    vertical-align: middle;
+    width: 100% !important;
+}
+
+.customPrepend {
+    height: 38px !important;
+}
+
+span.input-group-append.input-group-text.customAppend {
+    height: 31px;
+    border-top-left-radius: unset;
+    border-bottom-left-radius: unset;
+}
+
+.customMultiInput {
+    margin: 2px 2px 2px 9px !important;
+    padding: 0 !important;
+}
+

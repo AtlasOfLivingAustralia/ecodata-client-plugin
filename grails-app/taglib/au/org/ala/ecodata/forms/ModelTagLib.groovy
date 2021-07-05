@@ -580,13 +580,19 @@ class ModelTagLib {
             case 'col':
                 out << "<div class=\"row\">"
                 labelAttributes.addSpan 'col-sm-4'
-                if (model.type != "number") {
+                if (model.type != "number" && model.type != "selectOne") {
                     elementAttributes.addSpan 'col-sm-8'
+                }
+                if (model.type == "selectOne") {
+                    elementAttributes.addSpan("col-sm-8 form-control form-control-sm")
                 }
                 break
             case 'table':
                 if (model.type == 'boolean') {
                     out << "<label class=\"table-checkbox-label\">"
+                }
+                if (model.type == "selectOne") {
+                    elementAttributes.addSpan("form-control form-control-sm")
                 }
                 break
             default:
@@ -874,9 +880,9 @@ class ModelTagLib {
         }
         if (model.editableRows) {
                 out << INDENT*5 << "<td>\n"
-                out << INDENT*6 << "<button class='btn btn-mini' data-bind='click:\$root.edit${model.source}Row, enable:!\$root.${model.source}Editing()' title='edit'><i class='fa fa-edit'></i> Edit</button>\n"
+                out << INDENT*6 << "<button class='btn btn-sm' data-bind='click:\$root.edit${model.source}Row, enable:!\$root.${model.source}Editing()' title='edit'><i class='fa fa-edit'></i> Edit</button>\n"
                 if (allowRowDelete) {
-                    out << INDENT*6 << "<button class='btn btn-mini' data-bind='click:${ctx.property}.removeRow, enable:!\$root.${model.source}Editing()' title='remove'><i class='fa fa-trash'></i> Remove</button>\n"
+                    out << INDENT*6 << "<button class='btn btn-sm' data-bind='click:${ctx.property}.removeRow, enable:!\$root.${model.source}Editing()' title='remove'><i class='fa fa-trash'></i> Remove</button>\n"
                 }
                 out << INDENT*5 << "</td>\n"
         } else {

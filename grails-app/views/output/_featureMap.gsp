@@ -1,6 +1,6 @@
 <div class="feature-map">
     <div class="map-container">
-        <m:map id="map-holder" width="100%"></m:map>
+        <m:map id="map-holder" width="100%" height="100%"></m:map>
     </div>
 
     <div class="sites-list-sidebar">

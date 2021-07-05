@@ -26,6 +26,7 @@ class GeoMap extends Module {
     def drawPolygon() {
 
         def polygonDraw = $('.leaflet-draw-draw-polygon')
+        Thread.sleep(1000)
         waitFor { polygonDraw.displayed }
 
         // Wakeup the map (leaflet_sleep will be preventing interaction otherwise
@@ -39,7 +40,8 @@ class GeoMap extends Module {
 
         polygonDraw.click()
 
-        waitFor{$('.leaflet-draw-actions').getAt(0).displayed}
+        Thread.sleep(1000)
+        waitFor 10, {$('.leaflet-draw-actions').getAt(0).displayed}
 
         moveAndClick(100, 100, 1)
         moveAndClick(200, -200, 2)
@@ -53,7 +55,7 @@ class GeoMap extends Module {
             doubleClick()
         }
 
-        waitFor { $("#locationCentroidLatitude").getAt(0).displayed }
+        waitFor 10, { $("#locationCentroidLatitude").getAt(0).displayed }
     }
 
     def moveAndClick(int xOffset, int yOffset, int expectedCount) {
