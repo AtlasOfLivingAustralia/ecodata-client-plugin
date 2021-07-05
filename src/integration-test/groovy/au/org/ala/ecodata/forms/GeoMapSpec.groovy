@@ -39,40 +39,52 @@ class GeoMapSpec extends GebReportingSpec {
         page.findById("siteLocation").find("option").size() == 2;
 
         when:
-        Thread.sleep(5000)
         page.geoMap.drawPolygon()
 
         then:
-        page.findById("locationLatitude").displayed == false
-        page.findById("locationLongitude").displayed == false
-        page.findById("locationCentroidLatitude").displayed == true
-        page.findById("locationCentroidLongitude").displayed == true
+        waitFor 10, {
+            page.findById("locationLatitude").displayed == false
+            page.findById("locationLongitude").displayed == false
+            page.findById("locationCentroidLatitude").displayed == true
+            page.findById("locationCentroidLongitude").displayed == true
+        }
+
 
         when:
         page.geoMap.drawLine()
 
         then:
-        page.findById("locationLatitude").displayed == false
-        page.findById("locationLongitude").displayed == false
-        page.findById("locationCentroidLatitude").displayed == true
-        page.findById("locationCentroidLongitude").displayed == true
+        waitFor 10, {
+            page.findById("locationLatitude").displayed == false
+            page.findById("locationLongitude").displayed == false
+            page.findById("locationCentroidLatitude").displayed == true
+            page.findById("locationCentroidLongitude").displayed == true
+        }
+
+
 
         when:
         page.geoMap.drawMarker()
 
         then:
-        page.findById("locationLatitude").displayed == true
-        page.findById("locationLongitude").displayed == true
-        page.findById("locationCentroidLatitude").displayed == false
-        page.findById("locationCentroidLongitude").displayed == false
+        waitFor 10, {
+            page.findById("locationLatitude").displayed == true
+            page.findById("locationLongitude").displayed == true
+            page.findById("locationCentroidLatitude").displayed == false
+            page.findById("locationCentroidLongitude").displayed == false
+        }
+
 
         when:
         page.geoMap.addCoordinatesManually()
 
         then:
-        page.findById("locationLatitude").displayed == true
-        page.findById("locationLongitude").displayed == true
-        page.findById("locationLatitude").value() == "-31"
-        page.findById("locationLongitude").value() == "128"
+        waitFor 10, {
+            page.findById("locationLatitude").displayed == true
+            page.findById("locationLongitude").displayed == true
+            page.findById("locationLatitude").value() == "-31"
+            page.findById("locationLongitude").value() == "128"
+        }
+
     }
 }
