@@ -731,7 +731,7 @@ class ModelTagLib {
         def extraClassAttrs = model.class ?: ""
         def tableClass = isprintblankform ? "printed-form-table" : ""
         def validation = model.editableRows && model.source ? "data-bind=\"independentlyValidated:data.${model.source}\"":""
-        out << "<div class=\"row ${extraClassAttrs}\">\n"
+        out << "<div class=\"col-sm-12 ${extraClassAttrs}\">\n"
         if (model.title) {
             out << model.title
         }
