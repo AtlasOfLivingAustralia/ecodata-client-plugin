@@ -580,8 +580,14 @@ class ModelTagLib {
             case 'col':
                 out << "<div class=\"row\">"
                 labelAttributes.addSpan 'col-sm-4'
-                if (model.type != "number" && model.type != "selectOne") {
+                if (model.type != "number" && model.type != "selectOne" && model.type != "autocomplete") {
                     elementAttributes.addSpan 'col-sm-6'
+                }
+                if (model.type == "autocomplete"){
+                    elementAttributes.addSpan 'col-sm-6 input-group'
+                }
+                if (model.type == "number"){
+                    elementAttributes.addSpan("col-sm-2")
                 }
 
                 if (model.type == "selectOne") {
@@ -591,6 +597,9 @@ class ModelTagLib {
             case 'table':
                 if (model.type == 'boolean') {
                     out << "<label class=\"table-checkbox-label\">"
+                }
+                if (model.type == "autocomplete"){
+                    elementAttributes.addSpan 'input-group autocompleteSpecies'
                 }
                 if (model.type == "selectOne") {
                     elementAttributes.addSpan("form-control form-control-sm")

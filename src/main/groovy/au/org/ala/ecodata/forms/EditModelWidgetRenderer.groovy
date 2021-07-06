@@ -39,9 +39,11 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     }
 
     private void renderWithAddon(String addOnText, String modelElementText, writer) {
-        writer << "<div class=\"input-append\">"
+        writer << "<div class=\"input-group\">"
         writer << modelElementText
-        writer << "<span class=\"add-on\">${addOnText}</span>"
+        writer << "<div class=\"input-group-append\">"
+        writer << "<span class=\"add-on input-group-text\">${addOnText}</span>"
+        writer << "</div>"
         writer << "</div>"
     }
 
@@ -272,7 +274,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         newAttrs.add "event", "{focusout:focusLost}"
         newAttrs.add "speciesAutocomplete", "{url:transients.speciesSearchUrl, result:speciesSelected, valueChangeCallback:textFieldChanged}"
 
-        context.writer << context.g.render(template: '/output/speciesTemplate', plugin:'ecodata-client-plugin', model:[source: context.source, databindAttrs: newAttrs.toString(), validationAttrs:context.validationAttr])
+        context.writer << context.g.render(template: '/output/speciesTemplate', plugin:'ecodata-client-plugin', model:[css: context?.attributes?.map?.class, source: context.source, databindAttrs: newAttrs.toString(), validationAttrs:context.validationAttr])
     }
 
     @Override
