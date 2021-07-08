@@ -48,7 +48,7 @@ class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLi
 
         then:
         mb.h4([:], title)
-        mb.div(class:"row output-section") {
+        mb.div(class:"col-sm-12 output-section") {
             div(class:"col-sm-12") {}
         }
         TestUtils.compareHtml(actualOut, expectedOut)
@@ -64,7 +64,7 @@ class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLi
 
         then:
         mb.div(class:"boxed-heading", "data-content":title) {
-            div(class:'row') {
+            div(class:'col-sm-12') {
                 div(class:"col-sm-12") {}
             }
         }
