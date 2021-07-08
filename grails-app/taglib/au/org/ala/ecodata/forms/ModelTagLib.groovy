@@ -500,10 +500,10 @@ class ModelTagLib {
 
         if (model.title && !model.boxed) {
             out << "<h4>${model.title}</h4>"
-            out << "<div class=\"row output-section\">\n"
+            out << "<div class=\"col-sm-12 output-section\">\n"
         } else if (model.title && model.boxed) {
             out << "<div class=\"boxed-heading\" data-content='${model.title}'>\n"
-            out << "<div class=\"row\">\n"
+            out << "<div class=\"col-sm-12\">\n"
         }
         else {
             out << "<div class=\"row output-section\">\n"
@@ -536,7 +536,7 @@ class ModelTagLib {
         def extraClassAttrs = model.class ?: model.css ?: ""
         def databindAttrs = model.visibility ? "data-bind=\"visible:${model.visibility}\"" : ""
 
-        out << "<div class=\"row space-after ${extraClassAttrs}\" ${databindAttrs}>\n"
+        out << "<div class=\"row col-sm-12 space-after ${extraClassAttrs}\" ${databindAttrs}>\n"
         if (model.align == 'right') {
             out << "<div class=\"pull-right\">\n"
         }
@@ -558,6 +558,7 @@ class ModelTagLib {
                 css += "${css} ${model.css}"
             }
             else {
+                model.css = model.css.replaceAll("span", "col-sm-")
                 css = model.css
             }
         }
@@ -569,6 +570,9 @@ class ModelTagLib {
     def layoutDataItem(out, attrs, model, LayoutRenderContext layoutContext) {
 
         AttributeMap at = new AttributeMap()
+        if (model?.css?.contains("span")){
+            model.css = model.css.replaceAll("span", "col-sm-")
+        }
         at.addClass(model.css)
 
         // Wrap data elements in rows to reset the bootstrap indentation on subsequent spans to save the

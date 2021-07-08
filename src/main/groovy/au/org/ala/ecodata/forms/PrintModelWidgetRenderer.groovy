@@ -37,7 +37,7 @@ class PrintModelWidgetRenderer implements ModelWidgetRenderer {
 
     @Override
     void renderTextArea(WidgetRenderContext context) {
-        context.writer << "<span class=\"span12 printed-form-field textarea\"></span>"
+        context.writer << "<span class=\"col-sm-12 printed-form-field textarea\"></span>"
 //        context.databindAttrs.add 'value', context.source
 //        context.writer << "<textarea ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'></textarea>"
     }

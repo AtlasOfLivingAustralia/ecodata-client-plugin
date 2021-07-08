@@ -39,7 +39,7 @@ class AttributeMap {
     }
 
     def classHasSpan() {
-        return map.containsKey('class') && map.class.tokenize(' ').any {it.startsWith('span')}
+        return map.containsKey('class') && map.class.tokenize(' ').any {it.startsWith('col')}
     }
 
     void addMaxLength(int maxLength) {

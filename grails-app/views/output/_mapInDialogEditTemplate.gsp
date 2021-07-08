@@ -1,7 +1,7 @@
 
 
 <!-- ko stopBinding: true -->
-<div id="map-modal" class="modal w-100" role="dialog" tabindex="-1">
+<div id="map-modal" class="modal hide fade w-100" role="dialog" tabindex="-1">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
