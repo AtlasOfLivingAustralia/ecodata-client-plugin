@@ -409,44 +409,44 @@ function orEmptyArray(v) {
 
         config = _.defaults(config, defaults);
         var viewModel = new config.constructorFunction(output, dataModel, context, config);
-        viewModel.initialise(output.data);
 
-        // dirtyFlag must be defined after data is initialised
-        viewModel.dirtyFlag = config.dirtyFlag(viewModel, false);
+        viewModel.initialise(output.data).done(function() {
+            // dirtyFlag must be defined after data is initialised
+            // this resets the baseline for detecting changes to the model
+            // - shouldn't be required if everything behaves itself but acts as a backup for
+            //   any binding side-effects
+            // - note that it is not foolproof as applying the bindings happens asynchronously and there
+            //   is no easy way to detect its completion
+            viewModel.dirtyFlag.reset();
 
-        ko.applyBindings(viewModel, document.getElementById(config.viewRootElementId));
+            // Check for locally saved data for this output - this will happen in the event of a session timeout
+            // for example.
+            var savedData = amplify.store(config.recoveryDataStorageKey);
+            var savedOutput = null;
+            if (savedData) {
+                savedData = $.parseJSON(savedData);
 
-        // this resets the baseline for detecting changes to the model
-        // - shouldn't be required if everything behaves itself but acts as a backup for
-        //   any binding side-effects
-        // - note that it is not foolproof as applying the bindings happens asynchronously and there
-        //   is no easy way to detect its completion
-        viewModel.dirtyFlag.reset();
-
-        // Check for locally saved data for this output - this will happen in the event of a session timeout
-        // for example.
-        var savedData = amplify.store(config.recoveryDataStorageKey);
-        var savedOutput = null;
-        if (savedData) {
-            savedData = $.parseJSON(savedData);
-
-            var savedOutput;
-            if (savedData.name && savedData.name == output.name) {
-                savedOutput = savedData.data;
-            }
-            else if (savedData.outputs) {
-                $.each(savedData.outputs, function (i, tmpOutput) {
-                    if (tmpOutput.name === output.name) {
-                        if (tmpOutput.data) {
-                            savedOutput = tmpOutput.data;
+                var savedOutput;
+                if (savedData.name && savedData.name == output.name) {
+                    savedOutput = savedData.data;
+                }
+                else if (savedData.outputs) {
+                    $.each(savedData.outputs, function (i, tmpOutput) {
+                        if (tmpOutput.name === output.name) {
+                            if (tmpOutput.data) {
+                                savedOutput = tmpOutput.data;
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
-        }
-        if (savedOutput) {
-            viewModel.loadData(savedOutput);
-        }
+            if (savedOutput) {
+                viewModel.loadData(savedOutput);
+            }
+        });
+
+        viewModel.dirtyFlag = config.dirtyFlag(viewModel, false);
+        ko.applyBindings(viewModel, document.getElementById(config.viewRootElementId));
 
         return viewModel;
     };
