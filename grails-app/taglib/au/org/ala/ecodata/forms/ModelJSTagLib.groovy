@@ -699,7 +699,7 @@ class ModelJSTagLib {
 
     def audioModel(JSModelRenderContext ctx) {
 
-        out << INDENT*4 << "${ctx.propertyPath}.${ctx.dataModel.name} = new AudioViewModel({downloadUrl: '"${grailsApplication.config.getProperty('grails.serverURL')}"/download/file?filename='});\n"
+        out << INDENT*4 << "${ctx.propertyPath}.${ctx.dataModel.name} = new AudioViewModel({downloadUrl: '${grailsApplication.config.getProperty('grails.serverURL')}/download/file?filename='});\n"
         populateAudioList(ctx)
     }
 
