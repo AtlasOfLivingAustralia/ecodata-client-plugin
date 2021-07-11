@@ -699,7 +699,7 @@ class ModelJSTagLib {
 
     def audioModel(JSModelRenderContext ctx) {
 
-        out << INDENT*4 << "${ctx.propertyPath}.${ctx.dataModel.name} = new AudioViewModel({downloadUrl: '${grailsApplication.config.grails.serverURL}/download/file?filename='});\n"
+        out << INDENT*4 << "${ctx.propertyPath}.${ctx.dataModel.name} = new AudioViewModel({downloadUrl: '"${grailsApplication.config.getProperty('grails.serverURL')}"/download/file?filename='});\n"
         populateAudioList(ctx)
     }
 
@@ -826,7 +826,7 @@ class ModelJSTagLib {
             if (data !== undefined) {
                 \$.each(data, function (i, obj) {
                     if (_.isUndefined(obj.url)) {
-                        obj.url = "${grailsApplication.config.grails.serverURL}/download/file?filename=" + obj.filename;
+                        obj.url = ""${grailsApplication.config.getProperty('grails.serverURL')}"/download/file?filename=" + obj.filename;
                     }
                     ${ctx.propertyPath}.${ctx.dataModel.name}.files.push(new AudioItem(obj));
                 });
