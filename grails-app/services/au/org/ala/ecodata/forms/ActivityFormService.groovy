@@ -20,7 +20,7 @@ class ActivityFormService {
      */
     def findActivityForm(String name, Integer version = null) {
 
-        String url = grailsApplication.config.ecodata.service.url +
+        String url = grailsApplication.config.getProperty('ecodata.service.url') +
                 ACTIVITY_FORM_PATH+'?name='+URLEncoder.encode(name, 'UTF-8')
         if (version) {
             url += '&formVersion='+version

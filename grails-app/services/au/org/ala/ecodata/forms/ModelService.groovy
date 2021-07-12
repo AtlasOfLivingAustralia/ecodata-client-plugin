@@ -13,7 +13,7 @@ class ModelService {
 
     def activitiesModel() {
         return cacheService.get('activity-model',{
-            webService.getJson(grailsApplication.config.ecodata.service.url +
+            webService.getJson(grailsApplication.config.getProperty('ecodata.service.url') +
                 '/metadata/activitiesModel')
         })
     }
@@ -25,7 +25,7 @@ class ModelService {
 
     def getDataModel(template) {
         return cacheService.get(template + '-model',{
-            webService.getJson(grailsApplication.config.ecodata.service.url +
+            webService.getJson(grailsApplication.config.getProperty('ecodata.service.url') +
                     "/metadata/dataModel/${template}")
         })
     }

@@ -662,7 +662,7 @@ class ModelJSTagLib {
                 , readonly: ${!!readonly}
                 , markerOrShapeNotBoth: ${model.options ? !model.options.allowMarkerAndRegion : true}
                 , proxyFeatureUrl: '${createLink(controller: 'proxy', action: 'feature')}'
-                , spatialGeoserverUrl: '${grailsApplication.config.spatial.geoserverUrl}'
+                , spatialGeoserverUrl: '${grailsApplication.config.getProperty("spatial.geoserverUrl")}'
                 , updateSiteUrl: '${createLink(controller: 'site', action: 'ajaxUpdate')}'
                 , listSitesUrl: '${createLink(controller: 'site', action: 'ajaxList' )}'
                 , getSiteUrl: '${createLink(controller: 'site', action: 'index' )}'
