@@ -45,7 +45,7 @@ class ViewModelWidgetRenderer implements ModelWidgetRenderer {
     @Override
     void renderBoolean(WidgetRenderContext context) {
         context.databindAttrs.add 'visible', context.source
-        context.writer << "<i data-bind='${context.databindAttrs.toString()}' class='icon-ok'></i>"
+        context.writer << "<i data-bind='${context.databindAttrs.toString()}' class='fa fa-check'></i>"
     }
 
     @Override

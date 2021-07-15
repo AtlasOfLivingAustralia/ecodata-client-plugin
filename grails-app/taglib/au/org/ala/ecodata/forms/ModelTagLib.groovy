@@ -536,7 +536,7 @@ class ModelTagLib {
         def extraClassAttrs = model.class ?: model.css ?: ""
         def databindAttrs = model.visibility ? "data-bind=\"visible:${model.visibility}\"" : ""
 
-        out << "<div class=\"row col-sm-12 space-after ${extraClassAttrs}\" ${databindAttrs}>\n"
+        out << "<div class=\"row space-after ${extraClassAttrs}\" ${databindAttrs}>\n"
         if (model.align == 'right') {
             out << "<div class=\"pull-right\">\n"
         }
@@ -584,16 +584,15 @@ class ModelTagLib {
             case 'col':
                 out << "<div class=\"row\">"
                 labelAttributes.addSpan 'col-sm-4'
-                if (model.type != "number" && model.type != "selectOne" && model.type != "autocomplete") {
+                if (model.type != "number" && model.type != "selectOne" && model.type != "autocomplete" && model.type != "feature" ) {
                     elementAttributes.addSpan 'col-sm-6'
+                }
+                if (model.type == "feature"){
+                    elementAttributes.addSpan 'col-sm-12'
                 }
                 if (model.type == "autocomplete"){
                     elementAttributes.addSpan 'col-sm-6 input-group'
                 }
-                if (model.type == "number"){
-                    elementAttributes.addSpan("col-sm-2")
-                }
-
                 if (model.type == "selectOne") {
                     elementAttributes.addSpan("col-sm-8 selectOne form-control form-control-sm")
                 }
@@ -745,7 +744,17 @@ class ModelTagLib {
         def extraClassAttrs = model.class ?: ""
         def tableClass = isprintblankform ? "printed-form-table" : ""
         def validation = model.editableRows && model.source ? "data-bind=\"independentlyValidated:data.${model.source}\"":""
-        out << "<div class=\"row col-sm-12 ${extraClassAttrs}\">\n"
+        if (ctx.parentView == "row"){
+            out << "<div class=\"col-sm-12\">\n"
+        } else if(ctx.parentView == ""){
+            out << "<div class=\"row ${extraClassAttrs}\">\n"
+            out << "<div class=\"col-sm-12\">\n"
+
+        } else{
+            out << "<div class=\"row ${extraClassAttrs}\">\n"
+        }
+
+
         if (model.title) {
             out << model.title
         }
@@ -759,7 +768,15 @@ class ModelTagLib {
         }
 
         out << INDENT*3 << "</table>\n"
-        out << INDENT*2 << "</div>\n"
+        if (ctx.parentView == "row"){
+            out << "</div>\n"
+        } else if(ctx.parentView == ""){
+            out << "</div>\n"
+            out << "</div>\n"
+        } else{
+            out << INDENT*2 << "</div>\n"
+        }
+
     }
 
     def tableHeader(LayoutRenderContext ctx) {
