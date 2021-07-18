@@ -8,7 +8,7 @@ buildscript {
     dependencies {
         classpath "org.grails:grails-gradle-plugin:$grailsVersion"
         classpath "com.bertramlabs.plugins:asset-pipeline-gradle:$assetPipelineVersion"
-        classpath 'com.bmuschko:gradle-clover-plugin:2.2.4'
+        classpath 'com.bmuschko:gradle-clover-plugin:3.0.1'
         classpath 'org.grails.plugins:quartz:2.0.13'
         classpath "gradle.plugin.com.energizedwork.webdriver-binaries:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
     }
@@ -63,7 +63,6 @@ dependencies {
     compile "org.grails.plugins:scaffolding"
     compile "org.grails.plugins:gsp"
     compile 'commons-io:commons-io:2.6'
-    compile "org.openclover:clover:4.3.1"
     console "org.grails:grails-console"
     profile "org.grails.profiles:web-plugin"
     provided "org.grails:grails-plugin-services"
