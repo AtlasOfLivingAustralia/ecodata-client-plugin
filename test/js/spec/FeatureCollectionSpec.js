@@ -55,13 +55,12 @@ describe("Specification for the featureCollection", function () {
         var featureCollection = new ecodata.forms.FeatureCollection();
 
         expect(featureCollection.allFeatures()).toEqual([]);
+
         var expectedSite = {
             type: 'compound',
             extent: {
-                source: 'drawn', geometry: {
-                    type: 'Polygon',
-                    coordinates: [[[1, 0], [1, 1], [0, 1], [0, 0], [1, 0]]]
-                }
+                source: 'drawn',
+                geometry: null
             },
             features: []
         };

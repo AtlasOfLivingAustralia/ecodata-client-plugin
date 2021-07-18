@@ -829,16 +829,14 @@ ecodata.forms.FeatureCollection = function (features) {
     self.toSite = function (site) {
 
         var featureGeoJson = {type: 'FeatureCollection', features: self.allFeatures()};
-
-        var extent = turf.convex(featureGeoJson);
-
-        if (!extent) {
-            extent = turf.bbox(featureGeoJson);
+        var extent = null;
+        if (featureGeoJson.features.length > 0) {
+            extent = turf.convex(featureGeoJson);
         }
 
         return _.extend(site || {}, {
             type: 'compound',
-            extent: {geometry: extent.geometry, source: 'drawn'},
+            extent: {geometry: (extent && extent.geometry), source: 'drawn'},
             features: featureGeoJson.features
         });
     };
