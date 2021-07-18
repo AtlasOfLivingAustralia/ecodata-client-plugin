@@ -621,7 +621,11 @@
             for (var i=0; i<extraOptions.length; i++) {
                 $element.append($("<option>").val(extraOptions[i]).text(extraOptions[i]));
             }
-            $(element).val(valueAccessor().value()).trigger('change');
+            var elementValue = $element.val();
+            if (!_.isEqual(elementValue, data)) {
+                $element.val(valueAccessor().value()).trigger('change');
+            }
+
         }
     };
 

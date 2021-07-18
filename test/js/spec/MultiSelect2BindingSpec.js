@@ -58,7 +58,7 @@ describe("multiSelect2 binding handler Spec", function () {
         expect(select2.find('li.select2-selection__choice[title="4"]').length).toEqual(1);
     });
 
-    it("The multiSelect2 binding keeps selections not in the contraints list to allow constraint list deletions without a new form version", function() {
+    it("The multiSelect2 binding keeps selections not in the constraints list to allow constraint list deletions without a new form version", function() {
 
         var model = {
             data:ko.observableArray(['3', '5'])
