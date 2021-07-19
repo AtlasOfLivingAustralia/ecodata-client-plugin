@@ -39,8 +39,7 @@ script:
 - ./gradlew -PenableClover=true cloverGenerateReport
 - node_modules/karma/bin/karma start karma.conf.js --single-run --browsers ChromeHeadless
 
-#- grails -Dphantomjs.binary.path=/usr/local/phantomjs/bin/phantomjs -Dgeb.env=chromeHeadless test-app -clover.on --non-interactive --stacktrace
-
+# need to gradlew clean before publishing to rebuild without the clover instrumentation.
 after_success:
   - '[ "${TRAVIS_PULL_REQUEST}" = "false" ] && travis_retry ./gradlew clean && ./gradlew publish'
 
