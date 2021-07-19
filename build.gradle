@@ -24,7 +24,9 @@ apply plugin:"org.grails.grails-plugin-publish"
 apply plugin:"org.grails.grails-gsp"
 apply plugin:"asset-pipeline"
 apply plugin:"com.energizedwork.webdriver-binaries"
-apply from: "${project.projectDir}/gradle/clover.gradle"
+if (Boolean.valueOf(enableClover)) {
+    apply from: "${project.projectDir}/gradle/clover.gradle"
+}
 apply plugin:"maven-publish"
 
 
