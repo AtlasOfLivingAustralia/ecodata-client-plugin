@@ -220,7 +220,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
 
         context.writer <<  "<div class='row'><div class='col-sm-6'><select${context.attributes.toString()} comboList='${context.source}' data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
 
-        def tagsBlock = "<div class='span6'><div id='tagsBlock' data-bind='foreach: ${context.source}'>" +
+        def tagsBlock = "<div class='col-sm-6'><div id='tagsBlock' data-bind='foreach: ${context.source}'>" +
                 " <span class='tag label label-default'>" +
                 '<span data-bind="text: $data"></span>' +
                 '<a href="#" class="remove removeTag" title="remove this item">' +
