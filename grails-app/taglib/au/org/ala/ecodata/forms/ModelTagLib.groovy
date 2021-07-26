@@ -594,7 +594,7 @@ class ModelTagLib {
                     elementAttributes.addSpan 'col-sm-6 input-group'
                 }
                 if (model.type == "selectOne") {
-                    elementAttributes.addSpan("col-sm-8 selectOne form-control form-control-sm")
+                    elementAttributes.addSpan("col-sm-8 selectOne")
                 }
                 break
             case 'table':

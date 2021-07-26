@@ -136,7 +136,7 @@ class PrintModelWidgetRenderer implements ModelWidgetRenderer {
     private void defaultRender(WidgetRenderContext context) {
 
 
-        context.writer << "<span class=\"span12 printed-form-field\"></span>"
+        context.writer << "<span class=\"col-sm-10 printed-form-field\"></span>"
     }
 
     private void renderCheckboxes(WidgetRenderContext context) {

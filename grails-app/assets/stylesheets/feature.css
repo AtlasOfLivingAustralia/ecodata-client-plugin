@@ -123,7 +123,20 @@ li.site-label i {
     background-color: #555;
 }
 
-
+#map-modal.modal .modal-dialog.modal-xl {
+    width: 96% !important;
+    max-width: 100% !important;
+    height: 96% !important;
+    max-height: 100% !important;
+}
+#map-modal.modal .modal-content {
+    height: 100% !important;
+    border: 0 !important;
+    border-radius: 0!important;
+}
+#map-modal.modal .modal-body {
+    overflow-y: auto !important;
+}
 
 .unstyled {
     list-style-type: none !important;
