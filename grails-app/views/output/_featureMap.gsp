@@ -2,7 +2,7 @@
     <div class="row">
         <div class="col-sm-8">
             <div class="map-container">
-                <m:map id="map-holder" width="100%" height="100%"/>
+                <m:map id="map-holder" width="100%"></m:map>
             </div>
         </div>
         <div class="col-sm-4">
