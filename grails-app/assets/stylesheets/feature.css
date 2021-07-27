@@ -124,9 +124,9 @@ li.site-label i {
 }
 
 #map-modal.modal .modal-dialog.modal-xl {
-    width: 96% !important;
+    width: 95% !important;
     max-width: 100% !important;
-    height: 96% !important;
+    /*height: 96% !important;*/
     max-height: 100% !important;
 }
 #map-modal.modal .modal-content {
