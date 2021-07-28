@@ -583,12 +583,10 @@ class ModelTagLib {
         switch (layoutContext.parentView) {
             case 'col':
                 out << "<div class=\"row\">"
+                out << "<div class=\"col-sm-12\">"
                 labelAttributes.addSpan 'col-sm-4'
-                if (model.type != "number" && model.type != "selectOne" && model.type != "autocomplete" && model.type != "feature" ) {
+                if (model.type != "number" && model.type != "selectOne" && model.type != "autocomplete" && model.type != "feature" && model.type != "text" && model.type != "select2" ) {
                     elementAttributes.addSpan 'col-sm-6'
-                }
-                if (model.type == "feature"){
-                    elementAttributes.addSpan 'col-sm-12'
                 }
                 if (model.type == "autocomplete"){
                     elementAttributes.addSpan 'col-sm-6 input-group'
@@ -622,6 +620,9 @@ class ModelTagLib {
                 }
                 break
             case 'col':
+                out << "</div>"
+                out << "</div>"
+                break
             default:
                 out << "</div>"
                 break

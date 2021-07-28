@@ -196,3 +196,10 @@ span.input-group-append.input-group-text.customAppend {
     padding: 0 !important;
 }
 
+input.input-small[type="number"] {
+    max-width: 125px !important;
+}
+
+.input-group .input-group-append .input-group-text {
+    height: 31px;
+}
