@@ -29,6 +29,7 @@ class ModelTagLib {
         def out
         Map model
         Map attrs
+        boolean hasTableAncestor = false
 
         boolean editMode() {
             return attrs.edit
@@ -47,7 +48,8 @@ class ModelTagLib {
                     dataContext:dataContext,
                     span:span,
                     model:model,
-                    attrs:attrs
+                    attrs:attrs,
+                    hasTableAncestor:hasTableAncestor
             )
             if (data.parentView != null) {
                 child.parentView = data.parentView
@@ -58,7 +60,9 @@ class ModelTagLib {
             if (data.span) {
                 child.span = data.span
             }
-
+            if (data.hasTableAncestor) {
+                child.hasTableAncestor = true
+            }
             child
         }
     }
@@ -150,7 +154,7 @@ class ModelTagLib {
             ctx.out << "</div>\n"
         }
 
-        ctx.out << """<div data-bind=\"attr:{id:'${model.source}-content-'+\$index},expandOnValidate:true\" class="section-content">\n"""
+        ctx.out << """<div data-bind=\"attr:{id:'${model.source}-content-'+\$index},expandOnValidate:true\" class="section-content clearfix">\n"""
         viewModelItems(model.items, childContext)
         ctx.out << "</div>\n"
         ctx.out << "</div>\n"
@@ -494,9 +498,16 @@ class ModelTagLib {
                 css = model.css
             }
         }
+        // Compensate for colums added without rows to keep the JSON simpler
+        if (ctx.parentView != 'row') {
+            out << """<div class="row space-after">"""
+        }
         out << "<div class=\"${css}\">\n"
         viewModelItems(model.items, childCtx)
         out << "</div>"
+        if (ctx.parentView != 'row') {
+            out << "</div>"
+        }
     }
 
     def layoutDataItem(out, attrs, model, LayoutRenderContext layoutContext) {
@@ -561,16 +572,16 @@ class ModelTagLib {
         }
         at.addClass(model.css)
 
-
         // These two items must add up to 12, and determine the space allocated to the label and input field
         // respectively in the row.
+        // For tables with controls without labels (which is most of time), use col-12
         int labelColWidth = 4
-        int inputFieldColWidth = 8
+        int inputFieldColWidth = layoutContext.hasTableAncestor ? 12 : 8
         switch (layoutContext.parentView) {
             case 'col':
                 out << "<div class=\"row\">"
-                labelAttributes.addSpan 'col-sm-4'
-                dataTag = "<span class=\"col-sm-${inputFieldColWidth}\">"+dataTag+"</span>"
+                labelAttributes.addSpan 'col-sm-'+labelColWidth
+                dataTag = "<div class=\"col-sm-${inputFieldColWidth}\">"+dataTag+"</div>"
                 break
             case 'table':
                 if (model.type == 'boolean') {
@@ -817,7 +828,7 @@ class ModelTagLib {
             }
             out << INDENT*4 << "<tbody ${dataBind}><tr>\n"
 
-            LayoutRenderContext tableCtx = ctx.createChildContext([dataContext: childDataContext, parentView: 'table'])
+            LayoutRenderContext tableCtx = ctx.createChildContext([dataContext: childDataContext, parentView: 'table', hasTableAncestor: true])
             table.columns.eachWithIndex { col, i ->
 
                 out << INDENT*5 << "<td>"
@@ -862,7 +873,7 @@ class ModelTagLib {
         def templateName = model.source ? "${model.source}viewTmpl" : "${getUnnamedTableCount(false)}viewTmpl"
         def allowRowDelete = getAllowRowDelete(attrs, model.source, null)
         out << INDENT*4 << "<script id=\"${templateName}\" type=\"text/html\"><tr>\n"
-        LayoutRenderContext tableCtx = ctx.createChildContext([dataContext: '', parentView: 'table'])
+        LayoutRenderContext tableCtx = ctx.createChildContext([dataContext: '', parentView: 'table', hasTableAncestor: true])
         model.columns.eachWithIndex { col, i ->
             out << INDENT*5 << "<td>"
             viewModelItems([col], tableCtx)
