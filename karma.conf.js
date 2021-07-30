@@ -38,8 +38,8 @@ module.exports = function (config) {
             'grails-app/assets/components/ecodata-components.js',
             'grails-app/assets/components/compile/ecodata-templates.js',
             'grails-app/assets/components/javascript/*.js',
-            'test/js/util/*.js',
-            'test/js/spec/**/*.js'
+            'src/test/js/util/*.js',
+            'src/test/js/spec/**/*.js'
         ],
 
         frameworks: ['jasmine-jquery'],
