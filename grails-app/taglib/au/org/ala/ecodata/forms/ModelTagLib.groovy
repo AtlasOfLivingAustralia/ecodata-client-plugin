@@ -571,27 +571,11 @@ class ModelTagLib {
                 out << "<div class=\"row\">"
                 labelAttributes.addSpan 'col-sm-4'
                 dataTag = "<span class=\"col-sm-${inputFieldColWidth}\">"+dataTag+"</span>"
-
-//                if (model.type != "number" && model.type != "selectOne" && model.type != "autocomplete" && model.type != "feature" && model.type != "text" && model.type != "select2" ) {
-//                    elementAttributes.addSpan 'col-sm-6'
-//                }
-//                if (model.type == "autocomplete"){
-//                    elementAttributes.addSpan 'col-sm-6 input-group'
-//                }
-//                if (model.type == "selectOne") {
-//                    elementAttributes.addSpan("col-sm-8 selectOne")
-//                }
                 break
             case 'table':
                 if (model.type == 'boolean') {
                     out << "<label class=\"table-checkbox-label\">"
                 }
-//                if (model.type == "autocomplete"){
-//                    elementAttributes.addSpan 'input-group autocompleteSpecies'
-//                }
-//                if (model.type == "selectOne") {
-//                    elementAttributes.addSpan("form-control form-control-sm")
-//                }
                 break
             default:
                 at.addSpan("col-sm-${layoutContext.span}")
