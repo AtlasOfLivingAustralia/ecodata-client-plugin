@@ -206,76 +206,25 @@ class ModelTagLib {
      * @param databindAttrs additional clauses to add to the data binding
      * @return the markup
      */
-    def dataTag(attrs, model, context, editable, elementAttributes, databindAttrs, labelAttributes) {
+    def dataTag(WidgetRenderContext renderContext) {
         ModelWidgetRenderer renderer
 
-        boolean toEdit = editable && !model.noEdit
-        if (attrs.printable) {
-            if (attrs.printable == 'pdf') {
+        if (renderContext.tagAttrs.printable) {
+            if (renderContext.tagAttrs.printable == 'pdf') {
                 renderer = new PDFModelWidgetRenderer()
             }
             else {
                 renderer = new PrintModelWidgetRenderer()
             }
         } else {
-            if (toEdit) {
+            if (renderContext.editMode) {
                 renderer = new EditModelWidgetRenderer()
             } else {
                 renderer = new ViewModelWidgetRenderer()
             }
         }
 
-        Map dataModel = getAttribute(attrs.model.dataModel, model.source)
-        def renderContext = new WidgetRenderContext(model, dataModel, context, databindAttrs, elementAttributes, labelAttributes, g, attrs, Boolean.valueOf(editable))
-
-        renderContext.databindAttrs
-        // The data model item we are rendering the view for.
-        Map source = getAttribute(attrs.model.dataModel, model.source)
-
-        // The Knockout binding to apply around the label and input field, if required.
-        String labelBindingValue = null
-        String labelBindingType = null
-        if (source?.behaviour) {
-            source.behaviour.each { constraint ->
-                ConstraintType type = ConstraintType.valueOf(constraint.type.toUpperCase())
-                String bindingValue = type.isBoolean ? "${renderContext.source}.${constraint.type}Constraint" : renderContext.source
-
-                //String bindingValue = type.isBoolean ? computedValueRenderer.expressionAsString(constraint.condition) : renderContext.source
-                if (!type.appliesToContainer) {
-                    renderContext.databindAttrs.add type.binding, bindingValue
-                }
-                else {
-                    // Visibility bindings have to be applied not on the input field but around the label and
-                    // input field
-                    labelBindingType = type.binding
-                    labelBindingValue = bindingValue
-                }
-            }
-        }
-
-        if (source?.warning) {
-            renderContext.databindAttrs.add 'warning', renderContext.source
-        }
-
-        if (model.visibility) {
-            renderContext.databindAttrs.add "visible", evalDependency(model.visibility)
-        }
-        if (model.enabled) {
-            renderContext.databindAttrs.add "enable", evalDependency(model.enabled)
-        }
-        // Computed values should be readonly.
-        if (model.readonly || model.computed || dataModel?.computed) {
-            renderContext.attributes.add "readonly", "readonly"
-            if (source && validationHelper.isValidatable(source, model, toEdit)) {
-                renderContext.databindAttrs.add("validateOnChange", renderContext.source)
-            }
-        }
-
-        if (model.placeholder) {
-            renderContext.attributes.add("placeholder", model.placeholder)
-        }
-
-        switch (model.type) {
+        switch (renderContext.model.type) {
             case 'literal':
                 renderer.renderLiteral(renderContext)
                 break
@@ -384,13 +333,6 @@ class ModelTagLib {
             addDeferredTemplate(it)
         }
 
-        result = renderWithLabel(model, labelAttributes, attrs, editable, result)
-
-        if (labelBindingType) {
-            result = """
-                <div data-bind="$labelBindingType:$labelBindingValue">${result}</div>
-            """
-        }
         return result
     }
 
@@ -477,16 +419,6 @@ class ModelTagLib {
         }
     }
 
-    // convenience method for the above
-    def dataTag(attrs, model, context, editable, at) {
-        dataTag(attrs, model, context, editable, at, null, new AttributeMap())
-    }
-
-    // convenience method for the above
-    def dataTag(attrs, model, context, editable) {
-        dataTag(attrs, model, context, editable, null, null, new AttributeMap())
-    }
-
     // -------- validation declarations --------------------
     def isRequired(attrs, model, edit) {
         def dataModel = getAttribute(attrs.model.dataModel, model.source)
@@ -500,10 +432,10 @@ class ModelTagLib {
 
         if (model.title && !model.boxed) {
             out << "<h4>${model.title}</h4>"
-            out << "<div class=\"col-sm-12 output-section\">\n"
+            out << "<div class=\"row output-section\">\n"
         } else if (model.title && model.boxed) {
             out << "<div class=\"boxed-heading\" data-content='${model.title}'>\n"
-            out << "<div class=\"col-sm-12\">\n"
+            out << "<div class=\"row\">\n"
         }
         else {
             out << "<div class=\"row output-section\">\n"
@@ -568,6 +500,60 @@ class ModelTagLib {
     }
 
     def layoutDataItem(out, attrs, model, LayoutRenderContext layoutContext) {
+        // Wrap data elements in rows to reset the bootstrap indentation on subsequent spans to save the
+        // model definition from needing to do so.
+        def labelAttributes = new AttributeMap()
+        def elementAttributes = new AttributeMap()
+
+        Map dataModel = getAttribute(attrs.model.dataModel, model.source)
+        boolean toEdit = attrs.edit && !model.noEdit
+        def renderContext = new WidgetRenderContext(model, dataModel, layoutContext.dataContext, null, elementAttributes, labelAttributes, g, attrs, toEdit)
+
+        // The data model item we are rendering the view for.
+        Map source = getAttribute(attrs.model.dataModel, model.source)
+
+        // The Knockout binding to apply around the label and input field, if required.
+        String labelBindingValue = null
+        String labelBindingType = null
+        if (source?.behaviour) {
+            source.behaviour.each { constraint ->
+                ConstraintType type = ConstraintType.valueOf(constraint.type.toUpperCase())
+                String bindingValue = type.isBoolean ? "${renderContext.source}.${constraint.type}Constraint" : renderContext.source
+
+                //String bindingValue = type.isBoolean ? computedValueRenderer.expressionAsString(constraint.condition) : renderContext.source
+                if (!type.appliesToContainer) {
+                    renderContext.databindAttrs.add type.binding, bindingValue
+                }
+                else {
+                    // Visibility bindings have to be applied not on the input field but around the label and
+                    // input field
+                    labelBindingType = type.binding
+                    labelBindingValue = bindingValue
+                }
+            }
+        }
+        if (source?.warning) {
+            renderContext.databindAttrs.add 'warning', renderContext.source
+        }
+
+        if (model.visibility) {
+            renderContext.databindAttrs.add "visible", evalDependency(model.visibility)
+        }
+        if (model.enabled) {
+            renderContext.databindAttrs.add "enable", evalDependency(model.enabled)
+        }
+        // Computed values should be readonly.
+        if (model.readonly || model.computed || dataModel?.computed) {
+            renderContext.attributes.add "readonly", "readonly"
+            if (source && validationHelper.isValidatable(source, model, toEdit)) {
+                renderContext.databindAttrs.add("validateOnChange", renderContext.source)
+            }
+        }
+
+        if (model.placeholder) {
+            renderContext.attributes.add("placeholder", model.placeholder)
+        }
+        String dataTag = dataTag(renderContext)
 
         AttributeMap at = new AttributeMap()
         if (model?.css?.contains("span")){
@@ -575,43 +561,52 @@ class ModelTagLib {
         }
         at.addClass(model.css)
 
-        // Wrap data elements in rows to reset the bootstrap indentation on subsequent spans to save the
-        // model definition from needing to do so.
-        def labelAttributes = new AttributeMap()
-        def elementAttributes = new AttributeMap()
 
+        // These two items must add up to 12, and determine the space allocated to the label and input field
+        // respectively in the row.
+        int labelColWidth = 4
+        int inputFieldColWidth = 8
         switch (layoutContext.parentView) {
             case 'col':
                 out << "<div class=\"row\">"
-                out << "<div class=\"col-sm-12\">"
                 labelAttributes.addSpan 'col-sm-4'
-                if (model.type != "number" && model.type != "selectOne" && model.type != "autocomplete" && model.type != "feature" && model.type != "text" && model.type != "select2" ) {
-                    elementAttributes.addSpan 'col-sm-6'
-                }
-                if (model.type == "autocomplete"){
-                    elementAttributes.addSpan 'col-sm-6 input-group'
-                }
-                if (model.type == "selectOne") {
-                    elementAttributes.addSpan("col-sm-8 selectOne")
-                }
+                dataTag = "<span class=\"col-sm-${inputFieldColWidth}\">"+dataTag+"</span>"
+
+//                if (model.type != "number" && model.type != "selectOne" && model.type != "autocomplete" && model.type != "feature" && model.type != "text" && model.type != "select2" ) {
+//                    elementAttributes.addSpan 'col-sm-6'
+//                }
+//                if (model.type == "autocomplete"){
+//                    elementAttributes.addSpan 'col-sm-6 input-group'
+//                }
+//                if (model.type == "selectOne") {
+//                    elementAttributes.addSpan("col-sm-8 selectOne")
+//                }
                 break
             case 'table':
                 if (model.type == 'boolean') {
                     out << "<label class=\"table-checkbox-label\">"
                 }
-                if (model.type == "autocomplete"){
-                    elementAttributes.addSpan 'input-group autocompleteSpecies'
-                }
-                if (model.type == "selectOne") {
-                    elementAttributes.addSpan("form-control form-control-sm")
-                }
+//                if (model.type == "autocomplete"){
+//                    elementAttributes.addSpan 'input-group autocompleteSpecies'
+//                }
+//                if (model.type == "selectOne") {
+//                    elementAttributes.addSpan("form-control form-control-sm")
+//                }
                 break
             default:
                 at.addSpan("col-sm-${layoutContext.span}")
                 out << "<div${at.toString()}>"
         }
 
-        out << INDENT << dataTag(attrs, model, layoutContext.dataContext, attrs.edit, elementAttributes, null, labelAttributes)
+        String result = renderWithLabel(model, labelAttributes, attrs, toEdit, dataTag)
+
+        if (labelBindingType) {
+            result = """
+                <div data-bind="$labelBindingType:$labelBindingValue">${result}</div>
+            """
+        }
+
+        out << INDENT << result
 
         switch (layoutContext.parentView) {
             case 'table':
@@ -620,9 +615,6 @@ class ModelTagLib {
                 }
                 break
             case 'col':
-                out << "</div>"
-                out << "</div>"
-                break
             default:
                 out << "</div>"
                 break
@@ -745,17 +737,7 @@ class ModelTagLib {
         def extraClassAttrs = model.class ?: ""
         def tableClass = isprintblankform ? "printed-form-table" : ""
         def validation = model.editableRows && model.source ? "data-bind=\"independentlyValidated:data.${model.source}\"":""
-        if (ctx.parentView == "row"){
-            out << "<div class=\"col-sm-12\">\n"
-        } else if(ctx.parentView == ""){
-            out << "<div class=\"row ${extraClassAttrs}\">\n"
-            out << "<div class=\"col-sm-12\">\n"
-
-        } else{
-            out << "<div class=\"row ${extraClassAttrs}\">\n"
-        }
-
-
+        //out << "<div class=\"row ${extraClassAttrs}\">\n"
         if (model.title) {
             out << model.title
         }
@@ -769,15 +751,7 @@ class ModelTagLib {
         }
 
         out << INDENT*3 << "</table>\n"
-        if (ctx.parentView == "row"){
-            out << "</div>\n"
-        } else if(ctx.parentView == ""){
-            out << "</div>\n"
-            out << "</div>\n"
-        } else{
-            out << INDENT*2 << "</div>\n"
-        }
-
+        //out << INDENT*2 << "</div>\n"
     }
 
     def tableHeader(LayoutRenderContext ctx) {
@@ -938,10 +912,11 @@ class ModelTagLib {
             def bindAttrs = new Databindings()
             if (i == 0) {bindAttrs.add 'hasFocus', 'isSelected'}
             // inject type from data model
-            col.type = col.type ?: getType(attrs, col.source, model.source)
+            Map source = getAttribute(attrs.model.dataModel, model.source)
             // inject computed from data model
             col.computed = col.computed ?: getComputed(attrs, col.source, model.source)
-            String data = dataTag(attrs, col, '', edit, null, bindAttrs, null)
+            WidgetRenderContext renderContext = new WidgetRenderContext(col, source, ctx.dataContext, bindAttrs, null, null, g, edit )
+            String data = dataTag(renderContext)
             out << INDENT*5 << "<td>"
             if (col.type == 'boolean') {
                 out << "<label style=\"table-checkbox-label\">" << data << "</label>"

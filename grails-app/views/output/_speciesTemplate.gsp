@@ -1,6 +1,6 @@
-<div class="${css}" data-bind="with:${source}">
+<div class="${css} input-group" data-bind="with:${source}">
     <div class="input-group-prepend">
-        <span class="add-on input-group-text" data-bind="visible:!transients.editing(), css:{'btn-success':name()}"><i class="fa fa-check"
+        <span class="input-group-text" data-bind="visible:!transients.editing(), css:{'btn-success':name()}"><i class="fa fa-check"
                                                                                                       data-bind="css:{'fa fa-check':listId()!='unmatched' && name(), 'fa fa-question-o':listId()=='unmatched' || listId() == 'error-unmatched'}"></i>
         </span>
     </div>
@@ -10,7 +10,7 @@
     </div>
     <input type="text" class="form-control form-control-sm speciesInputTemplates" data-bind="${databindAttrs}" ${validationAttrs}/>
     <div class="input-group-append">
-        <span class="add-on input-group-text" data-bind="visible: !transients.editing() && name()">
+        <span class="input-group-text" data-bind="visible: !transients.editing() && name()">
             <a data-bind="popover: {title: name, content: transients.speciesInformation}"><i class="fa fa-info-circle"></i></a>
         </span>
     </div>
