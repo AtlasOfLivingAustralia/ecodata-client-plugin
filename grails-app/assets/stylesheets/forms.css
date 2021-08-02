@@ -200,7 +200,7 @@ input.input-small[type="number"] {
     max-width: 125px !important;
 }
 
-.input-group .input-group-append .input-group-text {
+.input-group .input-group-append .input-group-text, table .autocompleteSpecies .input-group-text {
     height: 31px;
 }
 
@@ -215,6 +215,6 @@ input.input-small[type="number"] {
     display: flex;
 }
 
-table .autocompleteSpecies .input-group-text {
-    height: 30px;
+.species-select2 .input-group .input-group-text {
+    height: 28px;
 }
