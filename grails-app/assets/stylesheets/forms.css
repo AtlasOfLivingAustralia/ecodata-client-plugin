@@ -218,3 +218,11 @@ input.input-small[type="number"] {
 .species-select2 .input-group .input-group-text {
     height: 28px;
 }
+
+/**
+This compensates for differences in JSON when laying out components in a column - if the row is not providing
+the bottom margin, add it to the input group.
+ */
+.row:not(.space-after) > .col-sm-12 > .input-group input.form-control {
+    margin-bottom: 10px;
+}
