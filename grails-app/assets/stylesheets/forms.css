@@ -203,3 +203,18 @@ input.input-small[type="number"] {
 .input-group .input-group-append .input-group-text {
     height: 31px;
 }
+
+.map-modal-dialog {
+    max-width: 100%;
+    margin: 0;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    display: flex;
+}
+
+table .autocompleteSpecies .input-group-text {
+    height: 30px;
+}
