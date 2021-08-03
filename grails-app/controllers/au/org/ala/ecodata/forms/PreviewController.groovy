@@ -3,6 +3,8 @@ package au.org.ala.ecodata.forms
 import grails.converters.JSON
 import grails.util.Environment
 import org.apache.commons.io.FilenameUtils
+import org.grails.io.support.PathMatchingResourcePatternResolver
+import org.grails.io.support.Resource
 
 class PreviewController {
 
@@ -48,16 +50,15 @@ class PreviewController {
 
     private List allExamples(){
         List examples = []
-        URL pathUrl = getClass().getResource(EXAMPLE_MODELS_PATH)
-        File path = new File(pathUrl.getFile())
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver()
+        Resource[] resources = resolver.getResources(EXAMPLE_MODELS_PATH+"*.json")
 
-        if (path.exists()) {
-            for (File file : path.listFiles()) {
-                Map model = getExample(file.name)
+        for (Resource resource : resources) {
+            Map model = getExample(resource.filename)
 
-                examples << [name:file.name, title:model.title ?: model.modelName]
-            }
+            examples << [name:resource.filename, title:model.title ?: model.modelName]
         }
+
         examples
     }
 
