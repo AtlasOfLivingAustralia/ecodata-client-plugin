@@ -148,7 +148,6 @@ publishing {
 
 if (inplace) {
     grails {
-        exploded = true
         plugins {
             compile (project(':ala-map-plugin'))
         }
