@@ -560,9 +560,9 @@ ecodata.forms.maps.showMapInModal = function(options) {
         var maxHeight = $body.css('max-height');
         var height = Number(maxHeight.substring(0, maxHeight.length - 2));
         if (!height) {
-            height = 500;
+            height = $body.innerHeight();
         }
-        $mapElement.height(height - 5);
+        $mapElement.height(height - 20);
     }
     var mapHash = '#map';
     var $ok = $modal.find('.btn-primary');
@@ -591,7 +591,7 @@ ecodata.forms.maps.showMapInModal = function(options) {
     }
     $ok.one('click', okPressed);
 
-    $modal.one('shown', function (e) {
+    $modal.one('shown.bs.modal', function (e) {
 
         // This check is necessary because the accordion also fires these events which bubble to the modal.
         if (e.target == this) {
@@ -608,7 +608,7 @@ ecodata.forms.maps.showMapInModal = function(options) {
         }
 
     })
-    .one('hide', function (e) {
+    .one('hidden.bs.modal', function (e) {
         // This check is necessary because the accordion also fires these events which bubble to the modal.
         if (e.target == this) {
             self.featureMapInstance.clearDrawnItems();
