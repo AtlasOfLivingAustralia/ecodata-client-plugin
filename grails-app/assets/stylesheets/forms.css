@@ -17,10 +17,6 @@
     border-right-color: transparent;
 }
 
-.fileupload-buttonbar {
-    overflow-x: scroll;
-}
-
 .select2.select2-container {
     margin-bottom: 10px; /* Match the 10px bottom margin on input elements applied by bootstrap */
 }
@@ -174,13 +170,6 @@ textarea {
     border-top-left-radius: unset !important;
     border-bottom-left-radius: unset !important;
 }
-
-img.imageDataTypePreview.margin-bottom-10 {
-    height: auto;
-    vertical-align: middle;
-    width: 100% !important;
-}
-
 .customPrepend {
     height: 38px !important;
 }
