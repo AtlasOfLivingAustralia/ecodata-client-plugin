@@ -326,7 +326,7 @@ class ModelTagLib {
                 renderer.renderFeature(renderContext)
                 break
             default:
-                log.warn("Unhandled widget type: ${model.type}")
+                log.warn("Unhandled widget type: ${renderContext.model.type}")
                 break
         }
 
