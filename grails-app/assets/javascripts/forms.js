@@ -1204,7 +1204,6 @@ function orEmptyArray(v) {
                 .done(function (result) {
                     // checking documentid to void adding empty document into the attachment table
                     // documentid only return true if document is successfully save
-                    // cancel dialog box will also return documentId to undefined
                     if (result.documentId != undefined) {
                         target(new DocumentViewModel(result))
                     }
