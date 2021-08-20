@@ -729,10 +729,12 @@ class ModelTagLib {
 
         def isprintblankform = attrs.printable && attrs.printable != 'pdf'
 
-        def extraClassAttrs = model.class ?: ""
+        if (ctx.parentView == 'row') {
+            out << "<div class=\"col-sm-12\">"
+        }
         def tableClass = isprintblankform ? "printed-form-table" : ""
         def validation = model.editableRows && model.source ? "data-bind=\"independentlyValidated:data.${model.source}\"":""
-        //out << "<div class=\"row ${extraClassAttrs}\">\n"
+
         if (model.title) {
             out << model.title
         }
@@ -746,7 +748,9 @@ class ModelTagLib {
         }
 
         out << INDENT*3 << "</table>\n"
-        //out << INDENT*2 << "</div>\n"
+        if (ctx.parentView == 'row') {
+            out << "</div>"
+        }
     }
 
     def tableHeader(LayoutRenderContext ctx) {
