@@ -186,7 +186,7 @@ span.input-group-append.input-group-text.customAppend {
 }
 
 input.input-small[type="number"] {
-    max-width: 125px !important;
+    max-width: 125px;
 }
 
 .input-group .input-group-append .input-group-text, table .autocompleteSpecies .input-group-text {
