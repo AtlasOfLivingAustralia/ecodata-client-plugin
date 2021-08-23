@@ -217,5 +217,5 @@ the bottom margin, add it to the input group.
 }
 
 :not(table) .col-sm-6 > select.form-control.form-control-sm, :not(table) .col-sm-12 > select.form-control.form-control-sm, :not(table) .col-sm-3 > select.form-control.form-control-sm, :not(table) .col-sm-12 > button.btn.edit-feature{
-    width: 19rem !important;
+    width: 19rem;
 }
