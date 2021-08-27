@@ -164,6 +164,19 @@ class TestSpec extends GebReportingSpec {
         then:
         page.findFieldByModelName("item1").getAttribute("data-validation-engine") == "validate[required,custom[integer],min[1]]"
 
+        when:
+        def field = page.findFieldByModelName("warningItem").value("11")
+        page.commitEdits()
+
+        then:
+        page.isWarningDisplayed("Are you sure this shouldn't be less than or equal to 10?") == true
+
+        page.findFieldByModelName("warningItem").getAt(0).value("10")
+        page.commitEdits()
+
+        then:
+        page.noWarningDisplayed() == true
+
     }
 
     def "table columns support nested layouts"() {

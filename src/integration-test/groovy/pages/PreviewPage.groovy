@@ -85,4 +85,16 @@ class PreviewPage extends Page {
         }
     }
 
+    boolean isWarningDisplayed(String warning) {
+        waitFor {
+            $('.popover.warning .popover-body').text() == warning
+        }
+    }
+
+    boolean noWarningDisplayed() {
+        waitFor {
+            $('.popover.warning').size() == 0
+        }
+    }
+
 }

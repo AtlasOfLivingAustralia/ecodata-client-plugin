@@ -632,7 +632,7 @@
     var popoverWarningOptions = {
         placement:'top',
         trigger:'manual',
-        template: '<div class="popover warning"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+        template: '<div class="popover warning"><h3 class="popover-header"></h3><div class="popover-body"></div><div class="arrow"></div></div>'
     };
 
 
@@ -668,7 +668,8 @@
                     if (result) {
                         if (!target.popoverInitialised) {
                             $element.popover(_.extend({content:result.val[0]}, popoverWarningOptions));
-                            $element.data('popover').tip().click(function() {
+                            var popover = $element.data('bs.popover').getTipElement();
+                            $(popover).click(function() {
                                 $element.popover('hide');
                             });
                             target.popoverInitialised = true;

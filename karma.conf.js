@@ -21,6 +21,7 @@ module.exports = function (config) {
         plugins: ['@metahub/karma-jasmine-jquery', 'karma-*'],
         // list of files / patterns to load in the browser
         files: [
+            'grails-app/assets/vendor/bootstrap/4.6.0/js/bootstrap.bundle.js',
             'grails-app/assets/vendor/knockout/3.5.0/knockout.debug.js',
             'grails-app/assets/vendor/knockout/3.5.0/knockout.mapping-latest.js',
             'node_modules/jasmine-ajax/lib/mock-ajax.js',
@@ -33,6 +34,7 @@ module.exports = function (config) {
             'grails-app/assets/vendor/momentjs/2.24.0/moment.min.js',
             'grails-app/assets/vendor/momentjs/2.24.0/locales/en-au.js',
             'grails-app/assets/vendor/momentjs/moment-timezone-with-data.min.js',
+            'grails-app/assets/vendor/validatejs/0.11.1/validate.js',
             'grails-app/assets/javascripts/forms.js',
             'grails-app/assets/javascripts/*.js',
             'grails-app/assets/components/ecodata-components.js',
@@ -66,7 +68,7 @@ module.exports = function (config) {
             'type':"text",
             check: {
                 global: {
-                    lines: 46.7
+                    lines: 47.5
                 }
             }
         },
