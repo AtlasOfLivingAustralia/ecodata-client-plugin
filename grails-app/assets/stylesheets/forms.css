@@ -9,7 +9,7 @@
 }
 
 .popover.warning .arrow:after {
-    border-right-color: yellow;
+    border-top-color: yellow;
 }
 
 .popover.warning.top .arrow:after {
