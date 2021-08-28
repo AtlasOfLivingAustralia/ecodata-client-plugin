@@ -659,10 +659,10 @@
             // We are implementing the validation routine by adding a subscriber to avoid triggering the validation
             // on initialisation.
             target.subscribe(function() {
-                var invalid = $element.validationEngine('validate');
+                var valid = $element.validationEngine('validate');
 
                 // Only check warnings if the validation passes to avoid showing two sets of popups.
-                if (!invalid) {
+                if (valid) {
                     var result = target.checkWarnings();
 
                     if (result) {

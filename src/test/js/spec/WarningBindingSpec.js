@@ -16,7 +16,8 @@ describe("warning binding handler Spec", function () {
     });
 
     it("The warningPopup binding ...", function () {
-
+        var valid = true;
+        spyOn($.fn, 'validationEngine').and.callFake(function() {return valid;});
         var metadata = {
             name:'item',
             dataType:'number',
@@ -58,5 +59,11 @@ describe("warning binding handler Spec", function () {
         jasmine.clock().tick(10);
         expect($('.popover.warning').length).toEqual(0);
 
+        // The warning shouldn't fire if the field is invalid
+        valid = false;
+        model.item(-1);
+        jasmine.clock().tick(10);
+        expect($('.popover.warning').length).toEqual(0);
     });
+
 });
