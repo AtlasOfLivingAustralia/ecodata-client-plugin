@@ -5,8 +5,8 @@
 //= require bootstrap-datepicker/1.9/js/bootstrap-datepicker.js
 //= require file-upload-with-tmpl-manifest.js
 //= require underscorejs/1.8.3/underscore.js
-//= require jquery.validationEngine/jquery.validationEngine.js
-//= require jquery.validationEngine/jquery.validationEngine-en.js
+//= require jquery.validationEngine/3.1.0/jquery.validationEngine.js
+//= require jquery.validationEngine/3.1.0/jquery.validationEngine-en.js
 //= require fancybox/jquery.fancybox
 //= require bootbox/5.5.2/bootbox.all.js
 //= require jquery.blockUI/jquery.blockUI.js

@@ -4,7 +4,7 @@
 *= require bootstrap-datepicker/1.9/css/bootstrap-datepicker
 *= require modal-fullscreen-bootstrap-2.3.2/css/bootstrap-modal-fullscreen
 *= require select2/4.0.3/css/select2
-*= require jquery.validationEngine/validationEngine.jquery.css
+*= require jquery.validationEngine/3.1.0/validationEngine.jquery.css
 *= require leaflet-manifest.css
 *= require forms
 *= require feature
