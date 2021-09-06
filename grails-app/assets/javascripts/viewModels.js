@@ -668,6 +668,8 @@ function enmapify(args) {
                 }
             }).then(function (data, jqXHR, textStatus) {
                 return reloadSiteData().then(function () {
+                    $('select#siteLocation').val(data.id);
+                    $('select#siteLocation').trigger('change');
                     return data.id
                 })
             })
@@ -737,6 +739,8 @@ function enmapify(args) {
                     })
                     sitesObservable.push(anonymousSite);
                     siteIdObservable(anonymousSiteId);
+                    $('select#siteLocation').val(anonymousSiteId);
+                    $('select#siteLocation').trigger('change');
                  })
             .always(function () {
                 $.unblockUI();
