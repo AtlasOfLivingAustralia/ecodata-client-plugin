@@ -39,6 +39,15 @@ class GeoMapSpec extends GebReportingSpec {
         page.findById("siteLocation").find("option").size() == 2;
 
         when:
+        //site location drop down
+        $('.select2').click()
+
+        then:
+        //select 2 search box
+        waitFor{$('.select2-search__field').getAt(0).displayed}
+
+        when:
+        //test new polygon site
         page.geoMap.drawPolygon()
 
         then:
@@ -48,6 +57,7 @@ class GeoMapSpec extends GebReportingSpec {
         page.findById("locationCentroidLongitude").displayed == true
 
         when:
+        //test new line site
         page.geoMap.drawLine()
 
         then:
@@ -57,6 +67,7 @@ class GeoMapSpec extends GebReportingSpec {
         page.findById("locationCentroidLongitude").displayed == true
 
         when:
+        //test new point site
         page.geoMap.drawMarker()
 
         then:
@@ -66,6 +77,7 @@ class GeoMapSpec extends GebReportingSpec {
         page.findById("locationCentroidLongitude").displayed == false
 
         when:
+        //test new custom site by adding coordinates
         page.geoMap.addCoordinatesManually()
 
         then:

@@ -53,7 +53,11 @@ class GeoMap extends Module {
             doubleClick()
         }
 
-        waitFor { $("#locationCentroidLatitude").getAt(0).displayed }
+        waitFor {
+            $("#locationCentroidLatitude").getAt(0).displayed
+            //select newly created site in the site list dropdown
+            $('.select2-selection__rendered').text().contains('The Polygon you created.')
+        }
     }
 
     def moveAndClick(int xOffset, int yOffset, int expectedCount) {
@@ -106,10 +110,18 @@ class GeoMap extends Module {
 
             moveByOffset(-30, 0)
             click()
-            click()
+
+            moveByOffset(-30, 0)
+        }
+        interact {
+            doubleClick()
         }
 
-//        waitFor { $("#locationCentroidLatitude").getAt(0).displayed }
+        waitFor {
+            $("#locationCentroidLatitude").getAt(0).displayed
+            //select newly created site in the site list dropdown
+            $('.select2-selection__rendered').text().contains('The LineString you created.')
+        }
     }
 
     def drawMarker() {
@@ -135,7 +147,11 @@ class GeoMap extends Module {
             click()
         }
 
-//        waitFor { $("#locationLatitude").getAt(0).displayed }
+        waitFor {
+            $("#locationLatitude").getAt(0).displayed
+            //select newly created site in the site list dropdown
+            $('.select2-selection__rendered').text().contains('The Point you created.')
+        }
     }
 
     def addCoordinatesManually() {
@@ -148,7 +164,11 @@ class GeoMap extends Module {
         $('.manual-point-lat-input').value(-31)
 
         $('.manual-point-save-btn').click()
-        waitFor{$('#locationLatitude').getAt(0).displayed}
+        waitFor{
+            $('#locationLatitude').getAt(0).displayed
+            //select newly created site in the site list dropdown
+            $('.select2-selection__rendered').text().contains('The Point you created.')
+        }
     }
 
     def selectExistingSite() {
