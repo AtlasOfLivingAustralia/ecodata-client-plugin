@@ -39,7 +39,7 @@ class GeoMapSpec extends GebReportingSpec {
         page.findById("siteLocation").find("option").size() == 2;
 
         when:
-        //site location drop down
+        //site location select2 drop down
         $('.select2').click()
 
         then:
