@@ -559,8 +559,11 @@
             // updated to reflect the change.
             var valueBinding = allBindings.get('value');
             if (ko.isObservable(valueBinding)) {
-                valueBinding.subscribe(function() {
-                    $(element).trigger('change');
+                valueBinding.subscribe(function(newValue) {
+                    var currentValue = $(element).val();
+                    if (currentValue != newValue) {
+                        $(element).val(newValue).trigger('change');
+                    }
                 });
             }
         }
