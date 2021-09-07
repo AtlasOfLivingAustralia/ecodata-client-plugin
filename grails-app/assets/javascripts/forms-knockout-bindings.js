@@ -552,7 +552,8 @@
                 options.templateSelection = renderer;
 
             }
-            $(element).select2(options);
+            var $element = $(element);
+            $element.select2(options);
             applySelect2ValidationCompatibility(element);
 
             // Listen for changes to the view model and ensure the select2 component is
@@ -560,10 +561,15 @@
             var valueBinding = allBindings.get('value');
             if (ko.isObservable(valueBinding)) {
                 valueBinding.subscribe(function(newValue) {
-                    var currentValue = $(element).val();
+                    // Depending on the order the bindings are declared (value before select2
+                    // or vice versa), they can interfere with each other.
+                    var currentValue = $element.val();
                     if (currentValue != newValue) {
-                        $(element).val(newValue).trigger('change');
+                        // If the value is out of sync with the model, update the value.
+                        $element.val(newValue);
                     }
+                    // Make sure the select2 library is aware of the change.
+                    $element.trigger('change');
                 });
             }
         }
