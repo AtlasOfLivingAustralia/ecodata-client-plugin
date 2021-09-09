@@ -308,8 +308,9 @@
                         </g:if>
                         <g:else>
                             <select id="siteLocation"
-                                    data-bind='options: data.${source}SitesArray, optionsText: "name", optionsValue: "siteId", value: data.${source}, optionsCaption: "${textOnSiteLocation}", disable: ${readonly} || data.${source}Loading, select2:{}'
-                                    class="form-control input-xlarge full-width"></select>
+                                    data-bind='options: data.${source}SitesArray, optionsText: "name", optionsValue: "siteId", value: data.${source},
+                                    optionsCaption: "${textOnSiteLocation}", disable: ${readonly} || data.${source}Loading,
+                                    select2:{dropdownParent: $(siteLocation.parentElement)}' class="form-control input-xlarge full-width"></select>
                         </g:else>
                     </div>
                 </div>
