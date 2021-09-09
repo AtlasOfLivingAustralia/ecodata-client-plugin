@@ -543,7 +543,8 @@
             var defaults = {
                 placeholder:'Please select...',
                 dropdownAutoWidth:true,
-                allowClear:true
+                allowClear:true,
+                dropdownParent: $(element.parentElement)
             };
             var options = _.defaults(valueAccessor() || {}, defaults);
             if (options.constraintIcons) {
