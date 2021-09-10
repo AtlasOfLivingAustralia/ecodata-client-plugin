@@ -310,7 +310,7 @@
                             <select id="siteLocation"
                                     data-bind='options: data.${source}SitesArray, optionsText: "name", optionsValue: "siteId", value: data.${source},
                                     optionsCaption: "${textOnSiteLocation}", disable: ${readonly} || data.${source}Loading,
-                                    select2:{dropdownParent: $(siteLocation.parentElement)}' class="form-control input-xlarge full-width"></select>
+                                    select2:{dropdownParent: $(document.getElementById("siteLocation").parentElement)}' class="form-control input-xlarge full-width"></select>
                         </g:else>
                     </div>
                 </div>
