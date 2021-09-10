@@ -307,7 +307,6 @@
                             <span class="output-text" data-bind="text: data.${source}Name() "></span>
                         </g:if>
                         <g:else>
-                            //dropdownParent: $(siteLocation.parentElement) will be added to fix #120
                             <select id="siteLocation"
                                     data-bind='options: data.${source}SitesArray, optionsText: "name", optionsValue: "siteId", value: data.${source},
                                     optionsCaption: "${textOnSiteLocation}", disable: ${readonly} || data.${source}Loading,
