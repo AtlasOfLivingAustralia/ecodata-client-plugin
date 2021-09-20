@@ -176,6 +176,8 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.databindAttrs.add 'checked', "${context.source}"
         context.databindAttrs.add 'attr', "{'name': ${nameBinding}}"
         context.attributes.addClass('checkbox-list')
+        context.attributes.addClass('list-unstyled')
+
         context.writer << """
                 <ul${context.attributes.toString()} data-bind="foreach: ${constraints}">
                     <li>
