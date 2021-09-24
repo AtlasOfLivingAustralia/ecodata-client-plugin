@@ -11,7 +11,6 @@ environments {
     // The browser can be selected by passing geb.env to the runtime.  You need to run npm install before
     // the drivers will be available for use by geb.
 
-println "Cat"
     //baseUrl = 'http://localhost:8080/'
 
     chrome {
