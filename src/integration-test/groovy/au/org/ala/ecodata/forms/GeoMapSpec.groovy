@@ -47,8 +47,18 @@ class GeoMapSpec extends GebReportingSpec {
         waitFor{$('.select2-search__field').getAt(0).displayed}
 
         when:
-        //test new polygon site
-        page.geoMap.drawPolygon()
+        waitFor{$('.select2-results__option').getAt(0).click()}
+
+        then:
+        $('.select2-selection__rendered').getAt(0).text().contains("Test site")
+        page.findById("locationLatitude").displayed == true
+        page.findById("locationLongitude").displayed == true
+        page.findById("locationCentroidLatitude").displayed == false
+        page.findById("locationCentroidLongitude").displayed == false
+
+        when:
+        //test new line site
+        page.geoMap.drawLine()
 
         then:
         page.findById("locationLatitude").displayed == false
@@ -57,8 +67,8 @@ class GeoMapSpec extends GebReportingSpec {
         page.findById("locationCentroidLongitude").displayed == true
 
         when:
-        //test new line site
-        page.geoMap.drawLine()
+        //test new polygon site
+        page.geoMap.drawPolygon()
 
         then:
         page.findById("locationLatitude").displayed == false

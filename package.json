@@ -15,7 +15,7 @@
     "@turf/convex": "^6.0.2",
     "@turf/length": "^6.0.2",
     "@turf/simplify": "^5.1.5",
-    "chromedriver": "^91.0.0",
+    "chromedriver": "^94.0.0",
     "geojson2svg": "^1.2.3",
     "handlebars": "^4.7.7",
     "jasmine-ajax": "^3.4.0",
@@ -32,8 +32,8 @@
     "leaflet-draw": "^1.0.4",
     "lodash": "^4.17.21",
     "phantomjs-prebuilt": "^2.1.16",
-    "webpack": "^4.29.3",
-    "webpack-cli": "^3.3.12"
+    "webpack": "^5.58.0",
+    "webpack-cli": "^4.9.0"
   },
   "scripts": {
     "test": "karma start karma.conf.js",

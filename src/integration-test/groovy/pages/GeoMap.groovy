@@ -117,7 +117,7 @@ class GeoMap extends Module {
             doubleClick()
         }
 
-        waitFor {
+        waitFor 30,{
             $("#locationCentroidLatitude").getAt(0).displayed
             //select newly created site in the site list dropdown
             $('.select2-selection__rendered').text().contains('The LineString you created.')

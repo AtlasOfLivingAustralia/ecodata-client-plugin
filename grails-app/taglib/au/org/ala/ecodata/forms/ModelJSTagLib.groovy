@@ -353,7 +353,6 @@ class ModelJSTagLib {
                 out << INDENT*4 << """                
                 var old${fieldModel.name} = self.data.${fieldModel.name}()
                 if(old${fieldModel.name}) {
-                    self.data.${fieldModel.name}(null)
                     self.data.${fieldModel.name}(old${fieldModel.name});                                             
                 }                 
     
