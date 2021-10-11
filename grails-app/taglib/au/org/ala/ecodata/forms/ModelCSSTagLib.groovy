@@ -56,6 +56,7 @@ class ModelCSSTagLib {
                     out << INDENT*2 << "table.${tableClass} td:nth-child(${i+1}) {${textAlign}}\n"
                 }
                 else {
+                    out << INDENT*2 << "table.${tableClass} thead th:nth-child(${i+1}) {${width}}\n"
                     out << INDENT*2 << "table.${tableClass} td:nth-child(${i+1}) {${width}${textAlign}}\n"
                 }
             }
