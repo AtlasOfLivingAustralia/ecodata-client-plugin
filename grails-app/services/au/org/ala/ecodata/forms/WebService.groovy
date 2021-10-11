@@ -26,4 +26,8 @@ class WebService {
     def getJson(String url, Integer timeout = null, boolean includeApiKey = false) {
         [:]
     }
+
+    def doPostWithParams(String url, Map params) {
+        [:]
+    }
 }

@@ -1,8 +1,8 @@
 package au.org.ala.ecodata.forms
 
-import org.codehaus.groovy.grails.web.json.JSONArray
-import org.codehaus.groovy.grails.web.json.JSONElement
-import org.codehaus.groovy.grails.web.json.JSONObject
+import org.grails.web.json.JSONArray
+import org.grails.web.json.JSONElement
+import org.grails.web.json.JSONObject
 
 /**
  * Responsible for retrieving ActivityForms from ecodata.
@@ -20,7 +20,7 @@ class ActivityFormService {
      */
     def findActivityForm(String name, Integer version = null) {
 
-        String url = grailsApplication.config.ecodata.service.url +
+        String url = grailsApplication.config.getProperty('ecodata.service.url') +
                 ACTIVITY_FORM_PATH+'?name='+URLEncoder.encode(name, 'UTF-8')
         if (version) {
             url += '&formVersion='+version

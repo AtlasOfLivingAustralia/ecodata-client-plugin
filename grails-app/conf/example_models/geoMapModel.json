@@ -1,0 +1,65 @@
+{
+  "modelName": "GeoMap test",
+  "dataModel": [
+    {
+      "dataType": "geoMap",
+      "hideSiteSelection": true,
+      "zoomToProjectArea": true,
+      "defaultAccuracy": 50,
+      "name": "location",
+      "columns": [
+        {
+          "source": "locationLatitude",
+          "dwcAttribute": "verbatimLatitude"
+        },
+        {
+          "source": "locationLongitude",
+          "dwcAttribute": "verbatimLongitude"
+        },
+        {
+          "source": "Locality"
+        },
+        {
+          "source": "Accuracy"
+        },
+        {
+          "source": "Notes"
+        },
+        {
+          "source": "Source"
+        }
+      ],
+      "dwcAttribute": "verbatimCoordinates",
+      "validate": "required",
+      "hideMyLocation": false
+    }
+  ],
+  "viewModel": [
+    {
+      "title": "Location",
+      "items": [
+        {
+          "items": [
+            {
+              "includeSource": true,
+              "orientation": "vertical",
+              "includeNotes": true,
+              "source": "location",
+              "computed": null,
+              "autoLocalitySearch": false,
+              "type": "geoMap",
+              "includeAccuracy": false,
+              "readonly": false,
+              "includeLocality": false
+            }
+          ],
+          "computed": null,
+          "type": "row"
+        }
+      ],
+      "boxed": true,
+      "class": "",
+      "type": "section"
+    }
+  ]
+}

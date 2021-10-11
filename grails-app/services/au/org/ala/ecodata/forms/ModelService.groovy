@@ -1,18 +1,19 @@
 package au.org.ala.ecodata.forms
 
-import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec
+//import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec
 
+import org.grails.encoder.impl.JavaScriptCodec
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 
 class ModelService {
     static DateFormat ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
 
-    def grailsApplication, webService, cacheService, authService
+    def grailsApplication, webService, cacheService, userInfoService
 
     def activitiesModel() {
         return cacheService.get('activity-model',{
-            webService.getJson(grailsApplication.config.ecodata.service.url +
+            webService.getJson(grailsApplication.config.getProperty('ecodata.service.url') +
                 '/metadata/activitiesModel')
         })
     }
@@ -24,7 +25,7 @@ class ModelService {
 
     def getDataModel(template) {
         return cacheService.get(template + '-model',{
-            webService.getJson(grailsApplication.config.ecodata.service.url +
+            webService.getJson(grailsApplication.config.getProperty('ecodata.service.url') +
                     "/metadata/dataModel/${template}")
         })
     }
@@ -52,7 +53,7 @@ class ModelService {
                         value = "'${value}'"
                     }
                 } else if(dataModel.name == 'recordedBy' && !value) {
-                    value = "'${authService.userDetails()?.getDisplayName()}'"
+                    value = "'${userInfoService.getCurrentUser()?.displayName?:''}'"
                 }
                 else if (value) {
                     value = JavaScriptCodec.ENCODER.encode(value)

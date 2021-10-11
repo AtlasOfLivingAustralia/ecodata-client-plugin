@@ -36,7 +36,7 @@
   "pre-populate": [
     {
       "source": {
-        "url": "preview/prepopulate",
+        "url": "/preview/prepopulate",
         "params" : [
           {
             "name":"p1",

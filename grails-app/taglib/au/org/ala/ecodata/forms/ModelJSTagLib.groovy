@@ -577,7 +577,7 @@ class ModelJSTagLib {
             extenderJS += ".extend({writableComputed:{expression:'${expression}', context:${ctx.propertyPath}, decimalPlaces:${decimalPlaces}}})"
         }
         if (requiresMetadataExtender(ctx.dataModel)) {
-            extenders.push("{metadata:{metadata:self.dataModel['${ctx.fieldName()}'], context:self.\$context, config:config}}")
+            extenders.add("{metadata:{metadata:self.dataModel['${ctx.fieldName()}'], context:self.\$context, config:config}}")
         }
 
         extenders.each {
@@ -660,13 +660,13 @@ class ModelJSTagLib {
                 , name: "${model.name}"
                 , edit: ${!!edit}
                 , readonly: ${!!readonly}
-                , zoomToProjectArea: ${model.zoomToProjectArea}
                 , markerOrShapeNotBoth: ${model.options ? !model.options.allowMarkerAndRegion : true}
                 , proxyFeatureUrl: '${createLink(controller: 'proxy', action: 'feature')}'
-                , spatialGeoserverUrl: '${grailsApplication.config.spatial.geoserverUrl}'
+                , spatialGeoserverUrl: '${grailsApplication.config.getProperty("spatial.geoserverUrl")}'
                 , updateSiteUrl: '${createLink(controller: 'site', action: 'ajaxUpdate')}'
                 , listSitesUrl: '${createLink(controller: 'site', action: 'ajaxList' )}'
                 , getSiteUrl: '${createLink(controller: 'site', action: 'index' )}'
+                , checkPointUrl: '${createLink(controller: 'site', action: 'checkPointInsideProjectAreaAndAddress' )}'
                 , uniqueNameUrl: '${createLink(controller: 'site', action: 'checkSiteName' )}'
                 , activityLevelData: context
                 , hideSiteSelection: ${model.hideSiteSelection}
@@ -699,7 +699,7 @@ class ModelJSTagLib {
 
     def audioModel(JSModelRenderContext ctx) {
 
-        out << INDENT*4 << "${ctx.propertyPath}.${ctx.dataModel.name} = new AudioViewModel({downloadUrl: '${grailsApplication.config.grails.serverURL}/download/file?filename='});\n"
+        out << INDENT*4 << "${ctx.propertyPath}.${ctx.dataModel.name} = new AudioViewModel({downloadUrl: '${grailsApplication.config.getProperty('grails.serverURL')}/download/file?filename='});\n"
         populateAudioList(ctx)
     }
 
@@ -826,7 +826,7 @@ class ModelJSTagLib {
             if (data !== undefined) {
                 \$.each(data, function (i, obj) {
                     if (_.isUndefined(obj.url)) {
-                        obj.url = "${grailsApplication.config.grails.serverURL}/download/file?filename=" + obj.filename;
+                        obj.url = ""${grailsApplication.config.getProperty('grails.serverURL')}"/download/file?filename=" + obj.filename;
                     }
                     ${ctx.propertyPath}.${ctx.dataModel.name}.files.push(new AudioItem(obj));
                 });
