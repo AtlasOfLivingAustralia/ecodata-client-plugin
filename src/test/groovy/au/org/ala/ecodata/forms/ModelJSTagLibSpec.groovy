@@ -263,11 +263,6 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace("""                
-                var oldlocation = self.data.location()
-                if(oldlocation) {
-                    self.data.location(oldlocation);                                             
-                }                 
-    
                 var oldlocationLatitude = self.data.locationLatitude()
                 var oldlocationLongitude = self.data.locationLongitude()               
 

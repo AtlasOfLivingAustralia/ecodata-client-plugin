@@ -350,12 +350,7 @@ class ModelJSTagLib {
         geoFields.each { fieldModel ->
 
             if (fieldModel.dataType == "geoMap") {
-                out << INDENT*4 << """                
-                var old${fieldModel.name} = self.data.${fieldModel.name}()
-                if(old${fieldModel.name}) {
-                    self.data.${fieldModel.name}(old${fieldModel.name});                                             
-                }                 
-    
+                out << INDENT*4 << """
                 var old${fieldModel.name}Latitude = self.data.${fieldModel.name}Latitude()
                 var old${fieldModel.name}Longitude = self.data.${fieldModel.name}Longitude()               
 
