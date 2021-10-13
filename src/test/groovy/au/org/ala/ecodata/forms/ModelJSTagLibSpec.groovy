@@ -251,6 +251,34 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
                 actualOut.toString())
     }
 
+    def "Reload geo model"() {
+        setup:
+        List dataModel = [[dataType:'geoMap', name:'location']]
+        List viewModel = [[type: "row"]]
+        def attrs = [output:"test", model:[modelName:"test", dataModel:dataModel, viewModel:viewModel ]]
+
+        when:
+        def output = tagLib.jsReloadGeoModel(attrs)
+
+        then:
+
+        compareWithoutWhiteSpace("""                
+                var oldlocationLatitude = self.data.locationLatitude()
+                var oldlocationLongitude = self.data.locationLongitude()               
+
+                if(oldlocationLatitude) {
+                    self.data.locationLatitude(null)
+                    self.data.locationLatitude(oldlocationLatitude)
+                } 
+                    
+                if(oldlocationLongitude) {
+                    self.data.locationLongitude(null)
+                    self.data.locationLongitude(oldlocationLongitude)
+                } 
+                    
+                """, output as String)
+    }
+
 
     private void compareWithoutWhiteSpace(String expected, String actual) {
         assert expected.replaceAll(/\s/, "") == actual.replaceAll(/\s/, "")

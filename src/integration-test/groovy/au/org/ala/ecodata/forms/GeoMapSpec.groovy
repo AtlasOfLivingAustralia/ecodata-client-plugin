@@ -39,18 +39,25 @@ class GeoMapSpec extends GebReportingSpec {
         page.findById("siteLocation").find("option").size() == 2;
 
         when:
-        page.geoMap.drawPolygon()
+        //site location select2 drop down
+        $('.select2').click()
 
         then:
-        waitFor 10, {
-            page.findById("locationLatitude").displayed == false
-            page.findById("locationLongitude").displayed == false
-            page.findById("locationCentroidLatitude").displayed == true
-            page.findById("locationCentroidLongitude").displayed == true
-        }
-
+        //select 2 search box
+        waitFor{$('.select2-search__field').getAt(0).displayed}
 
         when:
+        waitFor{$('.select2-results__option').getAt(0).click()}
+
+        then:
+        $('.select2-selection__rendered').getAt(0).text().contains("Test site")
+        page.findById("locationLatitude").displayed == true
+        page.findById("locationLongitude").displayed == true
+        page.findById("locationCentroidLatitude").displayed == false
+        page.findById("locationCentroidLongitude").displayed == false
+
+        when:
+        //test new line site
         page.geoMap.drawLine()
 
         then:
@@ -62,8 +69,22 @@ class GeoMapSpec extends GebReportingSpec {
         }
 
 
+        when:
+        //test new polygon site
+        page.geoMap.drawPolygon()
+
+        then:
+        waitFor 10, {
+            page.findById("locationLatitude").displayed == false
+            page.findById("locationLongitude").displayed == false
+            page.findById("locationCentroidLatitude").displayed == true
+            page.findById("locationCentroidLongitude").displayed == true
+        }
+
+
 
         when:
+        //test new point site
         page.geoMap.drawMarker()
 
         then:
@@ -76,6 +97,7 @@ class GeoMapSpec extends GebReportingSpec {
 
 
         when:
+        //test new custom site by adding coordinates
         page.geoMap.addCoordinatesManually()
 
         then:
