@@ -32,6 +32,6 @@ clover {
         testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
         testResultsInclude = 'TEST-*.xml'
 
-        targetPercentage = 60.5
+        targetPercentage = 60.4
     }
 }
