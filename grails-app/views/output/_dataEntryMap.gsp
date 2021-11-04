@@ -1,8 +1,9 @@
 <g:set var="orientation" value="${orientation ?: 'horizontal'}"/>
 <g:set var="isHorizontal" value="${orientation == 'horizontal'}"/>
-<g:set var="orientationClass" value="${isHorizontal ? 'span6' : 'row-fluid'}"/>
+<g:set var="orientationClass" value="${isHorizontal ? 'col-6' : 'row'}"/>
 <g:set var="latValidation" value="data-validation-engine='validate[min[-90],max[90]]'"/>
 <g:set var="lngValidation" value="data-validation-engine='validate[min[-180],max[180]]'"/>
+<g:set var="orientationMainClass" value="${isHorizontal ? 'row' : ''}"/>
 
 <h4 data-validation-engine="validate[funcCall[validator_site_check]" data-prompt-position="inline" data-position-type="inline" data-prompt-target="error-info">
     <g:message code="geomap.heading" default="Location"/>
@@ -10,9 +11,9 @@
         <span class="req-field"></span>
     </g:if>
 </h4>
-<div class="row-fluid">
+<div class="${orientationMainClass}">
     <g:if test="${isHorizontal}">
-        <div class="span6">
+        <div class="col-6">
             <!-- ko template: 'site-selector-dropdown-template' -->
             <!-- /ko -->
             <span id="error-info" class="margin-bottom-1"></span>
@@ -24,18 +25,18 @@
         <!-- ko template: 'site-selector-dropdown-template' -->
         <!-- /ko -->
 
-        <div class="row-fluid margin-bottom-1">
+        <div class="row margin-bottom-1">
             <span id="error-info" class="margin-bottom-1"></span>
             <m:map id="${source}Map" width="100%"/>
         </div>
     </g:if>
 
     <div class="${orientationClass}">
-        <div data-bind="visible: transients.showDataEntryFields">
+        <div class="col-12" data-bind="visible: transients.showDataEntryFields">
             <!-- ko if: transients.showCentroid() -->
 
-            <div class="row-fluid" data-bind="if: data.${source}CentroidLatitude">
-                <div class="span3">
+            <div class="row" data-bind="if: data.${source}CentroidLatitude">
+                <div class="col-3">
                     <label for="${source}CentroidLatitude">Centroid Latitude
                         <a href="#" class="helphover" data-bind="popover: {title:'<g:message code="record.edit.map.centroidLatLon"/>', content:'<g:message code="record.edit.map.centroidLatLon.content"/>'}">
                             <i class="fa fa-question-circle"></i>
@@ -43,7 +44,7 @@
                     </label>
                 </div>
 
-                <div class="span9">
+                <div class="col-9">
                     <g:if test="${readonly}">
                         <span data-bind="text: data.${source}CentroidLatitude"></span>
                     </g:if>
@@ -54,12 +55,12 @@
                 </div>
             </div>
 
-            <div class="row-fluid" data-bind="if: data.${source}CentroidLongitude">
-                <div class="span3">
+            <div class="row" data-bind="if: data.${source}CentroidLongitude">
+                <div class="col-3">
                     <label for="${source}CentroidLongitude">Centroid Longitude</label>
                 </div>
 
-                <div class="span9">
+                <div class="col-9">
                     <g:if test="${readonly}">
                         <span data-bind="text: data.${source}CentroidLongitude"></span>
                     </g:if>
@@ -74,8 +75,8 @@
 
             <!-- ko if: transients.showPointLatLon() -->
 
-            <div class="row-fluid" data-bind="slideVisible: !transients.editCoordinates()">
-                <div class="span3">
+            <div class="row" data-bind="slideVisible: !transients.editCoordinates()">
+                <div class="col-3">
                     <label for="${source}Latitude">Latitude
                         <a href="#" class="helphover" data-bind="popover: {title:'<g:message code="record.edit.map.latLon"/>', content:'<g:message code="record.edit.map.latLon.content"/>'}">
                             <i class=fa fa-question-circle></i>
@@ -83,7 +84,7 @@
                     </label>
                 </div>
 
-                <div class="span9">
+                <div class="col-9">
                     <g:if test="${readonly}">
                         <span data-bind="text: data.${source}Latitude"></span>
                     </g:if>
@@ -94,12 +95,12 @@
                 </div>
             </div>
 
-            <div class="row-fluid" data-bind="slideVisible: !transients.editCoordinates()">
-                <div class="span3">
+            <div class="row" data-bind="slideVisible: !transients.editCoordinates()">
+                <div class="col-3">
                     <label for="${source}Longitude">Longitude</label>
                 </div>
 
-                <div class="span9">
+                <div class="col-9">
                     <g:if test="${readonly}">
                         <span data-bind="text: data.${source}Longitude"></span>
                     </g:if>
@@ -114,8 +115,8 @@
 
             <!-- ko if: transients.showManualCoordinateForm -->
             <g:if test="${!readonly}">
-                <div class="row-fluid" data-bind="slideVisible: transients.editCoordinates">
-                    <div class="span3">
+                <div class="row" data-bind="slideVisible: transients.editCoordinates">
+                    <div class="col-3">
                         <label for="${source}Latitude">Enter latitude
                             <a href="#" class="helphover" data-bind="popover: {title:'<g:message code="record.edit.map.latLon"/>', content:'<g:message code="record.edit.map.latLon.content"/>'}">
                                 <i class=fa fa-question-circle></i>
@@ -123,27 +124,27 @@
                         </label>
                     </div>
 
-                    <div class="span9">
+                    <div class="col-9">
                         <input placeholder="Decimal latitude" id="${source}LatitudeStaged" type="number" min="-90" max="90" data-bind="value: transients.${source}LatitudeStaged"
                             ${latValidation} class="form-control full-width-input manual-point-lat-input">
                     </div>
                 </div>
 
-                <div class="row-fluid" data-bind="slideVisible: transients.editCoordinates">
-                    <div class="span3">
+                <div class="row" data-bind="slideVisible: transients.editCoordinates">
+                    <div class="col-3">
                         <label for="${source}Longitude">Enter longitude</label>
                     </div>
 
-                    <div class="span9">
+                    <div class="col-9">
                         <input placeholder="Decimal longitude" id="${source}LongitudeStaged" type="number" min="-180" max="180" data-bind="value: transients.${source}LongitudeStaged"
                                 ${lngValidation} class="form-control full-width-input manual-point-lng-input">
                     </div>
                 </div>
 
-                <div class="row-fluid margin-bottom-10">
-                    <div class="span3">
+                <div class="row margin-bottom-10">
+                    <div class="col-3">
                     </div>
-                    <div class="span9">
+                    <div class="col-9">
                         <!-- ko if: !transients.editCoordinates() -->
                         <button class="btn btn-default manual-point-add-btn" data-bind="click: transients.showCoordinateFields"><i class="fa fa-plus"></i> Add coordinates manually</button>
                         <!-- /ko -->
@@ -159,12 +160,12 @@
             <input id = "${source}geoInfo" hidden="true">
 
             <g:if test="${includeAccuracy}">
-                <div class="row-fluid">
-                    <div class="span3">
+                <div class="row">
+                    <div class="col-3">
                         <label for="${source}Accuracy">Accuracy (metres)</label>
                     </div>
 
-                    <div class="span9">
+                    <div class="col-9">
                         <g:if test="${readonly}">
                             <span data-bind="text: data.${source}Accuracy"></span>
                         </g:if>
@@ -179,12 +180,12 @@
                 </div>
             </g:if>
             <g:if test="${includeSource}">
-                <div class="row-fluid">
-                    <div class="span3">
+                <div class="row">
+                    <div class="col-3">
                         <label for="${source}Source">Source of coordinates</label>
                     </div>
 
-                    <div class="span9">
+                    <div class="col-9">
                         <g:if test="${readonly}">
                             <span data-bind="text: data.${source}Source"></span>
                         </g:if>
@@ -198,14 +199,14 @@
                 </div>
             </g:if>
             <g:if test="${includeNotes}">
-                <div class="row-fluid">
-                    <div class="span3">
+                <div class="row">
+                    <div class="col-3">
                         <label for="${source}Notes">Location notes</label>
                     </div>
 
-                    <div class="span9">
-                        <div class="row-fluid">
-                            <div class="span12">
+                    <div class="col-9">
+                        <div class="row">
+                            <div class="col-12">
                                 <g:if test="${readonly}">
                                     <textarea id="${source}Notes" type="text" data-bind="text: data.${source}Notes" readonly class="form-control form-control-sm"></textarea>
                                 </g:if>
@@ -218,12 +219,12 @@
                 </div>
             </g:if>
             <g:if test="${includeLocality}">
-                <div class="row-fluid">
+                <div class="row">
                     <g:if test="${!readonly}">
-                        <div class="span3">
+                        <div class="col-3">
                             <label for="bookmarkedLocations">Saved locations</label>
                         </div>
-                        <div class="span9">
+                        <div class="col-9">
                             <form class="form-inline">
                                 <select name="bookmarkedLocations" id="bookmarkedLocations" class="form-control full-width">
                                     <option value="">-- saved locations --</option>
@@ -234,14 +235,14 @@
                 </div>
             </g:if>
             <g:if test="${includeLocality}">
-                <div class="row-fluid" data-bind="slideVisible: data.${source}Latitude() && data.${source}Latitude()">
-                    <div class="span3">
+                <div class="row" data-bind="slideVisible: data.${source}Latitude() && data.${source}Latitude()">
+                    <div class="col-3">
                         <label for="${source}Locality">Matched locality</label>
                     </div>
 
-                    <div class="span9">
-                        <div class="row-fluid">
-                            <div class="span12">
+                    <div class=" col-9">
+                        <div class="row">
+                            <div class="col-12">
                                 <g:if test="${readonly}">
                                     <textarea id="${source}Locality" type="text" data-bind="value: data.${source}Locality" readonly class="form-control form-control-sm full-width"></textarea>
                                 </g:if>
@@ -296,13 +297,13 @@
         <g:set var="textOnSiteLocation" value="Create or select a location"/>
         <g:set var="textOnSiteLocation" value="Select a location"/>
 
-        <div class="row-fluid">
-            <div class="span12">
-                <div class="row-fluid">
-                    <span class="span4 preLabel">
+        <div class="row">
+            <div class="col-12">
+                <div class="row">
+                    <span class="col-4 preLabel">
                         <label>${readonly ? 'Location:' : "${textOnSiteLocation}"}</label>
                     </span>
-                    <div class="span8">
+                    <div class="col-8">
                         <g:if test="${readonly}">
                             <span class="output-text" data-bind="text: data.${source}Name() "></span>
                         </g:if>
