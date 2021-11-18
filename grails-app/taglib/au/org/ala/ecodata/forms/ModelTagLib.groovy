@@ -438,7 +438,7 @@ class ModelTagLib {
             out << "<h4>${model.title}</h4>"
             out << "<div class=\"row output-section\">\n"
         } else if (model.title && model.boxed) {
-            out << "<div class=\"boxed-heading\" data-content='${model.title}'>\n"
+            out << "<div class=\"boxed-heading col-sm-12\" data-content='${model.title}'>\n"
             out << "<div class=\"row\">\n"
         }
         else {
@@ -472,7 +472,7 @@ class ModelTagLib {
         def extraClassAttrs = model.class ?: model.css ?: ""
         def databindAttrs = model.visibility ? "data-bind=\"visible:${model.visibility}\"" : ""
 
-        out << "<div class=\"row space-after ${extraClassAttrs}\" ${databindAttrs}>\n"
+        out << "<div class=\"row space-after form-group ${extraClassAttrs}\" ${databindAttrs}>\n"
         if (model.align == 'right') {
             out << "<div class=\"pull-right\">\n"
         }
@@ -579,7 +579,7 @@ class ModelTagLib {
         int inputFieldColWidth = layoutContext.hasTableAncestor ? 12 : 8
         switch (layoutContext.parentView) {
             case 'col':
-                out << "<div class=\"row\">"
+                out << "<div class=\"row form-group\">"
                 labelAttributes.addSpan 'col-sm-'+labelColWidth
                 dataTag = "<div class=\"col-sm-${inputFieldColWidth}\">"+dataTag+"</div>"
                 break

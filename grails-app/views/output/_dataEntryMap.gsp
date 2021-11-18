@@ -1,6 +1,6 @@
 <g:set var="orientation" value="${orientation ?: 'horizontal'}"/>
 <g:set var="isHorizontal" value="${orientation == 'horizontal'}"/>
-<g:set var="orientationClass" value="${isHorizontal ? 'col-6' : 'row'}"/>
+<g:set var="orientationClass" value="${isHorizontal ? 'col-md-6' : 'row'}"/>
 <g:set var="latValidation" value="data-validation-engine='validate[min[-90],max[90]]'"/>
 <g:set var="lngValidation" value="data-validation-engine='validate[min[-180],max[180]]'"/>
 <g:set var="orientationMainClass" value="${isHorizontal ? 'row' : ''}"/>
@@ -13,7 +13,7 @@
 </h4>
 <div class="${orientationMainClass}">
     <g:if test="${isHorizontal}">
-        <div class="col-6">
+        <div class="col-md-6">
             <!-- ko template: 'site-selector-dropdown-template' -->
             <!-- /ko -->
             <span id="error-info" class="margin-bottom-1"></span>
@@ -32,11 +32,11 @@
     </g:if>
 
     <div class="${orientationClass}">
-        <div class="col-12" data-bind="visible: transients.showDataEntryFields">
+        <div class="col-sm-12" data-bind="visible: transients.showDataEntryFields">
             <!-- ko if: transients.showCentroid() -->
 
-            <div class="row" data-bind="if: data.${source}CentroidLatitude">
-                <div class="col-3">
+            <div class="form-group row" data-bind="if: data.${source}CentroidLatitude">
+                <div class="col-sm-3">
                     <label for="${source}CentroidLatitude">Centroid Latitude
                         <a href="#" class="helphover" data-bind="popover: {title:'<g:message code="record.edit.map.centroidLatLon"/>', content:'<g:message code="record.edit.map.centroidLatLon.content"/>'}">
                             <i class="fa fa-question-circle"></i>
@@ -44,7 +44,7 @@
                     </label>
                 </div>
 
-                <div class="col-9">
+                <div class="col-sm-9">
                     <g:if test="${readonly}">
                         <span data-bind="text: data.${source}CentroidLatitude"></span>
                     </g:if>
@@ -55,12 +55,12 @@
                 </div>
             </div>
 
-            <div class="row" data-bind="if: data.${source}CentroidLongitude">
-                <div class="col-3">
+            <div class="form-group row" data-bind="if: data.${source}CentroidLongitude">
+                <div class="col-sm-3">
                     <label for="${source}CentroidLongitude">Centroid Longitude</label>
                 </div>
 
-                <div class="col-9">
+                <div class="col-sm-9">
                     <g:if test="${readonly}">
                         <span data-bind="text: data.${source}CentroidLongitude"></span>
                     </g:if>
@@ -75,8 +75,8 @@
 
             <!-- ko if: transients.showPointLatLon() -->
 
-            <div class="row" data-bind="slideVisible: !transients.editCoordinates()">
-                <div class="col-3">
+            <div class="form-group row" data-bind="slideVisible: !transients.editCoordinates()">
+                <div class="col-sm-3">
                     <label for="${source}Latitude">Latitude
                         <a href="#" class="helphover" data-bind="popover: {title:'<g:message code="record.edit.map.latLon"/>', content:'<g:message code="record.edit.map.latLon.content"/>'}">
                             <i class=fa fa-question-circle></i>
@@ -84,7 +84,7 @@
                     </label>
                 </div>
 
-                <div class="col-9">
+                <div class="col-sm-9">
                     <g:if test="${readonly}">
                         <span data-bind="text: data.${source}Latitude"></span>
                     </g:if>
@@ -95,12 +95,12 @@
                 </div>
             </div>
 
-            <div class="row" data-bind="slideVisible: !transients.editCoordinates()">
-                <div class="col-3">
+            <div class="form-group row" data-bind="slideVisible: !transients.editCoordinates()">
+                <div class="col-sm-3">
                     <label for="${source}Longitude">Longitude</label>
                 </div>
 
-                <div class="col-9">
+                <div class="col-sm-9">
                     <g:if test="${readonly}">
                         <span data-bind="text: data.${source}Longitude"></span>
                     </g:if>
@@ -115,8 +115,8 @@
 
             <!-- ko if: transients.showManualCoordinateForm -->
             <g:if test="${!readonly}">
-                <div class="row" data-bind="slideVisible: transients.editCoordinates">
-                    <div class="col-3">
+                <div class="form-group row" data-bind="slideVisible: transients.editCoordinates">
+                    <div class="col-sm-3">
                         <label for="${source}Latitude">Enter latitude
                             <a href="#" class="helphover" data-bind="popover: {title:'<g:message code="record.edit.map.latLon"/>', content:'<g:message code="record.edit.map.latLon.content"/>'}">
                                 <i class=fa fa-question-circle></i>
@@ -124,33 +124,33 @@
                         </label>
                     </div>
 
-                    <div class="col-9">
+                    <div class="col-sm-9">
                         <input placeholder="Decimal latitude" id="${source}LatitudeStaged" type="number" min="-90" max="90" data-bind="value: transients.${source}LatitudeStaged"
                             ${latValidation} class="form-control full-width-input manual-point-lat-input">
                     </div>
                 </div>
 
-                <div class="row" data-bind="slideVisible: transients.editCoordinates">
-                    <div class="col-3">
+                <div class="form-group row" data-bind="slideVisible: transients.editCoordinates">
+                    <div class="col-sm-3">
                         <label for="${source}Longitude">Enter longitude</label>
                     </div>
 
-                    <div class="col-9">
+                    <div class="col-sm-9">
                         <input placeholder="Decimal longitude" id="${source}LongitudeStaged" type="number" min="-180" max="180" data-bind="value: transients.${source}LongitudeStaged"
                                 ${lngValidation} class="form-control full-width-input manual-point-lng-input">
                     </div>
                 </div>
 
-                <div class="row margin-bottom-10">
-                    <div class="col-3">
+                <div class="form-group row margin-bottom-10">
+                    <div class="col-sm-3">
                     </div>
-                    <div class="col-9">
+                    <div class="col-sm-9">
                         <!-- ko if: !transients.editCoordinates() -->
-                        <button class="btn btn-default manual-point-add-btn" data-bind="click: transients.showCoordinateFields"><i class="fa fa-plus"></i> Add coordinates manually</button>
+                        <button class="btn btn-primary-dark manual-point-add-btn" data-bind="click: transients.showCoordinateFields"><i class="fas fa-plus"></i> Add coordinates manually</button>
                         <!-- /ko -->
                         <!-- ko if: transients.editCoordinates() -->
-                        <button class="btn btn-default manual-point-save-btn" data-bind="click: transients.saveCoordinates"><i class="fa fa-hdd" data-bind="visible: !transients.showLoadingOnCoordinateCheck()"></i><span class="fa fa-spin fa-spinner" data-bind="visible: transients.showLoadingOnCoordinateCheck"></span> Save coordinates</button>
-                        <button class="btn btn-default manual-point-cancel-btn" data-bind="click: transients.hideCoordinateFields"><i class="fa fa-arrow-right"></i> Cancel</button>
+                        <button class="btn btn-primary-dark manual-point-save-btn" data-bind="click: transients.saveCoordinates"><i class="fa fa-hdd" data-bind="visible: !transients.showLoadingOnCoordinateCheck()"></i><span class="fa fa-spin fa-spinner" data-bind="visible: transients.showLoadingOnCoordinateCheck"></span> Save coordinates</button>
+                        <button class="btn btn-dark manual-point-cancel-btn" data-bind="click: transients.hideCoordinateFields"><i class="far fa-times-circle"></i> Cancel</button>
                         <!-- /ko -->
                     </div>
                 </div>
@@ -160,12 +160,12 @@
             <input id = "${source}geoInfo" hidden="true">
 
             <g:if test="${includeAccuracy}">
-                <div class="row">
-                    <div class="col-3">
+                <div class="form-group row">
+                    <div class="col-sm-3">
                         <label for="${source}Accuracy">Accuracy (metres)</label>
                     </div>
 
-                    <div class="col-9">
+                    <div class="col-sm-9">
                         <g:if test="${readonly}">
                             <span data-bind="text: data.${source}Accuracy"></span>
                         </g:if>
@@ -180,12 +180,12 @@
                 </div>
             </g:if>
             <g:if test="${includeSource}">
-                <div class="row">
-                    <div class="col-3">
+                <div class="form-group row">
+                    <div class="col-sm-3">
                         <label for="${source}Source">Source of coordinates</label>
                     </div>
 
-                    <div class="col-9">
+                    <div class="col-sm-9">
                         <g:if test="${readonly}">
                             <span data-bind="text: data.${source}Source"></span>
                         </g:if>
@@ -199,14 +199,14 @@
                 </div>
             </g:if>
             <g:if test="${includeNotes}">
-                <div class="row">
-                    <div class="col-3">
+                <div class="form-group row">
+                    <div class="col-sm-3">
                         <label for="${source}Notes">Location notes</label>
                     </div>
 
-                    <div class="col-9">
+                    <div class="col-sm-9">
                         <div class="row">
-                            <div class="col-12">
+                            <div class="col-sm-12">
                                 <g:if test="${readonly}">
                                     <textarea id="${source}Notes" type="text" data-bind="text: data.${source}Notes" readonly class="form-control form-control-sm"></textarea>
                                 </g:if>
@@ -219,12 +219,12 @@
                 </div>
             </g:if>
             <g:if test="${includeLocality}">
-                <div class="row">
+                <div class="form-group row">
                     <g:if test="${!readonly}">
-                        <div class="col-3">
+                        <div class="col-sm-3">
                             <label for="bookmarkedLocations">Saved locations</label>
                         </div>
-                        <div class="col-9">
+                        <div class="col-sm-9">
                             <form class="form-inline">
                                 <select name="bookmarkedLocations" id="bookmarkedLocations" class="form-control full-width">
                                     <option value="">-- saved locations --</option>
@@ -235,14 +235,14 @@
                 </div>
             </g:if>
             <g:if test="${includeLocality}">
-                <div class="row" data-bind="slideVisible: data.${source}Latitude() && data.${source}Latitude()">
-                    <div class="col-3">
+                <div class="form-group row" data-bind="slideVisible: data.${source}Latitude() && data.${source}Latitude()">
+                    <div class="col-sm-3">
                         <label for="${source}Locality">Matched locality</label>
                     </div>
 
-                    <div class=" col-9">
+                    <div class=" col-sm-9">
                         <div class="row">
-                            <div class="col-12">
+                            <div class="col-sm-12">
                                 <g:if test="${readonly}">
                                     <textarea id="${source}Locality" type="text" data-bind="value: data.${source}Locality" readonly class="form-control form-control-sm full-width"></textarea>
                                 </g:if>
@@ -250,9 +250,9 @@
                                     <form class="form-inline">
                                         <textarea id="${source}Locality" type="text" data-bind="value: data.${source}Locality" class="form-control form-control-sm full-width"></textarea>
                                         <g:if test="${!autoLocalitySearch}">
-                                            <button id="reverseGeocodeLocality" class="btn btn-default margin-top-1">Search for locality match</button>
+                                            <button id="reverseGeocodeLocality" class="btn btn-primary-dark margin-top-1">Search for locality match</button>
                                         </g:if>
-                                        <button id="saveBookmarkLocation" class="btn btn-default margin-top-1">Save this location</button>
+                                        <button id="saveBookmarkLocation" class="btn btn-primary-dark margin-top-1">Save this location</button>
                                     </form>
                                 </g:else>
                             </div>
@@ -265,28 +265,34 @@
 </div>
 
 <script type="text/html" id="AddSiteModal">
-<div class="modal hide fade">
-    <div class="modal-header">
-        <button type="button" class="close" data-bind="click: cancel" aria-hidden="true">&times;</button>
-        <h3>Add Site</h3>
-    </div>
-    <div class="modal-body">
-        <form action="#" data-bind="submit: add">
-            <div class="control-group" data-bind="css: { warning: nameStatus() == 'conflict' }">
-                <label for="site-name" class="control-label">Site Name</label>
-                <div class="controls">
-                    <input id="site-name" type="text" class="input-xlarge form-control" data-bind="value: name, valueUpdate: 'afterkeydown'">
-                    <i class="fa fa-cog fa-spin" data-bind="visible: nameStatus() == 'checking' "></i>
-                    <span class="help-block" data-bind="visible: nameStatus() == 'conflict' ">This name is already being used for a site</span>
-                </div>
+<div class="modal hide fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Add Site</h3>
+                <button type="button" class="close" data-bind="click: cancel" aria-hidden="true">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
+            <div class="modal-body">
+                <form action="#" data-bind="submit: add">
+                    <div class="control-group" data-bind="css: { warning: nameStatus() == 'conflict' }">
+                        <label for="site-name" class="control-label">Site Name</label>
+                        <div class="controls">
+                            <input id="site-name" type="text" class="input-xlarge form-control" data-bind="value: name, valueUpdate: 'afterkeydown'">
+                            <i class="fa fa-spin fa-spinner" data-bind="visible: nameStatus() == 'checking' "></i>
+                            <span class="help-block" data-bind="visible: nameStatus() == 'conflict' ">This name is already being used for a site</span>
+                        </div>
+                    </div>
 
-        </form>
-        <p class="muted"><small>Cancel this dialog to edit your area.</small></p>
+                </form>
+                <p class="muted"><small>Cancel this dialog to edit your area.</small></p>
+            </div>
+            <div class="modal-footer">
+        <button type="button" class="btn btn-dark" data-bind="click: cancel"><i class="far fa-times-circle"></i> Cancel</button>
+        <button type="button" class="btn btn-primary-dark" data-bind="click: add, enable: nameStatus() == 'ok' "><i class="fa fa-hdd"></i> Save</button>
     </div>
-    <div class="modal-footer">
-        <button type="button" class="btn" data-bind="click: cancel">Cancel</button>
-        <button type="button" class="btn btn-primary" data-bind="click: add, enable: nameStatus() == 'ok' ">Save</button>
+        </div>
     </div>
 </div>
 </script>
@@ -297,13 +303,13 @@
         <g:set var="textOnSiteLocation" value="Create or select a location"/>
         <g:set var="textOnSiteLocation" value="Select a location"/>
 
-        <div class="row">
-            <div class="col-12">
+        <div class="form-group row">
+            <div class="col-sm-12">
                 <div class="row">
-                    <span class="col-4 preLabel">
+                    <span class="col-sm-4 preLabel">
                         <label>${readonly ? 'Location:' : "${textOnSiteLocation}"}</label>
                     </span>
-                    <div class="col-8">
+                    <div class="col-sm-8">
                         <g:if test="${readonly}">
                             <span class="output-text" data-bind="text: data.${source}Name() "></span>
                         </g:if>
