@@ -1,6 +1,7 @@
 package au.org.ala.ecodata.forms
 
 import geb.spock.GebReportingSpec
+import grails.testing.mixin.integration.Integration
 import pages.PreviewPage
 
 /*
@@ -19,7 +20,7 @@ import pages.PreviewPage
  * 
  * Created by Temi on 26/11/19.
  */
-
+@Integration
 class MultiInputSpec extends GebReportingSpec{
     def "multi input tests"() {
         when:
