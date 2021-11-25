@@ -3,24 +3,24 @@
   "dataModel": [
     {
       "dataType": "number",
-      "name": "item1",
-      "behaviour": [
-        {
-          "type": "enable",
-          "condition": "item2 > 3"
-        }
-      ]
+      "name": "item1"
     },
     {
       "dataType": "number",
-      "name": "item2"
+      "name": "item2",
+      "behaviour": [
+        {
+          "condition": "item1 > 3",
+          "type": "enable"
+        }
+      ]
     },
     {
       "dataType": "list",
       "name": "nested",
       "columns": [
         {
-          "dataType":"number",
+          "dataType": "number",
           "name": "item3"
         },
         {
@@ -48,7 +48,7 @@
             {
               "preLabel": "Item 2",
               "source": "item2",
-              "type": "text"
+              "type": "number"
             }
           ]
         }

@@ -1,15 +1,15 @@
 
 ## Ecodata Client Plugin
 
-### [![Build Status](https://travis-ci.org/AtlasOfLivingAustralia/.svg?branch=master)](https://travis-ci.org/AtlasOfLivingAustralia/ecodata-client-plugin)
+### [![Build Status](https://travis-ci.com/AtlasOfLivingAustralia/ecodata-client-plugin.svg?branch=master)](https://travis-ci.com/AtlasOfLivingAustralia/ecodata-client-plugin)
 
 ### About
 The ecodata client plugin is a grails plugin used to generate data entry forms from a metadata definition. It is used by the [MERIT](https://github.com/AtlasOfLivingAustralia/fieldcapture) and [BioCollect](https://github.com/AtlasOfLivingAustralia/fieldcapture) applications.
 
 ### Technologies
-* Grails framework 2.5.6
+* Grails framework 4.0.10
 * Knockout JS
-* Bootstrap 2
+* Bootstrap 4.6
 
 ### Setup
 * Clone the repository to your development machine.* Install npm and nodejs (see https://www.npmjs.com/get-npm)

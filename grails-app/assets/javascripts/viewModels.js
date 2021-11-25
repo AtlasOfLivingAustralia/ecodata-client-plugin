@@ -22,32 +22,35 @@
 function enmapify(args) {
     "use strict";
 
-
+    var SITE_CREATE = 'sitecreate', SITE_PICK = 'sitepick', SITE_PICK_CREATE = 'sitepickcreate';
     var viewModel = args.viewModel,
         container = args.container,
+        validationContainer = args.validationContainer || '#validation-container',
         name = args.name,
         edit = args.edit,
         readonly = args.readonly,
         markerOrShapeNotBoth = args.markerOrShapeNotBoth,
-        proxyFeatureUrl = args.proxyFeatureUrl,
-        spatialGeoserverUrl = args.spatialGeoserverUrl,
-        updateSiteUrl = args.updateSiteUrl,
-        listSitesUrl = args.listSitesUrl,
-        getSiteUrl = args.getSiteUrl,
-        context = args.context,
         activityLevelData = args.activityLevelData,
-        uniqueNameUrl = args.uniqueNameUrl + "/" + ( activityLevelData.pActivity.projectActivityId || activityLevelData.pActivity.projectId),
-        hideSiteSelection = args.hideSiteSelection || false,
-        hideMyLocation = args.hideMyLocation || false,
+        proxyFeatureUrl = activityLevelData.proxyFeatureUrl || args.proxyFeatureUrl,
+        spatialGeoserverUrl = activityLevelData.spatialGeoserverUrl || args.spatialGeoserverUrl,
+        updateSiteUrl = activityLevelData.updateSiteUrl || args.updateSiteUrl,
+        listSitesUrl = activityLevelData.listSitesUrl || args.listSitesUrl,
+        getSiteUrl = activityLevelData.getSiteUrl || args.getSiteUrl,
+        checkPointUrl = activityLevelData.checkPointUrl || args.checkPointUrl,
+        context = args.context,
+        uniqueNameUrl = (activityLevelData.uniqueNameUrl || args.uniqueNameUrl) + "/" + ( activityLevelData.pActivity.projectActivityId || activityLevelData.pActivity.projectId),
+        projectId = activityLevelData.pActivity.projectId,
+        // hideSiteSelection is now dependent on survey's mapConfiguration
+        // check viewModel.transients.hideSiteSelection
         project = args.activityLevelData.project || {},
         mapConfiguration = project.mapConfiguration || args.activityLevelData.pActivity || {},
         allowPolygons = mapConfiguration.allowPolygons == undefined ? false : mapConfiguration.allowPolygons,
         allowPoints = mapConfiguration.allowPoints  == undefined ? true : mapConfiguration.allowPoints,
+        allowLine = mapConfiguration.allowLine || false,
         pointsOnly = allowPoints && !allowPolygons,
         polygonsOnly = !allowPoints && allowPolygons,
-        defaultZoomArea = mapConfiguration.defaultZoomArea,
-        allowAdditionalSurveySites = mapConfiguration.allowAdditionalSurveySites == undefined ? false : mapConfiguration.allowAdditionalSurveySites,
-        selectFromSitesOnly =viewModel.selectFromSitesOnly= mapConfiguration.selectFromSitesOnly == undefined ? false : mapConfiguration.selectFromSitesOnly,
+        addCreatedSiteToListOfSelectedSites = ((mapConfiguration.surveySiteOption == SITE_PICK_CREATE) && mapConfiguration.addCreatedSiteToListOfSelectedSites) || false,
+        selectFromSitesOnly = viewModel.selectFromSitesOnly= mapConfiguration.surveySiteOption == SITE_PICK ? true : false,
 
 
         siteIdObservable =activityLevelData.siteId = container[name] = ko.observable(),
@@ -63,67 +66,199 @@ function enmapify(args) {
         sitesObservable = ko.observableArray(resolveSites(mapConfiguration.sites)),
         //container[SitesArray] does not care about 'private' or not, only check if the site matches the survey configs
         surveySupportedSitesObservable = container[name + "SitesArray"] =  ko.computed(function(){
-                if (pointsOnly){
-                     return ko.utils.arrayFilter(sitesObservable(),function(site){
-                        return site.extent.geometry.type === 'Point' || site.siteId == siteIdObservable();
-                    })
-                }
-
-                if (polygonsOnly){
-                    return ko.utils.arrayFilter(sitesObservable(),function(site){
-                        return site.extent.geometry.type != 'Point'|| site.siteId == siteIdObservable();
-                    })
-                }
-
-                return sitesObservable();
-
-                }),
+            return sitesObservable();
+        }),
 
 
         loadingObservable = container[name + "Loading"] = ko.observable(false),
-        checkMapInfo = viewModel.checkMapInfo = ko.computed(function(){
-            var lat = latObservable(), lon = lonObservable(), siteId = siteIdObservable();
+        checkMapInfo = viewModel.checkMapInfo = function(){
+            var siteId = siteIdObservable();
+            if (!siteId ) {
+                var msg;
+                switch (mapConfiguration.surveySiteOption) {
+                    case SITE_CREATE:
+                        msg = "A location is mandatory. Please draw a location on the below map.";
+                        break;
+                    case SITE_PICK:
+                        msg = "A location is mandatory. Please pick a location from the above drop down list.";
+                        break;
+                    case SITE_PICK_CREATE:
+                        msg = "A location is mandatory. Please pick a location from the above drop down list or draw on the below map.";
+                        break;
+                }
 
-            if (!siteId && !lon && !lat )
-                return {validation:false, message:"You have not created or selected a location yet"};
-
-            if (pointsOnly){
-                  if (lat && lon)
-                      return {validation:true};
-                  else
-                      return {validation:false, message:"The record only accepts POINTs"};
-            };
-            //Be careful of circle.
-            if (polygonsOnly){
-                if (siteId && !lat && !lon)
-                    return {validation:true};
-                else
-                    return {validation:false, message:"The record only accepts Polygons"};
+                return {validation:false, message: msg};
             }
 
-            if (selectFromSitesOnly){
-                if (siteId)
-                    return {validation:true};
-                else
-                    return {validation:false, message:"You must select a site from the drop down list."};
-            }
-
-            if (allowPolygons && allowPoints){
-                if (siteId)
-                    return {validation:true};
-                if (lat && lon)
-                    return {validation:true};
-            }
-
-            return {validation:false, message:"You have not created or selected a location yet"};
-
-        });
+            return {validation:true};
+        };
 
     viewModel.mapElementId = name + "Map";
 
     // add event handling functions
     if(!viewModel.on){
         new Emitter(viewModel);
+    }
+
+    viewModel.transients = viewModel.transients || {};
+    var latObservableStaged = viewModel.transients[name + "LatitudeStaged"] = ko.observable(),
+        lonObservableStaged = viewModel.transients[name + "LongitudeStaged"] = ko.observable(),
+        editCoordinates = viewModel.transients["editCoordinates"] = ko.observable(false),
+        showLoadingOnCoordinateCheck = viewModel.transients["showLoadingOnCoordinateCheck"] = ko.observable(false);
+
+    viewModel.transients.showCoordinateFields = function () {
+        editCoordinates(true);
+    };
+
+    viewModel.transients.hideCoordinateFields = function () {
+        editCoordinates(false);
+    };
+
+    viewModel.transients.saveCoordinates = function () {
+        var lat = latObservableStaged(),
+            lng = lonObservableStaged();
+
+        if(isLatitudeValid(lat) && isLongitudeValid(lng) ) {
+            canAddPointToMap(lat, lng, function (response) {
+                if (response.isPointInsideProjectArea) {
+                    addPointToMap(lat, lng);
+                } else {
+                    var message;
+                    if (response.address) {
+                        message = 'The coordinates are outside the project area.<br/>' +
+                            'Address of the location is "' + response.address + '".<br/>' +
+                            'Do you wish to add it anyway?';
+                    } else {
+                        message = 'The coordinates are outside the project area.<br/>' +
+                            'Do you wish to add it anyway?';
+                    }
+
+                    bootbox.confirm( message, function (result) {
+                        if (result) {
+                            addPointToMap(lat, lng);
+                        }
+                    });
+                }
+            });
+        } else {
+            bootbox.alert("Latitude or longitude is invalid.");
+        }
+    };
+
+    function isLatitudeValid (lat) {
+        if (typeof lat === "string") {
+            lat = parseFloat(lat);
+        }
+
+        return (lat >= -90) && (lat <= 90);
+    }
+
+    function isLongitudeValid (lng) {
+        if (typeof lng === "string") {
+            lng = parseFloat(lng);
+        }
+
+        return (lng >= -180) && (lng <= 180);
+    }
+
+    function addPointToMap(lat, lng) {
+        if (lat && lng) {
+            viewModel.addMarker ({decimalLatitude: lat,  decimalLongitude: lng});
+            editCoordinates(false);
+        }
+    }
+
+    function canAddPointToMap (lat, lng, callback) {
+        var url = checkPointUrl + '?lat=' + lat + '&lng=' + lng + '&projectId=' + projectId;
+        showLoadingOnCoordinateCheck(true);
+        $.ajax({
+            url: url,
+            method: 'GET',
+            success : function (data) {
+                callback && callback(data);
+                showLoadingOnCoordinateCheck(false);
+            },
+            error: function () {
+                // add the point if error is returned.
+                callback && callback({
+                    isPointInsideProjectArea: true,
+                    address: null
+                });
+                showLoadingOnCoordinateCheck(false);
+            }
+        });
+    }
+
+    viewModel.transients.hideSiteSelection = ko.computed(function () {
+        if (mapConfiguration && ([SITE_PICK, SITE_PICK_CREATE].indexOf(mapConfiguration.surveySiteOption) >= 0)) {
+            return true;
+        }
+
+        return false;
+    });
+
+    viewModel.transients.showMyLocationAndLocationByAddress = function () {
+        if (readonly) {
+            return true;
+        }
+
+        // only show my location control if user can add point to map
+        if (mapConfiguration && ([SITE_CREATE, SITE_PICK_CREATE].indexOf(mapConfiguration.surveySiteOption) >= 0) && allowPoints) {
+            return true;
+        }
+
+        return false;
+    };
+
+    viewModel.transients.showDataEntryFields = ko.computed(function () {
+        switch (mapConfiguration.surveySiteOption) {
+            case SITE_CREATE:
+            case SITE_PICK_CREATE:
+                return true;
+        }
+
+        return false;
+    });
+
+    viewModel.transients.showCentroid = function () {
+        var site = viewModel.transients.getCurrentSite();
+        if (site) {
+            var geoJson  = Biocollect.MapUtilities.featureToValidGeoJson(site.extent.geometry);
+            if (geoJson.properties.point_type === ALA.MapConstants.DRAW_TYPE.CIRCLE_TYPE) {
+                return true;
+            } else {
+                return [ALA.MapConstants.DRAW_TYPE.POLYGON_TYPE, ALA.MapConstants.DRAW_TYPE.LINE_TYPE].indexOf(geoJson.geometry.type) >= 0;
+            }
+        }
+
+        return false;
+    };
+
+    viewModel.transients.showPointLatLon = function () {
+        var site = viewModel.transients.getCurrentSite();
+        if (site) {
+            var geoJson  = Biocollect.MapUtilities.featureToValidGeoJson(site.extent.geometry);
+            if ((geoJson.properties.point_type != ALA.MapConstants.DRAW_TYPE.CIRCLE_TYPE) && (geoJson.geometry.type === ALA.MapConstants.DRAW_TYPE.POINT_TYPE)) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    viewModel.transients.showManualCoordinateForm = function () {
+        if (mapConfiguration && ([SITE_CREATE, SITE_PICK_CREATE].indexOf(mapConfiguration.surveySiteOption) >= 0) && allowPoints) {
+            return true;
+        }
+
+        return false;
+    };
+
+    viewModel.transients.getCurrentSite = function () {
+        var siteId = siteIdObservable();
+        return $.grep(sitesObservable(), function (site) {
+            return siteId == site.siteId;
+        })[0];
     }
 
     var mapOptions = {
@@ -137,28 +272,16 @@ function enmapify(args) {
         singleDraw: true,
         singleMarker: true,
         markerOrShapeNotBoth: markerOrShapeNotBoth,
-        useMyLocation: !readonly && !hideMyLocation,
-        allowSearchLocationByAddress: !readonly,
+        useMyLocation: viewModel.transients.showMyLocationAndLocationByAddress(),
+        allowSearchLocationByAddress: viewModel.transients.showMyLocationAndLocationByAddress(),
         allowSearchRegionByAddress: false,
         zoomToObject: true,
         markerZoomToMax: true,
-        drawOptions:  activityLevelData.mobile || readonly ?
-            {
-                polyline: false,
-                polygon: false,
-                rectangle: false,
-                circle: false,
-                edit: false
-            }
-            :
-            {
-                polyline: !selectFromSitesOnly && allowPolygons,
-                polygon: !selectFromSitesOnly && allowPolygons? { allowIntersection: false } : false,
-                circle: !selectFromSitesOnly && allowPolygons,
-                rectangle: !selectFromSitesOnly && allowPolygons,
-                marker: !selectFromSitesOnly && allowPoints,
-                edit: !selectFromSitesOnly && true
-            }
+        maxZoom: 21,
+        addLayersControlHeading: true,
+        autoZIndex: false,
+        preserveZIndex: true,
+        drawOptions:  EnmapifyUtils.getMapOptions(activityLevelData, readonly, allowPolygons, allowPoints, allowLine, mapConfiguration.surveySiteOption)
     };
 
     // update siteId in activity
@@ -166,19 +289,11 @@ function enmapify(args) {
         viewModel.emit('sitechanged', siteId);
     });
 
-    // undefined/null, Google Maps or Default should enable Google Maps view
-    if (mapConfiguration.baseLayersName !== 'Open Layers') {
-        var googleLayer = new L.Google('ROADMAP', {maxZoom: 21, nativeMaxZoom: 21});
-        var otherLayers = {
-            Roadmap: googleLayer,
-            Hybrid: new L.Google('HYBRID', {maxZoom: 21, nativeMaxZoom: 21}),
-            Terrain: new L.Google('TERRAIN', {maxZoom: 21, nativeMaxZoom: 21})
-        };
-
-        mapOptions.baseLayer = googleLayer;
-        mapOptions.otherLayers = otherLayers;
-    }
-
+    var baseLayersAndOverlays = Biocollect.MapUtilities.getBaseLayerAndOverlayFromMapConfiguration(fcConfig.mapLayersConfig);
+    mapOptions.baseLayer = baseLayersAndOverlays.baseLayer;
+    mapOptions.otherLayers = baseLayersAndOverlays.otherLayers;
+    mapOptions.overlays = baseLayersAndOverlays.overlays;
+    mapOptions.overlayLayersSelectedByDefault = baseLayersAndOverlays.overlayLayersSelectedByDefault;
     var map = context.siteMap = new ALA.Map(viewModel.mapElementId, mapOptions);
 
     container[viewModel.mapElementId] = map;
@@ -197,8 +312,7 @@ function enmapify(args) {
     };
 
     function updateFieldsForMap(params) {
-        latSubscriber.dispose();
-        lngSubscriber.dispose();
+        subscribeOrDisposeLatLonObservables(false);
 
         var markerLocation = null;
         var markerLocations = map.getMarkerLocations();
@@ -207,6 +321,7 @@ function enmapify(args) {
         }
 
         var geo = map.getGeoJSON();
+        var numberOfFeatures = map.countFeatures();
         var feature;
 
         // When removing layers, events can also be fired, we want to avoid processing those
@@ -257,17 +372,35 @@ function enmapify(args) {
                 centroidLonObservable(c[0]);
                 centroidLatObservable(c[1]);
             }
-        } else {
+        }
+        else if (numberOfFeatures > 0) {
+            // Feature with pid will not return a GeoJSON object instantly. GeoJSON object will be returned after an
+            // AJAX request is complete. Therefore, wait for the AJAX to complete. And, do not clear any fields.
+        }
+        else {
             console.log("Clearing location fields");
             //latLonDisabledObservable(false);
+            previousLatObservable(null);
+            previousLonObservable(null);
             latObservable(null);
             lonObservable(null);
             centroidLatObservable(null);
             centroidLonObservable(null);
+            siteIdObservable(null);
         }
 
-        latSubscriber = latObservable.subscribe(updateMarkerPosition);
-        lngSubscriber = lonObservable.subscribe(updateMarkerPosition);
+        subscribeOrDisposeLatLonObservables(true);
+    }
+
+    function subscribeOrDisposeLatLonObservables (state) {
+        // destroy existing subscription before creating new subscription
+        latSubscriber && latSubscriber.dispose();
+        lngSubscriber && lngSubscriber.dispose();
+
+        if (state) {
+            latSubscriber = latObservable.subscribe(updateMarkerPosition);
+            lngSubscriber = lonObservable.subscribe(updateMarkerPosition);
+        }
     }
 
     function centroid(feature) {
@@ -292,7 +425,12 @@ function enmapify(args) {
                 return ( parseFloat(c[0][0][1]) + parseFloat(c[0][1][1]) ) * parseFloat(c[1]);
             }).reduce(sum, 0).value() / sixA;
             return [cx, cy];
-        } else if (feature.geometry.type == 'Point') {
+        }
+        else if (feature.geometry.type == 'LineString') {
+            coords = feature.geometry.coordinates[0];
+            return [parseFloat(coords[0]), parseFloat(coords[1])];
+        }
+        else if (feature.geometry.type == 'Point') {
             coords = feature.geometry.coordinates;
             return [parseFloat(coords[0]), parseFloat(coords[1])];
         } else {
@@ -375,31 +513,19 @@ function enmapify(args) {
         return L.geoJson(geoJSON, layerOptions);
     }
 
-    function zoomToProjectArea() {
-        console.log('Zooming to project area')
-        if (activityLevelData.pActivity.sites) {
-            var site = getProjectArea(),
-                geojson;
-            site = site && site[0];
-
-            if (site) {
-                geojson = createGeoJSON(Biocollect.MapUtilities.featureToValidGeoJson(site.extent.geometry));
-                var bounds = geojson.getBounds(),
-                    mapImpl = map.getMapImpl();
-
-                mapImpl.fitBounds(bounds);
-                geojson.addTo(map);
-            }
+    function updateMarkerPosition() {
+        if (shouldMarkerMove()) {
+            console.log("Enmapify: Displaying new marker");
+            map.addMarker(latObservable(), lonObservable());
+            previousLatObservable(latObservable());
+            previousLonObservable(lonObservable());
         }
     }
 
-    function updateMarkerPosition() {
-        if ((!siteIdObservable() || !args.markerOrShapeNotBoth) && latObservable() && lonObservable()) {
-            console.log("Displaying new marker")
-            map.addMarker(latObservable(), lonObservable());
-            previousLatObservable(latObservable())
-            previousLonObservable(lonObservable())
-        }
+    function shouldMarkerMove () {
+        var emptyValues = [null, undefined, ''];
+        return ((latObservable() != previousLatObservable()) || (lonObservable() != previousLonObservable())) &&
+            (emptyValues.indexOf(latObservable()) === -1) && (emptyValues.indexOf(lonObservable()) === -1);
     }
 
     viewModel.selectManyCombo = function (obj, event) {
@@ -438,16 +564,40 @@ function enmapify(args) {
         }
     };
 
+    viewModel.addMarker = function(data) {
+        if (mapOptions && mapOptions.drawOptions && mapOptions.drawOptions.marker) {
+            if ( (data.decimalLatitude != undefined) && (data.decimalLongitude != undefined) ) {
+                var isPublicSite;
+                subscribeOrDisposeLatLonObservables(false);
+                latObservable(data.decimalLatitude);
+                lonObservable(data.decimalLongitude);
+                updateMarkerPosition();
+
+                if (addCreatedSiteToListOfSelectedSites) {
+                    createPublicSite();
+                    isPublicSite = true;
+                }
+                else {
+                    createPrivateSite();
+                    isPublicSite = false;
+                }
+
+                subscribeOrDisposeLatLonObservables(true);
+                return isPublicSite
+            }
+        }
+    }
+
     var siteSubscriber = siteIdObservable.subscribe(updateMapForSite);
 
     //Listen mylocation and search events from the map plugin
     map.registerListener("searchEventFired", function (e) {
-        console.log('Received search event')
-        if (allowAdditionalSurveySites)
-            completeDraw();
+        console.log('Received search event');
+        if (addCreatedSiteToListOfSelectedSites)
+            createPublicSite();
         else
-            completeDrawWithoutAdditionalSite();
-    })
+            createPrivateSite();
+    });
 
     // make sure the lat/lng fields are cleared when the marker is removed by cancelling a new marker
 
@@ -457,10 +607,10 @@ function enmapify(args) {
             layer = e.layer;
 
         //Create site for all type including point
-        if (allowAdditionalSurveySites)
-            completeDraw();
+        if (addCreatedSiteToListOfSelectedSites)
+            createPublicSite();
         else
-            completeDrawWithoutAdditionalSite();
+            createPrivateSite();
     });
     var saved = false;
     map.registerListener("draw:edited", function (e) {
@@ -474,10 +624,10 @@ function enmapify(args) {
             console.log("clear geo json");
             map.clearLayers();
         } else if (saved) {
-            if (allowAdditionalSurveySites)
-                completeDraw();
+            if (addCreatedSiteToListOfSelectedSites)
+                createPublicSite();
             else
-                completeDrawWithoutAdditionalSite()
+                createPrivateSite()
         } else {
             console.log("cancelled edit with selected site, not clearing geometry")
         }
@@ -491,7 +641,14 @@ function enmapify(args) {
         map.markMyLocation();
     }
 
-    function completeDraw() {
+    /**
+     * Public sites have a name and are indexed by ElasticSearch.
+     * Hence they are visible on site listing pages.
+     * Creating public site also adds the site to ProjectActivity's
+     * pre-determined list. Therefore, users will be able to pick it from
+     * site selection drop down after creation.
+     */
+    function createPublicSite() {
         siteSubscriber.dispose();
         siteIdObservable(null);
         Biocollect.Modals.showModal({
@@ -530,7 +687,10 @@ function enmapify(args) {
         siteSubscriber = siteIdObservable.subscribe(updateMapForSite);
     }
 
-    function completeDrawWithoutAdditionalSite() {
+    /**
+     * Private sites are not index by ElasticSearch. Hence not visible on site listing pages.
+     */
+    function createPrivateSite() {
         siteSubscriber.dispose();
 
         var extent = convertGeoJSONToExtent(map.getGeoJSON());
@@ -680,7 +840,6 @@ function enmapify(args) {
 
 
         extent.geometry.centre = latLng;
-
         extent.geometry.type = geoType;
         extent.source = geoType == "Point" ? "Point" : geoType == "pid" ? "pid" : "drawn";
         extent.geometry.radius = feature.properties.radius;
@@ -736,36 +895,27 @@ function enmapify(args) {
         value ? map.startLoading() : map.finishLoading();
     });
 
-
-    // continue init map
-    if (!readonly) {
-        map.addButton("<span class='fa fa-undo reset-map' title='Reset map'></span>", function () {
-            map.resetMap();
-            if (!hideSiteSelection) {
-                if (activityLevelData.pActivity.sites.length == 1) {
-                    updateMapForSite(activityLevelData.pActivity.sites[0].siteId);
-                }
-            }
-        }, "bottomright");
-    }
-
-
-
     function zoomToDefaultSite(){
+        var defaultZoomArea = project.projectSiteId;
         if (!siteIdObservable()){
             var defaultsite  = $.grep(activityLevelData.pActivity.sites,function(site){
                 if(site.siteId == defaultZoomArea)
                     return site;
             });
+            // Is zoom area a project area?
+            if( (defaultsite.length == 0) && (defaultZoomArea == project.projectSiteId) && project.sites) {
+                defaultsite = $.grep(project.sites,function(site){
+                    if(site.siteId == defaultZoomArea)
+                        return site;
+                });
+            }
+
             var geojson;
-
             if (defaultsite.length>0) {
-                geojson = createGeoJSON(Biocollect.MapUtilities.featureToValidGeoJson(defaultsite[0].extent.geometry));
-                var bounds = geojson.getBounds(),
-                    mapImpl = map.getMapImpl();
-
-                mapImpl.fitBounds(bounds);
-                //geojson.addTo(map);
+                geojson = Biocollect.MapUtilities.featureToValidGeoJson(defaultsite[0].extent.geometry);
+                map.clearBoundLimits();
+                map.fitToBoundsOf(geojson);
+                return defaultsite[0].siteId;
             }
 
         }
@@ -773,6 +923,24 @@ function enmapify(args) {
 
     zoomToDefaultSite();
 
+    // Redraw map since it was created on a hidden element.
+    $(validationContainer).on('knockout-visible', function () {
+        map && map.getMapImpl().invalidateSize();
+    });
+
+    // returning variables to help test this method
+    return {
+        mapOptions: mapOptions,
+        hideSiteSelection: viewModel.transients.hideSiteSelection,
+        showMyLocationAndLocationByAddress: viewModel.transients.showMyLocationAndLocationByAddress,
+        checkMapInfo: checkMapInfo,
+        centroid: centroid,
+        createPublicSite: createPublicSite,
+        createPrivateSite: createPrivateSite,
+        viewModel: viewModel,
+        zoomToDefaultSite: zoomToDefaultSite,
+        shouldMarkerMove: shouldMarkerMove
+    };
 }
 
 var AddSiteViewModel = function (uniqueNameUrl) {
@@ -852,11 +1020,78 @@ function validator_site_check(field, rules, i, options){
     var model = ko.dataFor(field);
     if( model && (typeof model.checkMapInfo == 'function')) {
         var result = model.checkMapInfo();
-        if (!result.validation)
+        if (!result.validation) {
+            rules.push('required');
             return result.message;
+        }
         else
             return true;
     }
 
     return "Site validation failed. Please let administrator know.";
 }
+
+var EnmapifyUtils = {
+    /**
+     * Used by enmapify to show the correct drawing controls on map based on survey configuration.
+     * @param activityLevelData
+     * @param readonly
+     * @param allowPolygons
+     * @param allowPoints
+     * @param allowLine
+     * @param surveySiteOption
+     * @returns {{polygon: boolean, edit: boolean, marker: boolean, rectangle: boolean, circle: boolean, polyline: boolean}}
+     */
+    getMapOptions : function getMapOptions (activityLevelData, readonly, allowPolygons, allowPoints, allowLine, surveySiteOption) {
+        var SITE_CREATE = 'sitecreate', SITE_PICK = 'sitepick', SITE_PICK_CREATE = 'sitepickcreate';
+        if (activityLevelData.mobile || readonly) {
+            return {
+                polyline: false,
+                polygon: false,
+                rectangle: false,
+                circle: false,
+                marker:  false,
+                circlemarker: false,
+                edit: false
+            };
+        };
+
+        switch (surveySiteOption) {
+            case SITE_PICK:
+                return {
+                    polyline: false,
+                    polygon: false,
+                    rectangle: false,
+                    circle: false,
+                    marker:  false,
+                    circlemarker: false,
+                    edit: false
+                };
+
+                break;
+            case SITE_CREATE:
+            case SITE_PICK_CREATE:
+                return {
+                    polyline: !!allowLine,
+                    polygon: !!allowPolygons ? { allowIntersection: false } : false,
+                    rectangle:  !!allowPolygons,
+                    circle:  !!allowPolygons,
+                    marker:   !!allowPoints,
+                    circlemarker: false,
+                    edit: true
+                };
+
+                break;
+        }
+
+        return {
+            polyline: false,
+            polygon: false,
+            rectangle: false,
+            circle: false,
+            marker:  false,
+            circlemarker: false,
+            edit: false
+        };
+    }
+};

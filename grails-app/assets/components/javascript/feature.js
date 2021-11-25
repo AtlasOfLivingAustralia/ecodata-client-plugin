@@ -15,7 +15,7 @@
  * Created by Temi on 25/11/19.
  */
 
-//= require turf
+//= require_tree turf
 //= require_self
 ko.components.register('feature', {
 

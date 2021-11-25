@@ -19,30 +19,32 @@ module.exports = function (config) {
         basePath: '',
 
         plugins: ['@metahub/karma-jasmine-jquery', 'karma-*'],
-        frameworks: ['jasmine-jquery'],
-
         // list of files / patterns to load in the browser
         files: [
+            'grails-app/assets/vendor/bootstrap/4.6.0/js/bootstrap.bundle.js',
             'grails-app/assets/vendor/knockout/3.5.0/knockout.debug.js',
             'grails-app/assets/vendor/knockout/3.5.0/knockout.mapping-latest.js',
-            'grails-app/assets/vendor/expr-eval/2.0.2/bundle.js',
+            'node_modules/jasmine-ajax/lib/mock-ajax.js',
             'grails-app/assets/vendor/select2/4.0.3/js/select2.full.js',
             'grails-app/assets/vendor/underscorejs/1.8.3/underscore.js',
             'grails-app/assets/vendor/typeahead/0.11.1/bloodhound.js',
-            "grails-app/assets/vendor/expr-eval/1.2.1/bundle.js",
-            'grails-app/assets/vendor/jquery.validationEngine/jquery.validationEngine.js',
-            'grails-app/assets/vendor/jquery.validationEngine/jquery.validationEngine-en.js',
+            'grails-app/assets/vendor/expr-eval/2.0.2/bundle.js',
+            'grails-app/assets/vendor/jquery.validationEngine/3.1.0/jquery.validationEngine.js',
+            'grails-app/assets/vendor/jquery.validationEngine/3.1.0/jquery.validationEngine-en.js',
             'grails-app/assets/vendor/momentjs/2.24.0/moment.min.js',
             'grails-app/assets/vendor/momentjs/2.24.0/locales/en-au.js',
             'grails-app/assets/vendor/momentjs/moment-timezone-with-data.min.js',
+            'grails-app/assets/vendor/validatejs/0.11.1/validate.js',
             'grails-app/assets/javascripts/forms.js',
             'grails-app/assets/javascripts/*.js',
             'grails-app/assets/components/ecodata-components.js',
             'grails-app/assets/components/compile/ecodata-templates.js',
             'grails-app/assets/components/javascript/*.js',
-            'test/js/util/*.js',
-            'test/js/spec/**/*.js'
+            'src/test/js/util/*.js',
+            'src/test/js/spec/**/*.js'
         ],
+
+        frameworks: ['jasmine-jquery'],
 
 
         // list of files to exclude
@@ -66,7 +68,7 @@ module.exports = function (config) {
             'type':"text",
             check: {
                 global: {
-                    lines: 39.9
+                    lines: 48.1
                 }
             }
         },

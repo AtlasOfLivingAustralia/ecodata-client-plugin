@@ -17,15 +17,26 @@
       ]
     },
     {
+      "dataType": "number",
+      "name": "item2",
       "validate": [{
         "rule":"max",
         "param": {
             "type": "computed",
             "expression": "item1*3"
           }
-      }],
+      }]
+    },
+    {
       "dataType": "number",
-      "name": "item2"
+      "name": "warningItem",
+      "validate" : "max[20]",
+      "warning": {
+        "numericality": {
+          "message": "Are you sure this shouldn't be less than or equal to 10?",
+          "lessThanOrEqualTo": 10
+        }
+      }
     },
     {
       "dataType": "list",
@@ -75,7 +86,12 @@
             {
               "preLabel": "Item 2",
               "source": "item2",
-              "type": "text"
+              "type": "number"
+            },
+            {
+              "preLabel": "Warning Item (warning triggered if value is > 10 and < 20)",
+              "source": "warningItem",
+              "type": "number"
             }
           ]
         }

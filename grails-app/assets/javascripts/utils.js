@@ -198,3 +198,34 @@ function formatBytes(bytes) {
     return (bytes / 1000).toFixed(2) + ' KB';
 }
 
+/**
+ * It is for  projects which contain a list of site ids instead of sites
+ * e.g workprojects
+ * @param sites
+ * @param addNotFoundSite
+ * @returns {Array}
+ */
+function resolveSites(sites, addNotFoundSite) {
+    var resolved = [];
+    sites = sites || [];
+
+    sites.forEach(function (siteId) {
+        var site;
+        if(typeof siteId === 'string'){
+            site = lookupSite(siteId);
+
+            if(site){
+                resolved.push(site);
+            } else if(addNotFoundSite && siteId) {
+                resolved.push({
+                    name: 'User created site',
+                    siteId: siteId
+                });
+            }
+        } else if(typeof siteId === 'object'){
+            resolved.push(siteId);
+        }
+    });
+
+    return resolved;
+}

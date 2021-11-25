@@ -10,14 +10,14 @@
                     <label class="site-category-heading" data-bind="text:editableSitesHeading"></label>
 
                     <div class="btn-container">
-                        <button class="btn" data-bind="click:$root.defaultZoom"><i class="fa fa-search"></i>
+                        <button class="btn btn-sm" type="button" data-bind="click:$root.defaultZoom"><i class="fa fa-search"></i>
                         </button>
-                        <button class="btn" data-bind="click:$root.editSites"><i class="fa fa-edit"></i></button>
+                        <button class="btn btn-sm" type="button" data-bind="click:$root.editSites"><i class="fa fa-edit"></i></button>
                     </div>
                 </div>
-                <div class="site-information">
-                <label class="site-area">Total area (ha): <span data-bind="text:areaHa"></span></label>
-                <label class="site-length">Total length (km): <span data-bind="text:lengthKm"></span></label>
+                <div class="site-information mt-1">
+                    <label class="site-area">Total area (ha): <span data-bind="text:areaHa"></span></label>
+                    <label class="site-length">Total length (km): <span data-bind="text:lengthKm"></span></label>
                 </div>
             </div>
 
@@ -27,14 +27,14 @@
                 <!-- ko foreach:editableSites -->
                 <li class="clearfix site-label"
                     data-bind="event:{mouseover:$root.highlightFeature, mouseout:$root.unhighlightFeature}">
-                <label>
-                    <input type="text" style="width: 90%" data-bind="value:properties.name || 'Unnamed site'">
-                </label>
+                    <label>
+                        <input type="text" class="form-control form-control-sm" data-bind="value:properties.name || 'Unnamed site'">
+                    </label>
                     <div class="btn-container">
-                        <button class="btn" data-bind="click:$root.deleteFeature"><i
+                        <button class="btn btn-sm" type="button" data-bind="click:$root.deleteFeature"><i
                                 class="fa fa-remove"></i>
                         </button>
-                        <button class="btn" data-bind="click:$root.zoomToFeature"><i
+                        <button class="btn btn-sm" type="button" data-bind="click:$root.zoomToFeature"><i
                                 class="fa fa-search"></i>
                         </button>
                     </div>
@@ -57,7 +57,7 @@
                         <label class="site-category-heading collapsable" data-bind="text:category"></label>
 
                         <div class="btn-container">
-                            <button class="btn" data-bind="click:$root.zoomToCategorySites"><i
+                            <button class="btn btn-sm" type="button" data-bind="click:$root.zoomToCategorySites"><i
                                     class="fa fa-search"></i></button>
                         </div>
                     </div>
@@ -72,10 +72,10 @@
                                         data-bind="text:properties.name || 'Unnamed site'"></span></label>
 
                                 <div class="btn-container">
-                                    <button class="btn" data-bind="click:$root.copyFeature, enable:$root.copyEnabled"
+                                    <button class="btn btn-sm" type="button" data-bind="click:$root.copyFeature, enable:$root.copyEnabled"
                                             title="Copy (and edit) this site"><i class="fa fa-copy"></i>
                                     </button>
-                                    <button class="btn" data-bind="click:$root.zoomToFeature"
+                                    <button class="btn btn-sm" type="button" data-bind="click:$root.zoomToFeature"
                                             title="Zoom to this site"><i class="fa fa-search"></i>
                                     </button>
                                 </div>
@@ -94,10 +94,10 @@
     <div>
         <p><b>Reminder</b></p>
         <p>
-        This screen is currently in an Edit or Delete mode.
+            This screen is currently in an Edit or Delete mode.
         </p>
         <p>
-        Please inactivate the relevant mode, prior to leaving this page, by returning to either icon and selecting one of the highlighted options on the toolbar on the left of the map.
+            Please inactivate the relevant mode, prior to leaving this page, by returning to either icon and selecting one of the highlighted options on the toolbar on the left of the map.
         </p>
 
         <div class="actions-holder"></div>

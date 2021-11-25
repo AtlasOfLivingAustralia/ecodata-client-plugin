@@ -3,8 +3,8 @@
     <ul class="thumbnails" data-bind="visible: ${name}().length">
         <!-- ko foreach: ${name} -->
         <li>
-        <div class="row-fluid">
-            <div class="span4">
+        <div class="row">
+            <div class="col-sm-4">
                 <div class="projectLogo" data-toggle="popover" data-trigger="hover" data-title="Photo metadata" data-bind="popover: {placement:'top', content: function(){ return $(this).find('.metadata').html()} }">
                 <a href=""
                    data-bind="attr:{href:getImageViewerUrl()}, fancybox: {nextEffect:'fade', preload:0, 'prevEffect':'fade', type: 'iframe', width: '80%', title: function(){ return $(this).next().find('.metadata').html()}}"
@@ -13,7 +13,7 @@
                 </a>
                 </div>
             </div>
-            <div class="span8">
+            <div class="col-sm-8">
                 <div class="metadata">
                     <div data-bind="visible:name"><strong>Name:</strong> <span class="label-ellipsis" data-bind="text:name"></span></div>
                     <div data-bind="visible: attribution"><strong>Attribution:</strong> <span data-bind="text: attribution"></span></div>

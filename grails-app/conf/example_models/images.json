@@ -8,6 +8,10 @@
       "dataType": "image",
       "description": "",
       "name": "images2"
+    },{
+      "dataType": "image",
+      "description": "",
+      "name": "images3"
     }
   ],
   "modelName": "Images Example",
@@ -30,6 +34,15 @@
               "preLabel": "Default metadata behaviour:",
               "source": "images2",
               "type": "image"
+            },
+            {
+              "preLabel": "Hide metadata and show remove button with image behaviour:",
+              "source": "images3",
+              "type": "image",
+              "showMetadata": false,
+              "displayOptions": {
+                "showRemoveButtonWithImage": true
+              }
             }
           ]
         }

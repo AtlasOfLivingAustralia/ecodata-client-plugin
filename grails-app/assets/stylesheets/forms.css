@@ -9,16 +9,12 @@
 }
 
 .popover.warning .arrow:after {
-    border-right-color: yellow;
+    border-top-color: yellow;
 }
 
 .popover.warning.top .arrow:after {
     border-top-color: yellow;
     border-right-color: transparent;
-}
-
-.fileupload-buttonbar {
-    overflow-x: scroll;
 }
 
 .select2.select2-container {
@@ -108,13 +104,13 @@ table .select2-container .select2-selection--single {
 }
 
 /** Emulate bootstrap styling for input fields for the select 2 */
-div.species-select2[class*="span"] {
+div.species-select2[class*="div"] {
     display:inline-block;
     float:none;
     margin-left:0;
     position: relative;
 }
-div.species-select2 > span.input-append {
+div.species-select2 > span.input-group {
     width: 100%;
 }
 
@@ -150,3 +146,76 @@ table .select2 {
 }
 
 
+#error-info .formError.inline .formErrorContent {
+    box-sizing: border-box;
+}
+
+.margin-top-10 {
+    margin-top: 10px;
+}
+
+.margin-bottom-10 {
+    margin-bottom: 10px;
+}
+
+.unstyled {
+    list-style-type: none !important;
+}
+
+textarea {
+    border: 1px solid #cccccc;
+}
+.customAddOn {
+    height: 31px !important;
+    border-top-left-radius: unset !important;
+    border-bottom-left-radius: unset !important;
+}
+.customPrepend {
+    height: 38px !important;
+}
+
+span.input-group-append.input-group-text.customAppend {
+    height: 31px;
+    border-top-left-radius: unset;
+    border-bottom-left-radius: unset;
+}
+
+.customMultiInput {
+    margin: 2px 2px 2px 9px !important;
+    padding: 0 !important;
+}
+
+input.input-small[type="number"] {
+    max-width: 125px;
+}
+
+.input-group .input-group-append .input-group-text, table .autocompleteSpecies .input-group-text {
+    height: 31px;
+}
+
+.map-modal-dialog {
+    max-width: 100%;
+    margin: 0;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100vh;
+    display: flex;
+}
+
+.species-select2 .input-group .input-group-text {
+    height: 30px;
+}
+
+/**
+This compensates for differences in JSON when laying out components in a column - if the row is not providing
+the bottom margin, add it to the input group.
+ */
+.row:not(.space-after) > .col-sm-12 > .input-group input.form-control {
+    margin-bottom: 10px;
+}
+
+:not(table) .col-sm-6 > select.form-control.form-control-sm, :not(table) .col-sm-12 > select.form-control.form-control-sm, :not(table) .col-sm-3 > select.form-control.form-control-sm, :not(table) .col-sm-12 > button.btn.edit-feature{
+    width: 19rem;
+}

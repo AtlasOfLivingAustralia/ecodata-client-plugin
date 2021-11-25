@@ -3,22 +3,22 @@ package au.org.ala.ecodata.forms
 import grails.converters.JSON
 import grails.util.Environment
 import org.apache.commons.io.FilenameUtils
+import org.grails.io.support.PathMatchingResourcePatternResolver
+import org.grails.io.support.Resource
 
 class PreviewController {
 
     private static String EXAMPLE_MODEL = 'example.json'
     private static String EXAMPLE_MODELS_PATH = '/example_models/'
     private static String EXAMPLE_DATA_PATH = '/example_data/'
-
+    int siteCounter = 1
 
     def index() {
 
         String modelName = params.name ?: EXAMPLE_MODEL
         Map model = getExample(modelName)
-
         String dataFileName = params.data ?: modelName
         Map data = getData(dataFileName)
-
         render ([model:[model:model, data:data, title:model.modelName, examples:allExamples()], view:'index'])
 
     }
@@ -50,16 +50,15 @@ class PreviewController {
 
     private List allExamples(){
         List examples = []
-        URL pathUrl = getClass().getResource(EXAMPLE_MODELS_PATH)
-        File path = new File(pathUrl.getFile())
+        PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver()
+        Resource[] resources = resolver.getResources(EXAMPLE_MODELS_PATH+"*.json")
 
-        if (path.exists()) {
-            for (File file : path.listFiles()) {
-                Map model = getExample(file.name)
+        for (Resource resource : resources) {
+            Map model = getExample(resource.filename)
 
-                examples << [name:file.name, title:model.title ?: model.modelName]
-            }
+            examples << [name:resource.filename, title:model.title ?: model.modelName]
         }
+
         examples
     }
 
@@ -103,5 +102,75 @@ class PreviewController {
      */
     def prepopulate() {
         respond params
+    }
+
+    /**
+     * Stub function for testing geoMap dataType.
+     */
+    def getBookmarkLocations () {
+        render text: '[]', contentType: 'application/json'
+    }
+
+    /**
+     * Stub function for testing geoMap dataType.
+     */
+    def saveBookmarkLocation () {
+        render text: '{}', contentType: 'application/json'
+    }
+
+    /**
+     * Stub function for testing geoMap dataType.
+     */
+    def getSite () {
+        render text: '{}', contentType: 'application/json'
+    }
+
+    /**
+     * Stub function for testing geoMap dataType.
+     */
+    def updateSite() {
+        siteCounter ++
+        render text: "{\"id\": \"${siteCounter}\"}", contentType: 'application/json'
+    }
+
+    /**
+     * Stub function for testing geoMap dataType.
+     */
+    def listSites() {
+        // copy changes to site object to index.gsp
+        def sites = [[
+            'siteId': 'abc',
+            'projects': ['projectA'],
+            'name': 'Test site'
+        ]]
+        render sites as JSON, contentType: 'application/json'
+    }
+
+    /**
+     * Stub function for testing geoMap dataType.
+     */
+    def spatialGeoserver() {
+        render text: '', contentType: 'text/plain'
+    }
+
+    /**
+     * Stub function for testing geoMap dataType.
+     */
+    def proxyFeature() {
+        render text: '', contentType: 'text/plain'
+    }
+
+    /**
+     * Stub function for testing geoMap dataType.
+     */
+    def uniqueName() {
+        render text: '', contentType: 'text/plain'
+    }
+
+    /**
+     * Stub function for testing geoMap dataType.
+     */
+    def checkPoint() {
+        render text: '{ "isPointInsideProjectArea": true, "address": null }', contentType: 'application/json'
     }
 }

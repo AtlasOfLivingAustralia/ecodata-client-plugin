@@ -1,0 +1,37 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.bmuschko:gradle-clover-plugin:3.0.1'
+    }
+}
+
+apply plugin: 'com.bmuschko.clover'
+
+dependencies {
+    clover 'org.openclover:clover:4.4.1'
+}
+
+clover {
+    excludes = ['**/Application.groovy',
+                '**/BootStrap.groovy',
+                '**/UrlMappings.groovy',
+                '**/*GrailsPlugin.groovy',
+                '**/*Mock.groovy',
+    ]
+
+    testIncludes = ['**/*Spec.groovy']
+
+    report {
+        html = true
+        xml = true
+        json = true
+
+        // Support capturing test results from JUnix XML report
+        testResultsDir = project.tasks.getByName('test').reports.junitXml.destination
+        testResultsInclude = 'TEST-*.xml'
+
+        targetPercentage = 60.4
+    }
+}

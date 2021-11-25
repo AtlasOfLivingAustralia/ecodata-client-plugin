@@ -552,15 +552,24 @@
                 options.templateSelection = renderer;
 
             }
-            $(element).select2(options);
+            var $element = $(element);
+            $element.select2(options);
             applySelect2ValidationCompatibility(element);
 
             // Listen for changes to the view model and ensure the select2 component is
             // updated to reflect the change.
             var valueBinding = allBindings.get('value');
             if (ko.isObservable(valueBinding)) {
-                valueBinding.subscribe(function() {
-                    $(element).trigger('change');
+                valueBinding.subscribe(function(newValue) {
+                    // Depending on the order the bindings are declared (value before select2
+                    // or vice versa), they can interfere with each other.
+                    var currentValue = $element.val();
+                    if (currentValue != newValue) {
+                        // If the value is out of sync with the model, update the value.
+                        $element.val(newValue);
+                    }
+                    // Make sure the select2 library is aware of the change.
+                    $element.trigger('change');
                 });
             }
         }
@@ -621,14 +630,18 @@
             for (var i=0; i<extraOptions.length; i++) {
                 $element.append($("<option>").val(extraOptions[i]).text(extraOptions[i]));
             }
-            $(element).val(valueAccessor().value()).trigger('change');
+            var elementValue = $element.val();
+            if (!_.isEqual(elementValue, data)) {
+                $element.val(valueAccessor().value()).trigger('change');
+            }
+
         }
     };
 
     var popoverWarningOptions = {
         placement:'top',
         trigger:'manual',
-        template: '<div class="popover warning"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+        template: '<div class="popover warning"><h3 class="popover-header"></h3><div class="popover-body"></div><div class="arrow"></div></div>'
     };
 
 
@@ -655,16 +668,17 @@
             // We are implementing the validation routine by adding a subscriber to avoid triggering the validation
             // on initialisation.
             target.subscribe(function() {
-                var invalid = $element.validationEngine('validate');
+                var valid = $element.validationEngine('validate');
 
                 // Only check warnings if the validation passes to avoid showing two sets of popups.
-                if (!invalid) {
+                if (valid) {
                     var result = target.checkWarnings();
 
                     if (result) {
                         if (!target.popoverInitialised) {
                             $element.popover(_.extend({content:result.val[0]}, popoverWarningOptions));
-                            $element.data('popover').tip().click(function() {
+                            var popover = $element.data('bs.popover').getTipElement();
+                            $(popover).click(function() {
                                 $element.popover('hide');
                             });
                             target.popoverInitialised = true;

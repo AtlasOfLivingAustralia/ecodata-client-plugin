@@ -1,0 +1,8 @@
+rootProject.name='ecodata-client-plugin'
+
+boolean inplace = false
+
+if (inplace) {
+    include ':ala-map-plugin'
+    project(':ala-map-plugin').projectDir = new File(settingsDir,'../ala-map-plugin')
+}
