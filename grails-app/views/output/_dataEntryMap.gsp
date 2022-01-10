@@ -146,7 +146,7 @@
                     </div>
                     <div class="col-sm-9">
                         <!-- ko if: !transients.editCoordinates() -->
-                        <button class="btn btn-primary-dark manual-point-add-btn" data-bind="click: transients.showCoordinateFields"><i class="fas fa-plus"></i> Add coordinates manually</button>
+                        <button class="btn btn-primary-dark manual-point-add-btn" data-bind="click: transients.showCoordinateFields"><i class="fa fa-plus"></i> Add coordinates manually</button>
                         <!-- /ko -->
                         <!-- ko if: transients.editCoordinates() -->
                         <button class="btn btn-primary-dark manual-point-save-btn" data-bind="click: transients.saveCoordinates"><i class="fa fa-hdd" data-bind="visible: !transients.showLoadingOnCoordinateCheck()"></i><span class="fa fa-spin fa-spinner" data-bind="visible: transients.showLoadingOnCoordinateCheck"></span> Save coordinates</button>
