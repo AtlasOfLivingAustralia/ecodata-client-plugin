@@ -221,7 +221,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.databindAttrs.add 'optionsCaption', '"Please select"'
         context.databindAttrs.add 'value', "${context.source}.addWord"
 
-        context.writer <<  "<div class='row'><div class='col-sm-6'><select${context.attributes.toString()} comboList='${context.source}' data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
+        context.writer <<  "<div class='row'><div class='col-sm-6'><select${context.attributes.toString()} class='form-control' comboList='${context.source}' data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
 
         def tagsBlock = "<div class='col-sm-6'><div id='tagsBlock' data-bind='foreach: ${context.source}'>" +
                 " <span class='tag label label-default'>" +
