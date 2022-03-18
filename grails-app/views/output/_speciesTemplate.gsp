@@ -1,7 +1,7 @@
 <div class="${css} autocompleteSpecies input-group" data-bind="with:${source}">
     <div class="input-group-prepend">
         <span class="input-group-text" data-bind="visible:!transients.editing(), css:{'btn-success':name()}"><i class="fa fa-check"
-                                                                                                      data-bind="css:{'fa fa-check':listId()!='unmatched' && name(), 'fa fa-question-o':listId()=='unmatched' || listId() == 'error-unmatched'}"></i>
+                                                                                                      data-bind="css:{'fa-check':listId()!='unmatched' && name(), 'fa-question-o':listId()=='unmatched' || listId() == 'error-unmatched'}"></i>
         </span>
     </div>
     <div class="input-group-prepend">
