@@ -7,7 +7,6 @@ import groovy.util.slurpersupport.NodeChild
 import groovy.xml.MarkupBuilder
 import spock.lang.Specification
 
-//@TestFor(ModelTagLib)
 class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLib> {
 
     ModelTagLib.LayoutRenderContext ctx
@@ -128,6 +127,24 @@ class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLi
 
         println actualOut
         TestUtils.compareHtml(actualOut, expectedOut)
+    }
+
+    def "The presence of a scores attribute should result in the score data binding being applied to the element"() {
+
+        setup:
+        Map model = [type:'number', source:"myNumber"]
+        ctx.model = model
+        ctx.span = 3
+        List dataModel = [[name:"myNumber", dataType:"number", scores:[[label:"My score"]]]]
+        ctx.attrs.model = [dataModel :dataModel]
+
+        when:
+        tagLib.layoutDataItem(ctx.out, ctx.attrs, model, ctx)
+        println(actualOut)
+
+        then:
+        TestUtils.compareHtml(actualOut, """<div class="col-sm-3"><span data-bind='score:myNumber.get("scores"),text:myNumber'></span></div>""")
+
     }
 
 }
