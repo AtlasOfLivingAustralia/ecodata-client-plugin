@@ -547,6 +547,10 @@ class ModelTagLib {
             renderContext.databindAttrs.add 'warning', renderContext.source
         }
 
+        if (source?.scores) {
+            renderContext.databindAttrs.add 'score', renderContext.source+'.get("scores")'
+        }
+
         if (model.visibility) {
             renderContext.databindAttrs.add "visible", evalDependency(model.visibility)
         }

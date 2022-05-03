@@ -582,7 +582,7 @@ class ModelJSTagLib {
     }
 
     private boolean requiresMetadataExtender(Map dataModel) {
-        dataModel.dataType == 'feature' || dataModel.behaviour || dataModel.warning || dataModel.constraints || dataModel.displayOptions || (dataModel.validate instanceof List)
+        dataModel.dataType == 'feature' || dataModel.behaviour || dataModel.warning || dataModel.constraints || dataModel.displayOptions || (dataModel.validate instanceof List) || dataModel.scores
 
     }
 
