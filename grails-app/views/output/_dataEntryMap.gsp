@@ -3,7 +3,7 @@
 <g:set var="orientationClass" value="${isHorizontal ? 'col-md-6' : 'row'}"/>
 <g:set var="latValidation" value="data-validation-engine='validate[min[-90],max[90]]'"/>
 <g:set var="lngValidation" value="data-validation-engine='validate[min[-180],max[180]]'"/>
-<g:set var="orientationMainClass" value="${isHorizontal ? 'row' : ''}"/>
+<g:set var="orientationMainClass" value="${isHorizontal ? 'row mx-1' : ''}"/>
 
 <h4 data-validation-engine="validate[funcCall[validator_site_check]" data-prompt-position="inline" data-position-type="inline" data-prompt-target="error-info">
     <g:message code="geomap.heading" default="Location"/>
@@ -16,7 +16,7 @@
         <div class="col-md-6">
             <!-- ko template: 'site-selector-dropdown-template' -->
             <!-- /ko -->
-            <span id="error-info" class="margin-bottom-1"></span>
+            <span id="error-info" class="mb-2"></span>
             <m:map id="${source}Map" width="100%"/>
         </div>
     </g:if>
@@ -25,14 +25,14 @@
         <!-- ko template: 'site-selector-dropdown-template' -->
         <!-- /ko -->
 
-        <div class="row margin-bottom-1">
-            <span id="error-info" class="margin-bottom-1"></span>
+        <div class="row mb-2 mx-1">
+            <span id="error-info" class="mb-2"></span>
             <m:map id="${source}Map" width="100%"/>
         </div>
     </g:if>
 
     <div class="${orientationClass}">
-        <div class="col-sm-12" data-bind="visible: transients.showDataEntryFields">
+        <div class="${isHorizontal ? '' : 'col-12'}" data-bind="visible: transients.showDataEntryFields">
             <!-- ko if: transients.showCentroid() -->
 
             <div class="form-group row" data-bind="if: data.${source}CentroidLatitude">
@@ -141,7 +141,7 @@
                     </div>
                 </div>
 
-                <div class="form-group row margin-bottom-10">
+                <div class="form-group row mb-2">
                     <div class="col-sm-3">
                     </div>
                     <div class="col-sm-9">
@@ -225,7 +225,7 @@
                             <label for="bookmarkedLocations">Saved locations</label>
                         </div>
                         <div class="col-sm-9">
-                            <form class="form-inline">
+                            <form class="">
                                 <select name="bookmarkedLocations" id="bookmarkedLocations" class="form-control full-width">
                                     <option value="">-- saved locations --</option>
                                 </select>
@@ -247,7 +247,7 @@
                                     <textarea id="${source}Locality" type="text" data-bind="value: data.${source}Locality" readonly class="form-control form-control-sm full-width"></textarea>
                                 </g:if>
                                 <g:else>
-                                    <form class="form-inline">
+                                    <form>
                                         <textarea id="${source}Locality" type="text" data-bind="value: data.${source}Locality" class="form-control form-control-sm full-width"></textarea>
                                         <g:if test="${!autoLocalitySearch}">
                                             <button id="reverseGeocodeLocality" class="btn btn-primary-dark margin-top-1">Search for locality match</button>
