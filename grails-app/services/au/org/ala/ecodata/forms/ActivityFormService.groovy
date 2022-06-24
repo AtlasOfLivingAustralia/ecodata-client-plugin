@@ -30,7 +30,7 @@ class ActivityFormService {
             url += '&formVersion='+version
         }
         if (includeScoreInformation) {
-            url += '&includeScoreInformation'+Boolean.toString(includeScoreInformation)
+            url += '&includeScoreInformation='+Boolean.toString(includeScoreInformation)
         }
         Map result = webService.getJson(url)
         if (!result || result.error) {
