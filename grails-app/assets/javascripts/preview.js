@@ -16,8 +16,8 @@
 //= require attach-document.js
 //= require jquery.fileDownload/jQuery.fileDownload
 //= require leaflet-manifest.js
-//= require momentjs/2.24.0/moment.min.js
-//= require momentjs/2.24.0/locales/en-au.js
+//= require momentjs/2.29.4/moment.min.js
+//= require momentjs/2.29.4/locales/en-au.js
 //= require momentjs/moment-timezone-with-data.min.js
 //= require utils.js
 //= require knockout-dates.js
