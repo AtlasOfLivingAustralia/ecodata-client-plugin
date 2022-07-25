@@ -64,7 +64,7 @@ dependencies {
     implementation "org.grails.plugins:scaffolding"
     implementation "org.grails.plugins:gsp"
     implementation 'commons-io:commons-io:2.6'
-    implementation "org.grails.plugins:ala-auth:5.0.1"
+    implementation "org.grails.plugins:ala-auth:5.1.0"
     implementation 'org.pac4j:pac4j-core:5.3.1'
     implementation 'org.pac4j:pac4j-http:5.3.1'
 //    implementation 'org.pac4j:jee-pac4j:6.1.0'
