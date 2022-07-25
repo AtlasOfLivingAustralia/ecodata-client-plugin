@@ -2,10 +2,10 @@ package au.org.ala.ecodata.forms
 
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.pac4j.core.config.Config
-import org.pac4j.core.context.JEEContextFactory
 import org.pac4j.core.context.WebContext
 import org.pac4j.core.credentials.Credentials
 import org.pac4j.core.util.FindBest
+import org.pac4j.jee.context.JEEContextFactory
 import org.pac4j.http.client.direct.DirectBearerAuthClient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
