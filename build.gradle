@@ -84,7 +84,7 @@ dependencies {
 
 
     if (!inplace) {
-        compile ("org.grails.plugins:ala-map-plugin:3.0") {
+        compile ("org.grails.plugins:ala-map-plugin:3.0.1") {
             exclude group: 'com.bertramlabs.plugins', module: 'asset-pipeline-grails'
         }
     }

@@ -246,6 +246,20 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         compareWithoutWhiteSpace("data['test'].load(ecodata.forms.orDefault(data['test'],undefined));data['test'](ecodata.forms.orDefault(data['test'],undefined));", actualOut.toString())
     }
 
+    def "Input data is null/undefined checked before calling loadData() on SpeciesViewModel"() {
+        setup:
+        Map dataModel = [name:'test', dataType:'species']
+        ctx.dataModel = dataModel
+        ctx.propertyPath = 'self.data'
+        ctx.attrs = [:]
+
+        when:
+        tagLib.renderInitialiser(ctx)
+
+        then:
+        compareWithoutWhiteSpace("if(data['test']){self.data['test'].loadData(ecodata.forms.orDefault(data['test'], {}));}", actualOut.toString())
+    }
+
     def "The lookup table data type is rendered correctly"() {
         setup:
         List lookupTable = [[input:'a', output:'1'], [input:'b', output:'2']]
