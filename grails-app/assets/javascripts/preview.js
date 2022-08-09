@@ -14,10 +14,9 @@
 //= require typeahead/0.11.1/bloodhound
 //= require amplifyjs/1.1.2/amplify.min.js
 //= require attach-document.js
-//= require jquery.fileDownload/jQuery.fileDownload
 //= require leaflet-manifest.js
 //= require momentjs/2.29.4/moment.min.js
-//= require momentjs/2.29.4/locales/en-au.js
+//= require momentjs/2.29.4/locale/en-au.js
 //= require momentjs/moment-timezone-with-data.min.js
 //= require utils.js
 //= require knockout-dates.js
