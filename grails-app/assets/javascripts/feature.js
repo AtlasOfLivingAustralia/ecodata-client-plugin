@@ -235,11 +235,11 @@ ecodata.forms.maps.featureMap = function (options) {
 
         // undefined/null, Google Maps or Default should enable Google Maps view
         if (config.baseLayersName !== 'Open Layers') {
-            var googleLayer = L.gridLayer.googleMutant({maxZoom: 21, nativeMaxZoom: 21});
+            var googleLayer = L.gridLayer.googleMutant({maxZoom: 21, nativeMaxZoom: 21, type:'roadmap'});
             var otherLayers = {
                 Roadmap: googleLayer,
                 Hybrid: L.gridLayer.googleMutant({maxZoom: 21, nativeMaxZoom: 21, type:'hybrid'}),
-                Terrain: L.gridLayer.googleMutant({maxZoom: 21, nativeMaxZoom: 21, type:'terrian'})
+                Terrain: L.gridLayer.googleMutant({maxZoom: 21, nativeMaxZoom: 21, type:'terrain'})
             };
 
             mapOptions.baseLayer = googleLayer;
