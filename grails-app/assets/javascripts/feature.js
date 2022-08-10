@@ -16,6 +16,11 @@ if (!ecodata.forms.maps) {
     ecodata.forms.maps = {};
 }
 
+/** The google mutant leaflet plugin uses ES6 Map and Symbol so excludes IE11 */
+function supportsGoogleMutant() {
+    return _.isFunction(Map) && _.isFunction(Symbol);
+}
+
 /**
  * This knockout extender adds utility
  * @param target
@@ -234,7 +239,7 @@ ecodata.forms.maps.featureMap = function (options) {
 
 
         // undefined/null, Google Maps or Default should enable Google Maps view
-        if (config.baseLayersName !== 'Open Layers') {
+        if (config.baseLayersName !== 'Open Layers' && supportsGoogleMutant()) {
             var googleLayer = L.gridLayer.googleMutant({maxZoom: 21, nativeMaxZoom: 21, type:'roadmap'});
             var otherLayers = {
                 Roadmap: googleLayer,
