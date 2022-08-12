@@ -9,6 +9,7 @@ L.Icon.Text = L.Icon.extend({
 		el.appendChild(document.createTextNode(this._text));
 		this._setIconStyles(el, 'icon');
 		el.style.textShadow = '2px 2px 2px #fff';
+		el.style.whiteSpace = 'nowrap';
 		return el;
 	},
 
@@ -40,11 +41,9 @@ L.Marker.Text = L.Marker.extend({
 		i.parentNode.removeChild(i);
 		this._icon.appendChild(i);
 
-		var w = this._icon.clientWidth, h = this._icon.clientHeight;
+		var w = this._icon.clientWidth;
 		this._icon.style.marginLeft = -w / 2 + 'px';
-		//this._icon.style.backgroundColor = "red";
 		var off = new L.Point(w/2, 0);
-		if (L.Browser.webkit) off.y = -h;
 		L.DomUtil.setPosition(i, off);
 		if (s) L.DomUtil.setPosition(s, off);
 	}
