@@ -33,6 +33,20 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         actualOut.toString().trim() == 'data.myFeature = ko.observable().extend({feature:config}).extend({metadata:{metadata:self.dataModel[\'myFeature\'], context:self.\$context, config:config}});'
     }
 
+    void "The presence of a scores property for a field should result in the metadata extender being used"() {
+        setup:
+
+        ctx.attrs = [:]
+        ctx.propertyPath = 'data'
+        ctx.dataModel = [dataType:'number',name:'myField', scores:[[label:"This is a score"]]]
+
+        when:
+        tagLib.renderDataModelItem(ctx)
+
+        then:
+        actualOut.toString().trim() == 'data.myField = ko.observable().extend({numericString:2}).extend({metadata:{metadata:self.dataModel[\'myField\'], context:self.\$context, config:config}});'
+    }
+
     void "the feature data type doesn't need any special initialisation behaviour"() {
         setup:
 

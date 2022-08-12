@@ -1051,5 +1051,39 @@
         return valueHolder;
     };
 
+    /**
+     * Identifies that this field can contribute to reporting targets by attaching a class and
+     * tooltip to the field.
+     * This binding expects the bound value to be an array of scores (objects with a label property).
+     */
+    ko.bindingHandlers['score'] = {
+        init: function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            var scores = valueAccessor();
+
+            if (!scores || !_.isArray(scores)) {
+                console.log("Warning: scores binding applied but supplied value is not an array");
+                return;
+            }
+
+            $(element).addClass("score");
+
+            var message = 'This field can contribute to: <ul>';
+            for (var i=0; i<scores.length; i++) {
+                var target = scores[i].label;
+                message += '<li>'+target+'</li>';
+            }
+            message += '</ul>';
+
+            var options = {
+                trigger:'hover',
+                placement:'top',
+                content: message,
+                html: true
+            }
+            $(element).popover(options);
+
+        }
+    };
+
 })();
 

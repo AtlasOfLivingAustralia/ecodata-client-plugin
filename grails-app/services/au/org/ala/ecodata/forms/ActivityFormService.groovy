@@ -17,15 +17,22 @@ class ActivityFormService {
      * Returns the activity form identified by name and version.  If version is ommitted the most recent
      * published version will be returned.
      * Returns null if no activity form can be found.
+     * @param name the form name
+     * @param version if null, the highest published form version will be used
+     * @param includeScoreInformation true if the form template should be modified to include
+     * links to any scores that the form contributes to.
      */
-    def findActivityForm(String name, Integer version = null) {
+    Map findActivityForm(String name, Integer version = null, boolean includeScoreInformation = false) {
 
         String url = grailsApplication.config.getProperty('ecodata.service.url') +
                 ACTIVITY_FORM_PATH+'?name='+URLEncoder.encode(name, 'UTF-8')
         if (version) {
             url += '&formVersion='+version
         }
-        def result = webService.getJson(url)
+        if (includeScoreInformation) {
+            url += '&includeScoreInformation='+Boolean.toString(includeScoreInformation)
+        }
+        Map result = webService.getJson(url)
         if (!result || result.error) {
             result = null
         }
@@ -40,8 +47,8 @@ class ActivityFormService {
      * @param version
      * @return null if the form cannot be found.
      */
-    Map getActivityAndOutputMetadata(String name, Integer version = null) {
-        Map activityForm = findActivityForm(name, version)
+    Map getActivityAndOutputMetadata(String name, Integer version = null, boolean includeScoreInformation = false) {
+        Map activityForm = findActivityForm(name, version, includeScoreInformation)
         if (!activityForm) {
             activityForm = missingForm(name, version)
         }
