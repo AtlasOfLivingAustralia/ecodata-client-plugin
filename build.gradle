@@ -87,11 +87,7 @@ dependencies {
 
 
     if (!inplace) {
-<<<<<<< HEAD
-        implementation ("org.grails.plugins:ala-map-plugin:3.0") {
-=======
         compile ("org.grails.plugins:ala-map-plugin:3.0.1") {
->>>>>>> master
             exclude group: 'com.bertramlabs.plugins', module: 'asset-pipeline-grails'
         }
     }
