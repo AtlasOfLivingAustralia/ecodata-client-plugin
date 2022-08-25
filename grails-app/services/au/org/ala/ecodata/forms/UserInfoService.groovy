@@ -74,7 +74,7 @@ class UserInfoService {
      * @return
      */
     Map getUserFromJWT(String authorizationHeader = null) {
-        if(!config || !directBearerAuthClient)
+        if((config == null) || (directBearerAuthClient == null))
             return
 
         GrailsWebRequest grailsWebRequest = GrailsWebRequest.lookup()
@@ -90,7 +90,7 @@ class UserInfoService {
                 def optUserProfile = directBearerAuthClient.getUserProfile(credentials, context, config.sessionStore)
                 if (optUserProfile.isPresent()) {
                     def userProfile = optUserProfile.get()
-                    return ['displayName': "${userProfile.getAttribute("firstname")} ${userProfile.getAttribute("lastname")}", 'userName': userProfile.getAttribute("email"), 'userId': userProfile.getAttribute("userid")]
+                    return ['displayName': "${userProfile.getAttribute("given_name")} ${userProfile.getAttribute("family_name")}", 'userName': userProfile.getAttribute("email"), 'userId': userProfile.getAttribute("userid")]
                 }
             }
         }
