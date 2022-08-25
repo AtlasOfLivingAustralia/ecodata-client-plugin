@@ -14,7 +14,7 @@ buildscript {
     }
 }
 
-version "5.0-SNAPSHOT"
+version "5.0-OIDC-SNAPSHOT"
 group "org.grails.plugins"
 
 apply plugin:"eclipse"
@@ -87,7 +87,11 @@ dependencies {
 
 
     if (!inplace) {
+<<<<<<< HEAD
         implementation ("org.grails.plugins:ala-map-plugin:3.0") {
+=======
+        compile ("org.grails.plugins:ala-map-plugin:3.0.1") {
+>>>>>>> master
             exclude group: 'com.bertramlabs.plugins', module: 'asset-pipeline-grails'
         }
     }
