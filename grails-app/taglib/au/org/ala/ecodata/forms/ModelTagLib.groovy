@@ -117,7 +117,7 @@ class ModelTagLib {
                     column out, attrs, mod, ctx
                     break
                 case 'collapse':
-                    collapsableLayout ctx
+                    collapsibleLayout ctx
                     break
                 default:
                     layoutDataItem(out, attrs, mod, ctx)
@@ -169,14 +169,14 @@ class ModelTagLib {
     }
 
 
-    def collapsableLayout(LayoutRenderContext ctx) {
+    def collapsibleLayout(LayoutRenderContext ctx) {
         Map model = ctx.model
         LayoutRenderContext childContext = ctx.createChildContext(parentView:'', dataContext: '', span:ctx.span)
 
-        if (model.collapsable || model.description || model.userAddedRows && ctx.editMode()) {
+        if (model.collapsible || model.description || model.userAddedRows && ctx.editMode()) {
             ctx.out << "<hr/>"
             ctx.out << """<div class="section-title">\n"""
-            if (model.collapsable && ctx.editMode()) {
+            if (model.collapsible && ctx.editMode()) {
                 ctx.out << "<button data-bind=\"toggleVisibility:'#${model.description}-content-'\"></button>"
             }
             if (model.description) {
