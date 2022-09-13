@@ -44,7 +44,8 @@ class ActivityFormServiceSpec extends Specification implements ServiceUnitTest<A
     void "the service will produce a backwards compatible response after retrieving a form"() {
         setup:
         String name = "test form"
-        Map activityForm = [name:name, formVersion:1, sections:[[name:'output', optional:false, collapsedByDefault:false, optionalQuestionText:null, template:[modelName:'test']]]]
+        String description = "test form description"
+        Map activityForm = [name:name, description:description, formVersion:1, sections:[[name:'output', optional:false, collapsedByDefault:false, optionalQuestionText:null, template:[modelName:'test']]]]
 
         when:
         def result = service.getActivityAndOutputMetadata(name)
@@ -52,6 +53,7 @@ class ActivityFormServiceSpec extends Specification implements ServiceUnitTest<A
         then:
         1 * webService.getJson({it.endsWith(ActivityFormService.ACTIVITY_FORM_PATH+"?name=test+form")}) >> activityForm
         result.metaModel.name == activityForm.name
+        result.metaModel.description == activityForm.description
         result.metaModel.formVersion == activityForm.formVersion
         result.metaModel.outputs.size() == 1
         result.metaModel.outputs[0] == activityForm.sections[0].name

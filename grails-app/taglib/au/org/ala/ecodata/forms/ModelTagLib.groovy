@@ -116,6 +116,9 @@ class ModelTagLib {
                 case 'col':
                     column out, attrs, mod, ctx
                     break
+                case 'collapse':
+                    collapsableLayout ctx
+                    break
                 default:
                     layoutDataItem(out, attrs, mod, ctx)
                     break
@@ -163,6 +166,29 @@ class ModelTagLib {
         if (model.userAddedRows && ctx.editMode()) {
             ctx.out << """<button type="button" class="btn btn-success btn-sm add-section" data-bind="click:${ctx.property}.addRow"><i class="fa fa-plus"></i> ${model.addRowText ?: 'Add'}</button>\n"""
         }
+    }
+
+
+    def collapsableLayout(LayoutRenderContext ctx) {
+        Map model = ctx.model
+        LayoutRenderContext childContext = ctx.createChildContext(parentView:'', dataContext: '', span:ctx.span)
+
+        if (model.collapsable || model.description || model.userAddedRows && ctx.editMode()) {
+            ctx.out << "<hr/>"
+            ctx.out << """<div class="section-title">\n"""
+            if (model.collapsable && ctx.editMode()) {
+                ctx.out << "<button data-bind=\"toggleVisibility:'#${model.description}-content-'\"></button>"
+            }
+            if (model.description) {
+                ctx.out << "<span> ${model.title} </span>"
+            }
+            ctx.out << "</div>\n"
+        }
+        ctx.out << """<div data-bind=\"attr:{id:'${model.description}-content-'},expandOnValidate:true\" class="section-content clearfix">\n"""
+        viewModelItems(model.items, childContext)
+        ctx.out << "</div>\n"
+        ctx.out << "<hr/>"
+        ctx.out << "<!-- /ko -->\n"
     }
 
     private void beforeItem(LayoutRenderContext ctx) {
