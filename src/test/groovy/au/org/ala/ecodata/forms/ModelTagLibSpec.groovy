@@ -147,24 +147,4 @@ class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLi
 
     }
 
-    def "a section in the form that renders collapsible explanatory text"() {
-        setup:
-        Map model = [type:'repeat', source:"test", title: "Information Box", description:"TestSection", collapsible:true]
-        ctx.model = model
-        ctx.attrs.edit = true
-
-        when:
-        tagLib.collapsibleLayout(ctx)
-
-        then:
-        expectedOut << "<hr/><div class=\"section-title\">"
-        expectedOut << "<button data-bind=\"toggleVisibility:'#TestSection-content-'\"></button>"
-        expectedOut << "<span> ${model.title} </span></div>"
-        expectedOut << "<div data-bind=\"attr:{id:'${model.description}-content-'},expandOnValidate:true\" class=\"section-content clearfix\">"
-        expectedOut << "</div>"
-        expectedOut << "<hr/>"
-        expectedOut << "<!-- /ko -->"
-        TestUtils.compareHtml(actualOut, expectedOut)
-    }
-
 }
