@@ -1114,6 +1114,8 @@ function orEmptyArray(v) {
         });
         self.transients.optional = config.optional || false;
         self.transients.questionText = config.optionalQuestionText || 'Not applicable';
+        self.transients.description = config.outputDescription;
+        self.transients.collapsedByDefault = config.collapsedByDefault || false;
         self.transients.dummy = ko.observable();
 
         self.downloadTemplate = function (listName) {
