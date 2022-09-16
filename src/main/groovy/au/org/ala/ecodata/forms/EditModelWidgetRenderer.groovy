@@ -170,11 +170,11 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.labelAttributes.addClass 'checkbox-list-label '
         def constraints = context.source + '.constraints'
 
-        def nameBinding = "'${context.model.source}'+'-'+(\$parentContext.\$index?\$parentContext.\$index():'')"
+        def nameBinding = "\"${context.model.source}-\"+(\$parentContext.\$index?\$parentContext.\$index():\"\")"
 
         context.databindAttrs.add 'value', '\$data'
         context.databindAttrs.add 'checked', "${context.source}"
-        context.databindAttrs.add 'attr', "{'name': ${nameBinding}}"
+        context.databindAttrs.add 'attr', "{\"name\": ${nameBinding}}"
         context.attributes.addClass('checkbox-list')
         context.attributes.addClass('list-unstyled')
 
@@ -183,7 +183,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
                     <li>
                         <label class="checkbox">
                             <!-- ko with:_.extend({}, \$parent, {\$data:\$data, \$parentContext:\$parentContext}) -->
-                            <input type="checkbox" name="${context.source}" data-bind="${context.databindAttrs.toString()}" ${context.validationAttr}/><span data-bind="text:\$data"/></span>
+                            <input type="checkbox" name="${context.source}" data-bind='${context.databindAttrs.toString()}' ${context.validationAttr}/><span data-bind="text:\$data"/></span>
                             <!-- /ko -->
                         </label>
                     </li>
