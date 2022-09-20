@@ -58,7 +58,7 @@ class ActivityFormService {
         model.metaModel = new JSONObject(activityForm)
         model.metaModel.remove('sections')
         model.metaModel.outputs = new JSONArray(formSections.collect{it.name})
-        model.metaModel.outputConfig = new JSONArray(formSections.collect{new JSONObject(outputName:it.name, optional:it.optional, collapsedByDefault:it.collapsedByDefault, optionalQuestionText:it.optionalQuestionText, outputDescription:it.description)})
+        model.metaModel.outputConfig = new JSONArray(formSections.collect{new JSONObject(outputName:it.name, optional:it.optional, collapsedByDefault:it.collapsedByDefault, optionalQuestionText:it.optionalQuestionText, outputDescription:it.description, collapsibleHeading:it.collapsibleHeading)})
 
         // the array of output models
         model.outputModels = formSections.collectEntries { [ it.name, it.template] }
