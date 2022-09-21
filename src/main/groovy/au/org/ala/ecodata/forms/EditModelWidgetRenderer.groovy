@@ -26,6 +26,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
 
     @Override
     void renderNumber(WidgetRenderContext context) {
+        context.attributes.addClass context.getInputWidth()
         context.databindAttrs.add 'value', context.source
         String modelElementText = "<input${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr} type='number' step='any'/>"
         String units = context.unitsToRender()
