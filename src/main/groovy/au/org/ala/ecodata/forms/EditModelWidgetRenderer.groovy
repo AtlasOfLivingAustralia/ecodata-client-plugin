@@ -366,12 +366,13 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
 
     @Override
     void renderCurrency(WidgetRenderContext context) {
+        context.attributes.addClass context.getInputWidth()
         context.databindAttrs.add('value', context.source)
         context.writer << """<div class="input-group currency-input">
             <div class="input-group-prepend customAddOn">
             <span class="input-group-text">\$</span>
             </div>
-            <input type="number" class="form-control form-control-sm" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}'>
+            <input type="number" ${context.attributes.toString()} class="form-control form-control-sm" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}'>
             <div class="input-group-append customAddOn">
             <span class="input-group-text">.00</span>
             </div>

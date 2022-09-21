@@ -57,6 +57,11 @@
       "description": "Description for imageField"
     },
     {
+      "name": "currencyField",
+      "dataType": "number",
+      "description": "Data model backing the currency data type"
+    },
+    {
       "name":"list",
       "dataType":"list",
       "columns":[
@@ -173,6 +178,11 @@
               "source": "imageField",
               "type": "image",
               "preLabel": "Description for imageField"
+            },
+            {
+              "source": "currencyField",
+              "type": "currency",
+              "preLabel": "The currently data type"
             }
           ]
         }
