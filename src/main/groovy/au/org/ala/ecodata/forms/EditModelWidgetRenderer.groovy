@@ -156,7 +156,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
             options = "_.extend({value:${context.source}}, ${context.source}.displayOptions)"
         }
         context.databindAttrs.add 'multiSelect2', options
-        context.writer <<  "<div${context.attributes.toString()}><select multiple=\"multiple\" class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
+        context.writer <<  "<div${context.attributes.toString()}><select multiple=\"multiple\" class=\"select form-control form-control-sm\" data-maximum-selection-length='${context.model.limit}' data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
     }
 
     @Override
