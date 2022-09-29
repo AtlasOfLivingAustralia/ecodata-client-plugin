@@ -868,16 +868,25 @@
      */
     ko.bindingHandlers.toggleVisibility = {
         init: function (element, valueAccessor) {
-
+            var unwrapped = ko.utils.unwrapObservable(valueAccessor());
             var visibleClass = 'fa-angle-down';
             var hiddenClass = 'fa-angle-up';
 
             var $element = $(element);
             var $i = $('<i></i>').addClass('fa').addClass(visibleClass);
+            if (unwrapped.collapsedByDefault != undefined && !unwrapped.collapsedByDefault) {
+                $i = $('<i></i>').addClass('fa').addClass(hiddenClass);
+            }
             $element.append($i);
 
             $element.click(function() {
-               var selector = valueAccessor();
+                var selector = '';
+                if (unwrapped.collapsedByDefault != undefined && unwrapped.blockId) {
+                    selector = unwrapped.blockId;
+                } else {
+                    selector = unwrapped;
+                }
+
                var $section = $(selector);
                if ($section.is(':visible')) {
                    $section.hide();
