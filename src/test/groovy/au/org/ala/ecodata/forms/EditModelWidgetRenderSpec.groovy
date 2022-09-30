@@ -115,8 +115,8 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
     def "select2Many"() {
         setup:
         Map options = [tags:false]
-        ctx = ctxBuilder().model([source:'mymultioption', type:'select2Many', displayOptions:options]).build()
-        String expected = """<div><select multiple="multiple" class="select form-control form-control-sm" data-bind='options:mymultioption.constraints,optionsValue:mymultioption.constraints.value,optionsText:mymultioption.constraints.text,multiSelect2:_.extend({value:mymultioption}, mymultioption.displayOptions)'></select></div>"""
+        ctx = ctxBuilder().model([source:'mymultioption', type:'select2Many', displayOptions:options, limit:3]).build()
+        String expected = """<div><select multiple="multiple" class="select form-control form-control-sm" data-maximum-selection-length="3" data-bind='options:mymultioption.constraints,optionsValue:mymultioption.constraints.value,optionsText:mymultioption.constraints.text,multiSelect2:_.extend({value:mymultioption}, mymultioption.displayOptions)'></select></div>"""
 
         when:
         editModelWidgetRenderer.renderSelect2Many(ctx)
