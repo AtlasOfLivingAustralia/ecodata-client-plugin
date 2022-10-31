@@ -118,11 +118,11 @@ assets {
 publishing {
     repositories {
         maven {
-            name 'Nexus'
-            url "https://nexus.ala.org.au/content/repositories/${project.version.endsWith('-SNAPSHOT') ? 'snapshots' : 'releases' }"
+            name 'GitHubPackages'
+            url uri("https://maven.pkg.github.com/atlasoflivingaustralia/ecodata-client-plugin")
             credentials {
-                username = System.getenv('TRAVIS_DEPLOY_USERNAME')
-                password = System.getenv('TRAVIS_DEPLOY_PASSWORD')
+                username = System.getenv('GITHUB_ACTOR')
+                password = System.getenv('GITHUB_TOKEN')
             }
         }
     }
