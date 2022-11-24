@@ -1,5 +1,5 @@
-<g:set var="blockId" value="${divId?:(activity.activityId+fc.toSingleWord([name: outputName]))}"/>
-<g:set var="output" value="${activity.outputs.find {it.name == outputName}}"/>
+<g:set var="blockId" value="${divId?:(activity.activityId+fc.toSingleWord([name: outputName+(formVersion?:'')]))}"/>
+<g:set var="output" value="${output ?: activity.outputs.find {it.name == outputName}}"/>
 <g:if test="${!output}">
     <g:set var="output" value="[name: outputName]"/>
 </g:if>
@@ -16,7 +16,7 @@
     <asset:script>
         $(function(){
 
-            var viewModelName = "${fc.toSingleWord(name:outputName)}ViewModel";
+            var viewModelName = "${fc.toSingleWord(name:outputName+(formVersion?:''))}ViewModel";
             var viewModelInstance = "${blockId}Instance";
 
             var output = <fc:modelAsJavascript model="${output}"/>;
