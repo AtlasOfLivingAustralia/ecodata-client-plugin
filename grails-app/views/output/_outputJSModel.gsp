@@ -1,5 +1,5 @@
 <asset:script>
-    <g:set var="outputNameAsIdentifer" value="${md.toSingleWord([name: outputName])}"/>
+    <g:set var="outputNameAsIdentifer" value="${md.toSingleWord([name: outputName+(formVersion?:'')])}"/>
 
     ecodata.forms["${outputNameAsIdentifer + 'ViewModel'}"] = function (output, dataModel, context, config) {
 
