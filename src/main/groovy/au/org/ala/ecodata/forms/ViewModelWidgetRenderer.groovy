@@ -184,7 +184,7 @@ class ViewModelWidgetRenderer implements ModelWidgetRenderer {
 
     private void renderReadOnlySpecies(WidgetRenderContext context) {
         context.databindAttrs.add 'with', context.source
-        context.writer << """<span data-bind="${context.databindAttrs.toString()}"><span${context.attributes.toString()} data-bind='text:name'></span>
+        context.writer << """<span data-bind='${context.databindAttrs.toString()}'><span${context.attributes.toString()} data-bind='text:name'></span>
             <a href="#" data-bind="popover: {title: name, content: transients.speciesInformation}"><i class="icon-info-sign"></i></a>
             </span>"""
     }

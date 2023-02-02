@@ -221,9 +221,11 @@ var speciesSearchEngines = function() {
  * Manages the species data type in the output model.
  * Allows species information to be searched for and displayed.
  */
-var SpeciesViewModel = function(data, options) {
+var SpeciesViewModel = function(data, options, context) {
 
     var self = this;
+    ecodata.forms.DataModelItem.apply(self, [options.metadata || {}, context, options]);
+
     var params = [];
     var species = data;
     var populate = options.populate || false;
@@ -284,6 +286,10 @@ var SpeciesViewModel = function(data, options) {
             listId:self.listId
         }
     };
+
+    self.toJSON = function() {
+        return self.toJS();
+    }
 
     self.loadData = function(data) {
         if (!data) data = {};
