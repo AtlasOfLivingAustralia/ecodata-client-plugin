@@ -1,0 +1,108 @@
+{
+  "modelName": "Constraints example",
+  "dataModel": [
+    {
+      "dataType": "number",
+      "name": "number1"
+    },
+    {
+      "dataType": "text",
+      "name": "notes"
+    },
+    {
+      "dataType": "list",
+      "name": "list",
+      "columns": [
+        {
+          "name": "value1",
+          "dataType": "text"
+        },
+        {
+          "name": "nestedList",
+          "dataType": "list",
+          "columns": [
+            {
+              "name": "value2",
+              "dataType": "text",
+              "constraints": {
+                "type": "computed",
+                "excludePath": "list.nestedList.value2",
+                "default": [
+                  "c1",
+                  "c2",
+                  "c3",
+                  "c4"
+                ]
+              }
+            },
+            {
+              "name": "value3",
+              "dataType": "stringList",
+              "constraints": {
+                "type": "computed",
+                "includePath": "list.nestedList.value2",
+                "default": ["Default value"]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "viewModel": [
+    {
+      "type": "row",
+      "items": [
+        {
+          "type": "number",
+          "source": "number1",
+          "preLabel": "number1"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "items": [
+        {
+          "type": "textarea",
+          "source": "notes",
+          "preLabel": "notes"
+        }
+      ]
+    },
+    {
+      "type": "repeat",
+      "source": "list",
+      "userAddedRows": true,
+      "items": [
+        {
+          "type": "row",
+          "items": [
+            {
+              "preLabel": "Value1",
+              "type": "selectOne",
+              "source": "value1"
+            }
+          ]
+        },
+        {
+          "type": "table",
+          "source": "nestedList",
+          "userAddedRows": true,
+          "columns": [
+            {
+              "type": "selectOne",
+              "title": "Value 2",
+              "source": "value2"
+            },
+            {
+              "type": "selectMany",
+              "title": "Value 3",
+              "source": "value3"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

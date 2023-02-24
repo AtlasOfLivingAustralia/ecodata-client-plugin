@@ -97,4 +97,8 @@ class PreviewPage extends Page {
         }
     }
 
+    void addTableRow(String modelName) {
+        $("button[data-bind*='click:"+modelName+".addRow']").click()
+    }
+
 }

@@ -772,7 +772,7 @@ function orEmptyArray(v) {
                                 if (_.isArray(val)) {
                                     selectedSoFar = selectedSoFar.concat(val);
                                 }
-                                else {
+                                else if (val != null) {
                                     selectedSoFar.push(val);
                                 }
                             });
