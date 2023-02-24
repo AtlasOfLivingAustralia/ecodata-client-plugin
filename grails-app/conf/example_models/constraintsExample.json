@@ -41,7 +41,9 @@
               "constraints": {
                 "type": "computed",
                 "includePath": "list.nestedList.value2",
-                "default": ["Default value"]
+                "default": [
+                  "Default value"
+                ]
               }
             }
           ]
@@ -50,6 +52,15 @@
     }
   ],
   "viewModel": [
+    {
+      "type": "row",
+      "items": [
+        {
+          "type": "literal",
+          "source": "<p>This example illustrates the use of computed constraints</p><p>The 'Value 2' field will only allow each item in the dropdown to be selected once, no matter how many times 'Value 2' appears on the page.</p><p>For each selection made in a 'Value 2' field, that value will be added as a selectable option in the 'Value 3' field.</p>"
+        }
+      ]
+    },
     {
       "type": "row",
       "items": [
