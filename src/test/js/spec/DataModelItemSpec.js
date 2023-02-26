@@ -134,4 +134,70 @@ describe("DataModelItem Spec", function () {
         });
     });
 
+    it("Can allow each constraint to only be used once in the form", function() {
+        var constraints = ['1', '2', '3', '4'];
+        var metadata = {
+            name:'item',
+            dataType:'text',
+            constraints: {
+                type:'computed',
+                excludePath:'list.item',
+                default:constraints
+            }
+        };
+
+        var invokedWithPath;
+        var vals = ['1', '3'];
+        var customContext = _.extend({}, context, {outputModel: { eachValueForPath: function(path, callback) {
+                    invokedWithPath = path;
+                    for (var i=0; i<vals.length; i++) {
+                        callback(vals[i]);
+                    }
+        }}});
+
+        var dataItem = ko.observable().extend({metadata:{metadata:metadata, context:customContext, config:config}});
+
+        expect(dataItem.constraints()).toEqual(['2', '4']);
+        dataItem('1');
+        expect(dataItem.constraints()).toEqual(['1', '2', '4']);
+
+        // Tt should also support array valued fields (e.g. multi-select)
+        vals = [['1', '2'], ['3']];
+        dataItem = ko.observableArray().extend({metadata:{metadata:metadata, context:customContext, config:config}});
+        expect(dataItem.constraints()).toEqual(['4']);
+    });
+
+
+    it("Can support constraints being determined by other form selections", function() {
+
+        var metadata = {
+            name:'item',
+            dataType:'text',
+            constraints: {
+                type:'computed',
+                includePath:'list.item',
+                default:[]
+            }
+        };
+
+        var invokedWithPath;
+        var vals = ['1', '3'];
+        var customContext = _.extend({}, context, {outputModel: { eachValueForPath: function(path, callback) {
+                    invokedWithPath = path;
+                    for (var i=0; i<vals.length; i++) {
+                        callback(vals[i]);
+                    }
+                }}});
+
+        var dataItem = ko.observable().extend({metadata:{metadata:metadata, context:customContext, config:config}});
+
+        expect(dataItem.constraints()).toEqual(['1', '3']);
+        dataItem('4');
+        expect(dataItem.constraints()).toEqual(['1', '3', '4']);
+
+        // Tt should also support array valued fields (e.g. multi-select)
+        vals = [['1', '2'], ['3']];
+        dataItem = ko.observableArray().extend({metadata:{metadata:metadata, context:customContext, config:config}});
+        expect(dataItem.constraints()).toEqual(['1', '2', '3']);
+    });
 });

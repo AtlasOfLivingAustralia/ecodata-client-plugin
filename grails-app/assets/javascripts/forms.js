@@ -243,8 +243,6 @@ function orEmptyArray(v) {
             };
         }();
 
-
-
         function arrayFunction(array, expression, reducer, memo) {
             var parsedExpression = exprEval.Parser.parse(expression);
             var variables = parsedExpression.variables();
@@ -751,12 +749,54 @@ function orEmptyArray(v) {
             }
             else if (_.isObject(metadata.constraints)) {
                 if (metadata.constraints.type == 'computed') {
-                    self.constraints = ko.computed(function () {
-                        var rule = _.find(metadata.constraints.options, function (option) {
-                            return ecodata.forms.expressionEvaluator.evaluateBoolean(option.condition, context);
+                    if (_.isArray(metadata.constraints.options)) {
+                        self.constraints = ko.computed(function () {
+                            var rule = _.find(metadata.constraints.options, function (option) {
+                                return ecodata.forms.expressionEvaluator.evaluateBoolean(option.condition, context);
+                            });
+                            return rule ? rule.value : metadata.constraints.default;
                         });
-                        return rule ? rule.value : metadata.constraints.default;
-                    });
+                    }
+                    // This configuration takes a set of default constraints then either
+                    // adds values based on selections from other model items in the form or
+                    // removes selections based on other model items in the form.  The main use
+                    // case this was developed for was to only allow each contraint to be selected once
+                    // in a form.
+                    else if (metadata.constraints.excludePath || metadata.constraints.includePath) {
+                        var defaultConstraints = metadata.constraints.default || [];
+                        var path = metadata.constraints.excludePath || metadata.constraints.includePath;
+                        self.constraints = ko.computed(function() {
+                            var currentValue = self();
+                            var selectedSoFar = [];
+                            context.outputModel.eachValueForPath(path, function(val) {
+                                if (_.isArray(val)) {
+                                    selectedSoFar = selectedSoFar.concat(val);
+                                }
+                                else if (val != null) {
+                                    selectedSoFar.push(val);
+                                }
+                            });
+
+                            if (metadata.constraints.excludePath) {
+                                return _.filter(defaultConstraints, function (value) {
+                                    var isCurrentSelection = _.isArray(currentValue) ? currentValue.indexOf(value) >= 0 : value == currentValue;
+                                    return (isCurrentSelection || selectedSoFar.indexOf(value) < 0);
+                                });
+                            }
+                            else {
+                                var constraints = defaultConstraints.concat(selectedSoFar);
+                                var currentSelection = _.isArray(currentValue) ? currentValue : [currentValue];
+                                for (var i=0; i<currentSelection.length; i++) {
+
+                                    if (currentSelection[i] != null && constraints.indexOf(currentSelection[i]) < 0) {
+                                        constraints.push(currentSelection[i]);
+                                    }
+                                }
+
+                                return constraints;
+                            }
+                        });
+                    }
                 }
                 else if (metadata.constraints.type == 'pre-populated') {
                     var defaultConstraints = metadata.constraints.defaults || [];
@@ -769,7 +809,7 @@ function orEmptyArray(v) {
                         constraintsInititaliser.resolve();
                     });
                 }
-                else if (metadata.constraints.type == 'literal' || metadata.contraints.literal) {
+                else if (metadata.constraints.type == 'literal' || metadata.constraints.literal) {
                     self.constraints = [].concat(metadata.constraints.literal);
                 }
             }
@@ -1197,6 +1237,50 @@ function orEmptyArray(v) {
             return deferred;
         };
 
+        /**
+         * Invokes the callback function for each value of the specified path in this model.
+         * The path must treat array/list valued items as a simple property name (without
+         * an index) - each array in the path will be iterated over so the callback may be
+         * invoked more than once.
+         * @param path a string specifying the path to the item of interest e.g. 'list1.list2.property'
+         * @param callback a function taking a single argument which will be the value of the property
+         * specified by path.
+         */
+        self.eachValueForPath = function(path, callback) {
+            var pathAsArray = path.split('.');
+            self.iterateOverPath(pathAsArray, callback, self.data);
+        }
+
+        /**
+         * Recursively iterates over each element in the supplied pathAsArray, taking into
+         * account when values are lists.
+         * @param pathAsArray
+         * @param callback
+         * @param dataModel
+         */
+        self.iterateOverPath = function(pathAsArray, callback, dataModel) {
+            var modelItem = ko.utils.unwrapObservable(dataModel[pathAsArray[0]]);
+
+            function nextPath(model) {
+                var nextPath = pathAsArray.slice(1);
+                self.iterateOverPath(nextPath, callback, model);
+            }
+            // If the current model is an array, iterate over all elements in the array.
+            if (_.isArray(modelItem)) {
+                for (var i=0; i<modelItem.length; i++) {
+                    nextPath(modelItem[i]);
+                }
+            }
+            // Otherwise, just move deeper into the object hierarchy
+            else if (pathAsArray.length > 1) {
+               nextPath(modelItem);
+            }
+            // If we are at the final element of the path, we have reached the value we are after, so
+            // invoke the callback with this value.
+            else if (pathAsArray.length == 1) {
+                callback(modelItem);
+            }
+        }
 
         self.attachDocument = function (target) {
             var url = config.documentUpdateUrl || fcConfig.documentUpdateUrl;
