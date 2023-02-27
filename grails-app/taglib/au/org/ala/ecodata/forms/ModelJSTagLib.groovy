@@ -712,8 +712,8 @@ class ModelJSTagLib {
         def attrs = ctx.attrs
         def model = ctx.dataModel
         String configVarName = ctx.dataModel.name+"Config"
-        ctx.out << INDENT*3 << "var ${configVarName} = _.extend(config, {printable:'${ctx.attrs.printable?:''}', dataFieldName:'${model.name}', output: '${attrs.output}', surveyName: '${attrs.surveyName?:""}' });\n"
-        ctx.out << INDENT*3 << "${ctx.propertyPath}.${ctx.dataModel.name} = new SpeciesViewModel({}, ${configVarName});\n"
+        ctx.out << INDENT*3 << "var ${configVarName} = _.extend(config, {printable:'${ctx.attrs.printable?:''}', dataFieldName:'${model.name}', output: '${attrs.output}', surveyName: '${attrs.surveyName?:""}', metadata:self.dataModel['${model.name}']});\n"
+        ctx.out << INDENT*3 << "${ctx.propertyPath}.${ctx.dataModel.name} = new SpeciesViewModel({}, ${configVarName}, self.\$context);\n"
     }
 
     def imageModel(JSModelRenderContext ctx) {
