@@ -300,6 +300,8 @@ function enmapify(args) {
 
     var latSubscriber = latObservable.subscribe(updateMarkerPosition);
     var lngSubscriber = lonObservable.subscribe(updateMarkerPosition);
+    var createSiteOnLoadLatSub = latObservable.subscribe(createSiteWithLatLng),
+        createSiteOnLoadLonSub = lonObservable.subscribe(createSiteWithLatLng);
 
     var siteIdSubscriber;
 
@@ -310,6 +312,22 @@ function enmapify(args) {
         var siteId = activityLevelData.activity && activityLevelData.activity.siteId;
         siteId && siteIdObservable(siteId);
     };
+
+    function isEmpty(value){
+        return [undefined, null, ''].indexOf(value) > -1
+    }
+
+    function createSiteWithLatLng(){
+        if (!isEmpty(latObservable()) && !isEmpty(lonObservable()) && !siteIdObservable()) {
+            if (addCreatedSiteToListOfSelectedSites)
+                createPublicSite();
+            else
+                createPrivateSite();
+
+            createSiteOnLoadLatSub && createSiteOnLoadLatSub.dispose();
+            createSiteOnLoadLonSub && createSiteOnLoadLonSub.dispose();
+        }
+    }
 
     function updateFieldsForMap(params) {
         subscribeOrDisposeLatLonObservables(false);
