@@ -722,7 +722,8 @@ function orEmptyArray(v) {
             var constraints = {
                 val: warningRule
             };
-            return validate({val: self()}, constraints, {fullMessages: false});
+            var data = ko.utils.unwrapObservable(self); // The SpeciesViewModel is a DataModelItem but not a knockout observable
+            return validate({val: data}, constraints, {fullMessages: false});
         };
 
         self.evaluateBehaviour = function (type, defaultValue) {
