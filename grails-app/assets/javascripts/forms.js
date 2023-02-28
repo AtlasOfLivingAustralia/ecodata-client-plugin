@@ -165,18 +165,16 @@ function orEmptyArray(v) {
         },
         getInstanceForOutputName: function (outputName) {
             var instanceNames = ecodata.forms.utils.getViewModelInstanceNames();
-            console.log(instanceNames);
             var instance;
             for (var i = 0; i < instanceNames.length; i++) {
-                console.log(this[instanceNames[i]].outputName);
-                if (this[instanceNames[i]].name == outputName)
-                    instance = this[instanceNames[i]];
+                if (ecodata.forms[instanceNames[i]].name == outputName)
+                    instance = ecodata.forms[instanceNames[i]];
             }
 
             return instance
         },
         getViewModelInstanceNames: function () {
-            var keys = Object.keys(this);
+            var keys = Object.keys(ecodata.forms);
             return  keys.filter (key => key.endsWith('ViewModelInstance'));
         }
     };
