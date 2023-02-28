@@ -162,6 +162,22 @@ function orEmptyArray(v) {
                 return areaM2 / SQUARE_METERS_IN_HECTARE;
             }
             return m2ToHa(turf.area(geoJSON))
+        },
+        getInstanceForOutputName: function (outputName) {
+            var instanceNames = ecodata.forms.utils.getViewModelInstanceNames();
+            console.log(instanceNames);
+            var instance;
+            for (var i = 0; i < instanceNames.length; i++) {
+                console.log(this[instanceNames[i]].outputName);
+                if (this[instanceNames[i]].name == outputName)
+                    instance = this[instanceNames[i]];
+            }
+
+            return instance
+        },
+        getViewModelInstanceNames: function () {
+            var keys = Object.keys(this);
+            return  keys.filter (key => key.endsWith('ViewModelInstance'));
         }
     };
 
