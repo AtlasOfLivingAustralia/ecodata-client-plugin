@@ -36,6 +36,8 @@ jobs:
 
       - name: Build and run clover coverage report with Gradle
         uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
+        with:
+          arguments: build
 #        with:
 #          arguments: -PenableClover=true cloverGenerateReport
 
