@@ -13,6 +13,9 @@ buildscript {
         classpath "gradle.plugin.com.github.erdi.webdriver-binaries:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
     }
 }
+plugins {
+    id 'jacoco'
+}
 
 
 version "5.3-SNAPSHOT"
@@ -27,6 +30,9 @@ apply plugin:"asset-pipeline"
 apply plugin:"com.github.erdi.webdriver-binaries"
 if (Boolean.valueOf(enableClover)) {
     apply from: "${project.projectDir}/gradle/clover.gradle"
+}
+if (Boolean.valueOf(enableJacoco)) {
+    apply from: "${project.projectDir}/gradle/jacoco.gradle"
 }
 
 
