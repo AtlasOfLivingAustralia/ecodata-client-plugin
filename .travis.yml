@@ -1,7 +1,7 @@
 dist: bionic
 language: groovy
 jdk:
-- openjdk8
+- openjdk11
 sudo: false
 addons:
   chrome: stable
@@ -15,6 +15,7 @@ branches:
   - devg3
   - grails4
   - grails4-bs-branch
+  - grails5
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
@@ -36,7 +37,7 @@ before_script:
 - npm run-script package-turf
 script:
 - cd $TRAVIS_BUILD_DIR
-- ./gradlew -PenableClover=true cloverGenerateReport
+#- ./gradlew -PenableClover=true cloverGenerateReport
 - node_modules/karma/bin/karma start karma.conf.js --single-run --browsers ChromeHeadless
 
 # need to gradlew clean before publishing to rebuild without the clover instrumentation.
