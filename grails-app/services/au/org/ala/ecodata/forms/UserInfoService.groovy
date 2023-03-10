@@ -51,13 +51,13 @@ class UserInfoService {
      *
      **/
     Map getUserFromAuthKey(String username, String key) {
-        String url = grailsApplication.config.mobile.auth.check.url
+        String url = grailsApplication.config.getProperty('mobile.auth.check.url')
         Map params = [userName: username, authKey: key]
         def result = webService.doPostWithParams(url, params)
 
         if (result.statusCode == HttpStatus.OK.value() && result.resp?.status == 'success') {
             params = [userName: username]
-            url = grailsApplication.config.userDetails.url + "userDetails/getUserDetails"
+            url = grailsApplication.config.getProperty('userDetails.url') + "userDetails/getUserDetails"
             result = webService.doPostWithParams(url, params)
             if (result.statusCode == HttpStatus.OK.value() && result.resp) {
                 return ['displayName': "${result.resp.firstName} ${result.resp.lastName}", 'userName': result.resp.userName, 'userId': result.resp.userId]
