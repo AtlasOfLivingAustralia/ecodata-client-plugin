@@ -18,7 +18,7 @@ plugins {
 }
 
 
-version "5.3-SNAPSHOT"
+version "6.0-SNAPSHOT"
 group "org.grails.plugins"
 
 apply plugin:"eclipse"
