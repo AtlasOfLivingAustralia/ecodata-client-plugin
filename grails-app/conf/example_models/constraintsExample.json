@@ -15,7 +15,16 @@
       "columns": [
         {
           "name": "value1",
-          "dataType": "text"
+          "dataType": "text",
+          "constraints": {
+            "type": "pre-populated",
+            "config": {
+              "source": {
+                "url": "/preview/prepopulateConstraints"
+              }
+            },
+            "excludePath": "list.value1"
+          }
         },
         {
           "name": "nestedList",
@@ -39,9 +48,8 @@
               "name": "value3",
               "dataType": "stringList",
               "constraints": {
-                "type": "computed",
                 "includePath": "list.nestedList.value2",
-                "default": [
+                "literal": [
                   "Default value"
                 ]
               }
@@ -90,7 +98,7 @@
           "type": "row",
           "items": [
             {
-              "preLabel": "Value1",
+              "preLabel": "Value1 - pre-populated constraints with one constraint use per form",
               "type": "selectOne",
               "source": "value1"
             }
@@ -103,12 +111,12 @@
           "columns": [
             {
               "type": "selectOne",
-              "title": "Value 2",
+              "title": "Value 2 - constraints with one constraint use per form",
               "source": "value2"
             },
             {
               "type": "selectMany",
-              "title": "Value 3",
+              "title": "Value 3 - Constraints allowed from selections made from value2",
               "source": "value3"
             }
           ]

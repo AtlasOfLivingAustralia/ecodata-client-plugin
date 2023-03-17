@@ -667,6 +667,39 @@ function orEmptyArray(v) {
 
     };
 
+    function applyIncludeExclude(metadata, outputModel, observable, initialConstraints) {
+        var path = metadata.constraints.excludePath || metadata.constraints.includePath;
+
+        var currentValue = observable();
+        var selectedSoFar = [];
+        outputModel.eachValueForPath(path, function (val) {
+            if (_.isArray(val)) {
+                selectedSoFar = selectedSoFar.concat(val);
+            } else if (val != null) {
+                selectedSoFar.push(val);
+            }
+        });
+
+        if (metadata.constraints.excludePath) {
+            return _.filter(initialConstraints, function (value) {
+                var isCurrentSelection = _.isArray(currentValue) ? currentValue.indexOf(value) >= 0 : value == currentValue;
+                return (isCurrentSelection || selectedSoFar.indexOf(value) < 0);
+            });
+        } else {
+            var constraints = initialConstraints.concat(selectedSoFar);
+            var currentSelection = _.isArray(currentValue) ? currentValue : [currentValue];
+            for (var i = 0; i < currentSelection.length; i++) {
+
+                if (currentSelection[i] != null && constraints.indexOf(currentSelection[i]) < 0) {
+                    constraints.push(currentSelection[i]);
+                }
+            }
+
+            return constraints;
+        }
+
+    }
+
     /**
      * Implements the constraints specified on a single data model item using the "constraints" attribute in the metadata.
      * Also provides access to global configuration and context for components that need it.
@@ -744,6 +777,7 @@ function orEmptyArray(v) {
             }
 
             self.constraints = [];
+            var includeExcludeDefined = metadata.constraints.excludePath || metadata.constraints.includePath;
             // Support existing configuration style.
             if (_.isArray(metadata.constraints)) {
                 self.constraints = [].concat(metadata.constraints);
@@ -755,63 +789,44 @@ function orEmptyArray(v) {
                             var rule = _.find(metadata.constraints.options, function (option) {
                                 return ecodata.forms.expressionEvaluator.evaluateBoolean(option.condition, context);
                             });
-                            return rule ? rule.value : metadata.constraints.default;
+                            var evaluatedConstraints = rule ? rule.value : metadata.constraints.default;
+                            return !includeExcludeDefined ? evaluatedConstraints : applyIncludeExclude(metadata, context.outputModel, self, metadata.constraints.default || []);
                         });
-                    }
-                    // This configuration takes a set of default constraints then either
-                    // adds values based on selections from other model items in the form or
-                    // removes selections based on other model items in the form.  The main use
-                    // case this was developed for was to only allow each contraint to be selected once
-                    // in a form.
-                    else if (metadata.constraints.excludePath || metadata.constraints.includePath) {
-                        var defaultConstraints = metadata.constraints.default || [];
-                        var path = metadata.constraints.excludePath || metadata.constraints.includePath;
-                        self.constraints = ko.computed(function() {
-                            var currentValue = self();
-                            var selectedSoFar = [];
-                            context.outputModel.eachValueForPath(path, function(val) {
-                                if (_.isArray(val)) {
-                                    selectedSoFar = selectedSoFar.concat(val);
-                                }
-                                else if (val != null) {
-                                    selectedSoFar.push(val);
-                                }
-                            });
-
-                            if (metadata.constraints.excludePath) {
-                                return _.filter(defaultConstraints, function (value) {
-                                    var isCurrentSelection = _.isArray(currentValue) ? currentValue.indexOf(value) >= 0 : value == currentValue;
-                                    return (isCurrentSelection || selectedSoFar.indexOf(value) < 0);
-                                });
-                            }
-                            else {
-                                var constraints = defaultConstraints.concat(selectedSoFar);
-                                var currentSelection = _.isArray(currentValue) ? currentValue : [currentValue];
-                                for (var i=0; i<currentSelection.length; i++) {
-
-                                    if (currentSelection[i] != null && constraints.indexOf(currentSelection[i]) < 0) {
-                                        constraints.push(currentSelection[i]);
-                                    }
-                                }
-
-                                return constraints;
-                            }
+                    } else if (includeExcludeDefined) {
+                        self.constraints = ko.computed(function () {
+                           return  applyIncludeExclude(metadata, context.outputModel, self, metadata.constraints.default || []);
                         });
                     }
                 }
                 else if (metadata.constraints.type == 'pre-populated') {
                     var defaultConstraints = metadata.constraints.defaults || [];
-                    self.constraints = ko.observableArray(defaultConstraints);
+                    var constraintsObservable = ko.observableArray(defaultConstraints);
+                    if (!includeExcludeDefined) {
+                        self.constraints = constraintsObservable;
+                    }
+                    else {
+                        self.constraints = ko.computed(function () {
+                            return applyIncludeExclude(metadata, context.outputModel, self, constraintsObservable());
+                        });
+                    }
 
                     constraintsInititaliser = $.Deferred();
                     var dataLoader = ecodata.forms.dataLoader(context, config);
                     dataLoader.prepop(metadata.constraints.config).done(function (data) {
-                        self.constraints(data);
+                        constraintsObservable(data);
                         constraintsInititaliser.resolve();
                     });
                 }
                 else if (metadata.constraints.type == 'literal' || metadata.constraints.literal) {
-                    self.constraints = [].concat(metadata.constraints.literal);
+
+                    if (includeExcludeDefined) {
+                        self.constraints = ko.computed(function() {
+                            return applyIncludeExclude(metadata, context.outputModel, self, metadata.constraints.literal || []);
+                        });
+                    }
+                    else {
+                        self.constraints = [].concat(metadata.constraints.literal);
+                    }
                 }
             }
 
