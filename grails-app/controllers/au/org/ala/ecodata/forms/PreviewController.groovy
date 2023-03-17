@@ -104,6 +104,11 @@ class PreviewController {
         respond params
     }
 
+    def prepopulateConstraints() {
+        List constraints = ['pre-pop c1', 'pre-pop c2', 'pre-pop c3']
+        respond constraints
+    }
+
     /**
      * Stub function for testing geoMap dataType.
      */
