@@ -82,7 +82,6 @@ dependencies {
     testImplementation "org.grails:grails-gorm-testing-support"
     testImplementation "org.grails.plugins:geb"
     testImplementation "org.grails:grails-web-testing-support"
-    testImplementation 'com.codeborne:phantomjsdriver:1.3.0'
     testImplementation "org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion"
     testRuntimeOnly "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
     testRuntimeOnly "org.seleniumhq.selenium:selenium-safari-driver:$seleniumSafariDriverVersion"
