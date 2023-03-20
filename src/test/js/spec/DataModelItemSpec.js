@@ -199,5 +199,11 @@ describe("DataModelItem Spec", function () {
         vals = [['1', '2'], ['3']];
         dataItem = ko.observableArray().extend({metadata:{metadata:metadata, context:customContext, config:config}});
         expect(dataItem.constraints()).toEqual(['1', '2', '3']);
+
+        vals = ['v1'];
+        metadata.constraints.default = [{text:'t1', value:'v1'}, {text:'t2', value:'v2'}];
+        dataItem = ko.observableArray().extend({metadata:{metadata:metadata, context:customContext, config:config}});
+        expect(dataItem.constraints()).toEqual(['v2']);
+
     });
 });

@@ -667,10 +667,10 @@ function orEmptyArray(v) {
 
     };
 
-    function applyIncludeExclude(metadata, outputModel, observable, initialConstraints) {
+    function applyIncludeExclude(metadata, outputModel, dataModelItem, initialConstraints) {
         var path = metadata.constraints.excludePath || metadata.constraints.includePath;
 
-        var currentValue = observable();
+        var currentValue = dataModelItem();
         var selectedSoFar = [];
         outputModel.eachValueForPath(path, function (val) {
             if (_.isArray(val)) {
@@ -681,11 +681,17 @@ function orEmptyArray(v) {
         });
 
         if (metadata.constraints.excludePath) {
-            return _.filter(initialConstraints, function (value) {
+            var filteredConstraints = _.filter(initialConstraints, function (value) {
+                // Handle object valued constraints - however the functions are attached after the first call to
+                // the computed observable, so we need to guard against that.
+                value = _.isFunction(dataModelItem.constraints.value) ? dataModelItem.constraints.value(value) : value;
                 var isCurrentSelection = _.isArray(currentValue) ? currentValue.indexOf(value) >= 0 : value == currentValue;
                 return (isCurrentSelection || selectedSoFar.indexOf(value) < 0);
             });
+            return filteredConstraints;
         } else {
+            // Note that the "includePath" option does not support object (key/value) typed constraints as
+            // it needs to collect values from other form selections which won't be object typed.
             var constraints = initialConstraints.concat(selectedSoFar);
             var currentSelection = _.isArray(currentValue) ? currentValue : [currentValue];
             for (var i = 0; i < currentSelection.length; i++) {

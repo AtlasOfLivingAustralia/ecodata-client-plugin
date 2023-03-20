@@ -8,6 +8,8 @@ import org.grails.io.support.Resource
 
 class PreviewController {
 
+    static responseFormats = ['json', 'xml']
+
     private static String EXAMPLE_MODEL = 'example.json'
     private static String EXAMPLE_MODELS_PATH = '/example_models/'
     private static String EXAMPLE_DATA_PATH = '/example_data/'
