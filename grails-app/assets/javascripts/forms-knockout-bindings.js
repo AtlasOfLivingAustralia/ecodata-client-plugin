@@ -156,7 +156,7 @@
                 url:config.url,
                 autoUpload:true,
                 dropZone: dropZone,
-                pasteZone: undefined,
+                pasteZone: null,
                 dataType:'json'
             }).on(eventPrefix+'add', function(e, data) {
                 previewElem.html('');
