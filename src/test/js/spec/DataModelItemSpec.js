@@ -148,11 +148,9 @@ describe("DataModelItem Spec", function () {
 
         var invokedWithPath;
         var vals = ['1', '3'];
-        var customContext = _.extend({}, context, {outputModel: { eachValueForPath: function(path, callback) {
+        var customContext = _.extend({}, context, {outputModel: { getModelValuesForPath: function(path) {
                     invokedWithPath = path;
-                    for (var i=0; i<vals.length; i++) {
-                        callback(vals[i]);
-                    }
+                    return _.flatten(vals);
         }}});
 
         var dataItem = ko.observable().extend({metadata:{metadata:metadata, context:customContext, config:config}});
@@ -165,6 +163,12 @@ describe("DataModelItem Spec", function () {
         vals = [['1', '2'], ['3']];
         dataItem = ko.observableArray().extend({metadata:{metadata:metadata, context:customContext, config:config}});
         expect(dataItem.constraints()).toEqual(['4']);
+
+
+        vals = ['v1'];
+        metadata.constraints.default = [{text:'t1', id:'v1'}, {text:'t2', id:'v2'}];
+        dataItem = ko.observableArray().extend({metadata:{metadata:metadata, context:customContext, config:config}});
+        expect(dataItem.constraints()).toEqual([{text:'t2', id:'v2'}]);
     });
 
 
@@ -182,11 +186,10 @@ describe("DataModelItem Spec", function () {
 
         var invokedWithPath;
         var vals = ['1', '3'];
-        var customContext = _.extend({}, context, {outputModel: { eachValueForPath: function(path, callback) {
+        var customContext = _.extend({}, context, {outputModel: { getModelValuesForPath: function(path) {
                     invokedWithPath = path;
-                    for (var i=0; i<vals.length; i++) {
-                        callback(vals[i]);
-                    }
+                    console.log(_.flatten(vals));
+                   return _.flatten(vals);
                 }}});
 
         var dataItem = ko.observable().extend({metadata:{metadata:metadata, context:customContext, config:config}});

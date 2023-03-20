@@ -666,26 +666,25 @@ function orEmptyArray(v) {
         };
 
     };
-
-    function applyIncludeExclude(metadata, outputModel, observable, initialConstraints) {
+    function applyIncludeExclude(metadata, outputModel, dataModelItem, initialConstraints) {
         var path = metadata.constraints.excludePath || metadata.constraints.includePath;
 
-        var currentValue = observable();
-        var selectedSoFar = [];
-        outputModel.eachValueForPath(path, function (val) {
-            if (_.isArray(val)) {
-                selectedSoFar = selectedSoFar.concat(val);
-            } else if (val != null) {
-                selectedSoFar.push(val);
-            }
-        });
+        var currentValue = dataModelItem();
+        var selectedSoFar = outputModel.getModelValuesForPath(path);
 
         if (metadata.constraints.excludePath) {
-            return _.filter(initialConstraints, function (value) {
+            var filteredConstraints = _.filter(initialConstraints, function (value) {
+                // Handle object valued constraints - however the functions are attached after the first call to
+                // the computed observable, so we need to guard against that.
+                value = _.isFunction(dataModelItem.constraintValue) ? dataModelItem.constraintValue(value) : value;
                 var isCurrentSelection = _.isArray(currentValue) ? currentValue.indexOf(value) >= 0 : value == currentValue;
-                return (isCurrentSelection || selectedSoFar.indexOf(value) < 0);
+                var include = (isCurrentSelection || selectedSoFar.indexOf(value) < 0);
+                return include;
             });
+            return filteredConstraints;
         } else {
+            // Note that the "includePath" option does not support object (key/value) typed constraints as
+            // it needs to collect values from other form selections which won't be object typed.
             var constraints = initialConstraints.concat(selectedSoFar);
             var currentSelection = _.isArray(currentValue) ? currentValue : [currentValue];
             for (var i = 0; i < currentSelection.length; i++) {
@@ -697,9 +696,7 @@ function orEmptyArray(v) {
 
             return constraints;
         }
-
     }
-
     /**
      * Implements the constraints specified on a single data model item using the "constraints" attribute in the metadata.
      * Also provides access to global configuration and context for components that need it.
@@ -775,7 +772,20 @@ function orEmptyArray(v) {
                 valueProperty = metadata.constraints.valueProperty || valueProperty;
                 textProperty = metadata.constraints.textProperty || textProperty;
             }
-
+            // These need to be defined before the computed constraint is defined to support correct evaluation
+            // of the excludePath function.
+            self.constraintValue = function (constraint) {
+                if (_.isObject(constraint)) {
+                    return constraint[valueProperty];
+                }
+                return constraint;
+            };
+            self.constraintText = function(constraint) {
+                if (_.isObject(constraint)) {
+                    return constraint[textProperty];
+                }
+                return constraint;
+            };
             self.constraints = [];
             var includeExcludeDefined = metadata.constraints.excludePath || metadata.constraints.includePath;
             // Support existing configuration style.
@@ -830,18 +840,8 @@ function orEmptyArray(v) {
                 }
             }
 
-            self.constraints.value = function (constraint) {
-                if (_.isObject(constraint)) {
-                    return constraint[valueProperty];
-                }
-                return constraint;
-            };
-            self.constraints.text = function (constraint) {
-                if (_.isObject(constraint)) {
-                    return constraint[textProperty];
-                }
-                return constraint;
-            };
+            self.constraints.value = self.constraintValue;
+            self.constraints.text = self.constraintText;
             self.constraints.label = function(value) {
 
                 if (!value && ko.isObservable(self))  {
@@ -1265,6 +1265,24 @@ function orEmptyArray(v) {
         self.eachValueForPath = function(path, callback) {
             var pathAsArray = path.split('.');
             self.iterateOverPath(pathAsArray, callback, self.data);
+        }
+
+        /**
+         * Iterates over every instance of the DataModelItem defined by path and returns an array containing
+         * the values found at each item.
+         * @param path the path to the data model item of interest (e.g. list.nestedList.textValue1)
+         * @returns {*[]}
+         */
+        self.getModelValuesForPath = function(path) {
+            var values = [];
+            self.eachValueForPath(path, function (val) {
+                if (_.isArray(val)) {
+                    values = values.concat(val);
+                } else if (val != null) {
+                    values.push(val);
+                }
+            });
+            return values;
         }
 
         /**
