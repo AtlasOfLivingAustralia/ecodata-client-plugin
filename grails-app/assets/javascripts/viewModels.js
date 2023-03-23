@@ -490,6 +490,8 @@ function enmapify(args) {
                             data.site.name='Location of the sighting';
                             sitesObservable.push(data.site);
                             matchingSite = data.site;
+                            map.clearBoundLimits();
+                            map.setGeoJSON(Biocollect.MapUtilities.featureToValidGeoJson(matchingSite.extent.geometry));
                         }
                     },
                     error: function(xhr) {
@@ -513,9 +515,9 @@ function enmapify(args) {
             } else {
                 console.log("Resetting map because of non-previous lat long")
                 map.resetMap()
-                }
             }
         }
+    }
 
     function getProjectArea() {
         return $.grep(activityLevelData.pActivity.sites, function (item) {

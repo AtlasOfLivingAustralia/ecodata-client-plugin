@@ -301,12 +301,6 @@ class ModelJSTagLib {
                         self.loadActivitySite();
                     }
                     
-                    if (data.${mod.name}Latitude && typeof data.${mod.name}Latitude !== 'undefined') {
-                        self.data.${mod.name}Latitude(data.${mod.name}Latitude);
-                    }
-                    if (data.${mod.name}Longitude && typeof data.${mod.name}Longitude !== 'undefined') {
-                        self.data.${mod.name}Longitude(data.${mod.name}Longitude);
-                    }
                     if (data.${mod.name}Accuracy){
                         if( typeof data.${mod.name}Accuracy !== 'undefined') {
                             self.data.${mod.name}Accuracy(data.${mod.name}Accuracy);
