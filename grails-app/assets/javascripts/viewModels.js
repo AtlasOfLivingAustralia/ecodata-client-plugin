@@ -68,7 +68,7 @@ function enmapify(args) {
         surveySupportedSitesObservable = container[name + "SitesArray"] =  ko.computed(function(){
             return sitesObservable();
         }),
-
+        siteSubscriber = null,
 
         loadingObservable = container[name + "Loading"] = ko.observable(false),
         checkMapInfo = viewModel.checkMapInfo = function(){
@@ -350,7 +350,7 @@ function enmapify(args) {
             // If the user dropped a pin or search a location then the select location should be deselected
             if (!isRemoveEvent) {
 
-                siteSubscriber.dispose();
+                siteSubscriber && siteSubscriber.dispose();
                 console.log("Updating location fields to pin");
                 //siteIdObservable(null);
                 latObservable(markerLocation.lat);
@@ -414,10 +414,12 @@ function enmapify(args) {
         // destroy existing subscription before creating new subscription
         latSubscriber && latSubscriber.dispose();
         lngSubscriber && lngSubscriber.dispose();
+        siteSubscriber && siteSubscriber.dispose();
 
         if (state) {
             latSubscriber = latObservable.subscribe(updateMarkerPosition);
             lngSubscriber = lonObservable.subscribe(updateMarkerPosition);
+            siteSubscriber = siteIdObservable.subscribe(updateMapForSite);
         }
     }
 
@@ -608,7 +610,6 @@ function enmapify(args) {
         }
     }
 
-    var siteSubscriber = siteIdObservable.subscribe(updateMapForSite);
 
     //Listen mylocation and search events from the map plugin
     map.registerListener("searchEventFired", function (e) {
@@ -669,7 +670,7 @@ function enmapify(args) {
      * site selection drop down after creation.
      */
     function createPublicSite() {
-        siteSubscriber.dispose();
+        siteSubscriber && siteSubscriber.dispose();
         siteIdObservable(null);
         Biocollect.Modals.showModal({
             viewModel: new AddSiteViewModel(uniqueNameUrl)
@@ -711,7 +712,7 @@ function enmapify(args) {
      * Private sites are not index by ElasticSearch. Hence not visible on site listing pages.
      */
     function createPrivateSite() {
-        siteSubscriber.dispose();
+        siteSubscriber && siteSubscriber.dispose();
 
         var extent = convertGeoJSONToExtent(map.getGeoJSON());
         var siteName = 'Private site';
@@ -947,6 +948,8 @@ function enmapify(args) {
     $(validationContainer).on('knockout-visible', function () {
         map && map.getMapImpl().invalidateSize();
     });
+
+    siteSubscriber = siteIdObservable.subscribe(updateMapForSite);
 
     // returning variables to help test this method
     return {
