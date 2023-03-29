@@ -68,7 +68,6 @@ function enmapify(args) {
         surveySupportedSitesObservable = container[name + "SitesArray"] =  ko.computed(function(){
             return sitesObservable();
         }),
-        siteSubscriber = null,
 
         loadingObservable = container[name + "Loading"] = ko.observable(false),
         checkMapInfo = viewModel.checkMapInfo = function(){
@@ -298,10 +297,8 @@ function enmapify(args) {
 
     container[viewModel.mapElementId] = map;
 
-    var latSubscriber = latObservable.subscribe(updateMarkerPosition);
-    var lngSubscriber = lonObservable.subscribe(updateMarkerPosition);
-    var createSiteOnLoadLatSub = latObservable.subscribe(createSiteWithLatLng),
-        createSiteOnLoadLonSub = lonObservable.subscribe(createSiteWithLatLng);
+    var latSubscriber, lngSubscriber;
+    subscribeOrDisposeLatLonObservables(true);
 
     var siteIdSubscriber;
 
@@ -317,20 +314,8 @@ function enmapify(args) {
         return [undefined, null, ''].indexOf(value) > -1
     }
 
-    function createSiteWithLatLng(){
-        if (!isEmpty(latObservable()) && !isEmpty(lonObservable()) && !siteIdObservable()) {
-            if (addCreatedSiteToListOfSelectedSites)
-                createPublicSite();
-            else
-                createPrivateSite();
-
-            createSiteOnLoadLatSub && createSiteOnLoadLatSub.dispose();
-            createSiteOnLoadLonSub && createSiteOnLoadLonSub.dispose();
-        }
-    }
-
     function updateFieldsForMap(params) {
-        subscribeOrDisposeLatLonObservables(false);
+        subscribeOrDisposeObservables(false);
 
         var markerLocation = null;
         var markerLocations = map.getMarkerLocations();
@@ -349,19 +334,13 @@ function enmapify(args) {
             // Prevent sitesubscriber from been reset, when we are in the process of clearing the map
             // If the user dropped a pin or search a location then the select location should be deselected
             if (!isRemoveEvent) {
-
-                siteSubscriber && siteSubscriber.dispose();
                 console.log("Updating location fields to pin");
-                //siteIdObservable(null);
                 latObservable(markerLocation.lat);
                 lonObservable(markerLocation.lng);
-                //latLonDisabledObservable(false);
                 centroidLatObservable(null);
                 centroidLonObservable(null);
 
                 $(document).trigger('markerupdated');
-
-                siteSubscriber = siteIdObservable.subscribe(updateMapForSite);
             }
 
         } else if (geo && geo.features && geo.features.length > 0) {
@@ -407,20 +386,35 @@ function enmapify(args) {
             siteIdObservable(null);
         }
 
-        subscribeOrDisposeLatLonObservables(true);
+        subscribeOrDisposeObservables(true);
     }
 
     function subscribeOrDisposeLatLonObservables (state) {
         // destroy existing subscription before creating new subscription
         latSubscriber && latSubscriber.dispose();
+        latSubscriber = null;
         lngSubscriber && lngSubscriber.dispose();
-        siteSubscriber && siteSubscriber.dispose();
+        lngSubscriber = null;
 
         if (state) {
             latSubscriber = latObservable.subscribe(updateMarkerPosition);
             lngSubscriber = lonObservable.subscribe(updateMarkerPosition);
-            siteSubscriber = siteIdObservable.subscribe(updateMapForSite);
         }
+    }
+
+    function subscribeOrDisposeSiteIdObservable (state) {
+        // destroy existing subscription before creating new subscription
+        siteIdSubscriber && siteIdSubscriber.dispose();
+        siteIdSubscriber = null;
+
+        if (state) {
+            siteIdSubscriber = siteIdObservable.subscribe(updateMapForSite);
+        }
+    }
+
+    function subscribeOrDisposeObservables (state) {
+        subscribeOrDisposeLatLonObservables(state);
+        subscribeOrDisposeSiteIdObservable(state);
     }
 
     function centroid(feature) {
@@ -670,7 +664,7 @@ function enmapify(args) {
      * site selection drop down after creation.
      */
     function createPublicSite() {
-        siteSubscriber && siteSubscriber.dispose();
+        subscribeOrDisposeSiteIdObservable(false);
         siteIdObservable(null);
         Biocollect.Modals.showModal({
             viewModel: new AddSiteViewModel(uniqueNameUrl)
@@ -692,27 +686,26 @@ function enmapify(args) {
                     return data.id
                 })
             })
-                .always(function () {
-                    $.unblockUI();
-                    loadingObservable(false);
-                })
                 .done(function (id) {
                     siteIdObservable(id);
                 })
-                .fail(saveSiteFailed);
+                .fail(saveSiteFailed)
+                .always(function () {
+                    $.unblockUI();
+                    loadingObservable(false);
+                    subscribeOrDisposeSiteIdObservable(true);
+                });
         }).fail(function(){
             enableEditMode()
+            subscribeOrDisposeSiteIdObservable(true);
         });
-
-
-        siteSubscriber = siteIdObservable.subscribe(updateMapForSite);
     }
 
     /**
      * Private sites are not index by ElasticSearch. Hence not visible on site listing pages.
      */
     function createPrivateSite() {
-        siteSubscriber && siteSubscriber.dispose();
+        subscribeOrDisposeSiteIdObservable(false);
 
         var extent = convertGeoJSONToExtent(map.getGeoJSON());
         var siteName = 'Private site';
@@ -762,7 +755,7 @@ function enmapify(args) {
             .always(function () {
                 $.unblockUI();
                 loadingObservable(false);
-                siteSubscriber = siteIdObservable.subscribe(updateMapForSite);
+                subscribeOrDisposeSiteIdObservable(true);
             })
             .fail(saveSiteFailed)
     }
@@ -908,7 +901,6 @@ function enmapify(args) {
         var entityType = activityLevelData.pActivity.projectActivityId ? "projectActivity" : "project"
         return $.getJSON(listSitesUrl + '/' + (activityLevelData.pActivity.projectActivityId || activityLevelData.pActivity.projectId) + "?entityType=" + entityType).then(function (data, textStatus, jqXHR) {
             sitesObservable(data);
-
         });
     }
 
@@ -949,7 +941,7 @@ function enmapify(args) {
         map && map.getMapImpl().invalidateSize();
     });
 
-    siteSubscriber = siteIdObservable.subscribe(updateMapForSite);
+    subscribeOrDisposeSiteIdObservable(true)
 
     // returning variables to help test this method
     return {
