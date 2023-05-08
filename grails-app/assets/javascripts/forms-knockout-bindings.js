@@ -452,6 +452,29 @@
         }
     };
 
+    function forceSelect2ToRespectPercentageTableWidths(element) {
+        var parentColumn = $(element).parent('td') && $(element).parent('td')[0];
+        var resizeHandler = null;
+        if (parentColumn) {
+            var $parentColumn = $(parentColumn);
+            var select2 = $parentColumn.find('.select2-container');
+            select2.css('max-width', $parentColumn.width()+'px');
+
+            var debounce = null;
+            resizeHandler = function() {
+                clearTimeout(debounce);
+                setTimeout(function() {
+                    select2.css('max-width', $parentColumn.width()+'px');
+                }, 300);
+            };
+            $(window).on('resize', resizeHandler);
+
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                $(window).off('resize', resizeHandler);
+            });
+        }
+
+    }
     function applySelect2ValidationCompatibility(element) {
         var $element = $(element);
         var select2 = $element.next('.select2-container');
@@ -573,6 +596,9 @@
                     $element.trigger('change');
                 });
             }
+            if (options.preserveColumnWidth) {
+                forceSelect2ToRespectPercentageTableWidths(element);
+            }
         }
     };
 
@@ -620,6 +646,10 @@
             $(element).select2(options).change(function(e) {
                 model($(element).val());
             });
+
+            if (options.preserveColumnWidth) {
+                forceSelect2ToRespectPercentageTableWidths(element);
+            }
 
             applySelect2ValidationCompatibility(element);
         },
