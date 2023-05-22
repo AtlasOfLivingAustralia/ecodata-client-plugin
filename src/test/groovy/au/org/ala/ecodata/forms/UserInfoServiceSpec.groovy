@@ -1,13 +1,14 @@
 package au.org.ala.ecodata.forms
 
+import au.org.ala.web.UserDetails
+import au.org.ala.ws.security.client.AlaOidcClient
+import au.org.ala.ws.security.profile.AlaOidcUserProfile
 import grails.testing.services.ServiceUnitTest
 import grails.testing.web.GrailsWebUnitTest
 import org.pac4j.core.config.Config
 import org.pac4j.core.credentials.AnonymousCredentials
 import org.pac4j.core.credentials.Credentials
-import org.pac4j.core.profile.BasicUserProfile
 import org.pac4j.core.profile.UserProfile
-import org.pac4j.http.client.direct.DirectBearerAuthClient
 import spock.lang.Specification
 
 /*
@@ -30,7 +31,7 @@ import spock.lang.Specification
 class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserInfoService>, GrailsWebUnitTest {
     WebService webService = Mock(WebService)
     def authService = Mock(AuthService)
-    DirectBearerAuthClient directBearerAuthClient
+    AlaOidcClient alaOidcClient
     Config pack4jConfig
 
     def user
@@ -39,7 +40,7 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
     def setup() {
         userName = "test@gmail.com"
         key = "abcdefg"
-        user = [firstName: "first", lastName: "last", userName: "test@gmail.com", 'userId': 4000]
+        user = [firstName: "first", lastName: "last", userName: "test@gmail.com", 'userId': "4000"]
         grailsApplication.config.mobile = [auth:[check:[url: 'checkURL']], authKeyEnabled: false]
         grailsApplication.config.userDetails = [url: 'userDetails/']
         service.webService = webService
@@ -76,12 +77,11 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
     void "getUserFromJWT returns user when Authorization header is passed"() {
         setup:
         def result
-        directBearerAuthClient = GroovyMock([global: true], DirectBearerAuthClient)
+        alaOidcClient = GroovyMock([global: true], AlaOidcClient)
         pack4jConfig =  GroovyMock([global: true], Config)
-        service.directBearerAuthClient = directBearerAuthClient
+        service.alaOidcClient = alaOidcClient
         service.config = pack4jConfig
-        def person = new BasicUserProfile()
-        person.build(user.userId, ["given_name": user.firstName, "family_name": user.lastName, "email": user.userName, "userid": user.userId])
+        AlaOidcUserProfile person = new AlaOidcUserProfile(user.userId)
         Optional<Credentials> credentials = new Optional<Credentials>(AnonymousCredentials.INSTANCE)
         Optional<UserProfile> userProfile = new Optional<UserProfile>(person)
 
@@ -90,8 +90,9 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
         result = service.getUserFromJWT()
 
         then:
-        directBearerAuthClient.getCredentials(*_) >> credentials
-        directBearerAuthClient.getUserProfile(*_) >> userProfile
+        alaOidcClient.getCredentials(*_) >> credentials
+        alaOidcClient.getUserProfile(*_) >> userProfile
+        authService.getUserForUserId(user.userId)  >> new UserDetails(1, user.firstName, user.lastName, user.userName, user.userName, user.userId, false, true, null)
         result.size() == 3
         result.userName == user.userName
         result.displayName == "${user.firstName} ${user.lastName}"
@@ -101,12 +102,11 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
     void "getCurrentUser should get current user from CAS"() {
         setup:
         def result
-        directBearerAuthClient = GroovyMock([global: true], DirectBearerAuthClient)
+        alaOidcClient = GroovyMock([global: true], AlaOidcClient)
         pack4jConfig =  GroovyMock([global: true], Config)
-        service.directBearerAuthClient = directBearerAuthClient
+        service.alaOidcClient = alaOidcClient
         service.config = pack4jConfig
-        def person = new BasicUserProfile()
-        person.build(user.userId, ["given_name": "abc", "family_name": "def", "email": user.userName, "userid": user.userId])
+        AlaOidcUserProfile person = new AlaOidcUserProfile(user.userId)
         Optional<Credentials> credentials = new Optional<Credentials>(AnonymousCredentials.INSTANCE)
         Optional<UserProfile> userProfile = new Optional<UserProfile>(person)
 
@@ -122,12 +122,13 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
         result = service.getCurrentUser()
 
         then:
-        directBearerAuthClient.getCredentials(*_) >> credentials
-        directBearerAuthClient.getUserProfile(*_) >> userProfile
+        alaOidcClient.getCredentials(*_) >> credentials
+        alaOidcClient.getUserProfile(*_) >> userProfile
+        1 * authService.getUserForUserId(user.userId) >> new UserDetails(1, user.firstName, user.lastName, user.userName, user.userName, user.userId, false, true, null)
         1 * authService.userDetails() >> null
         result.size() == 3
         result.userName == user.userName
-        result.displayName == "abc def"
+        result.displayName == "first last"
         result.userId == user.userId
 
         when: "Authorization header is  not set and authKeyEnabled is false"
@@ -157,7 +158,12 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
 }
 
 class AuthService {
+    def user = [firstName: "first", lastName: "last", userName: "test@gmail.com", 'userId': "4000"]
     def userDetails () {
         [:]
+    }
+
+    UserDetails getUserForUserId(String userId) {
+        new UserDetails(1, user.firstName, user.lastName, user.userName, user.userName, userId, false, true, null)
     }
 }
