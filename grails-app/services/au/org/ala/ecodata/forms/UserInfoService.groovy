@@ -1,12 +1,13 @@
 package au.org.ala.ecodata.forms
 
+import au.org.ala.web.UserDetails
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.pac4j.core.config.Config
 import org.pac4j.core.context.WebContext
 import org.pac4j.core.credentials.Credentials
 import org.pac4j.core.util.FindBest
 import org.pac4j.jee.context.JEEContextFactory
-import org.pac4j.http.client.direct.DirectBearerAuthClient
+import au.org.ala.ws.security.client.AlaOidcClient
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 
@@ -36,7 +37,7 @@ class UserInfoService {
     @Autowired(required = false)
     Config config
     @Autowired(required = false)
-    DirectBearerAuthClient directBearerAuthClient
+    AlaOidcClient alaOidcClient
 
     static String USER_NAME_HEADER_FIELD = "userName"
     static String AUTH_KEY_HEADER_FIELD = "authKey"
@@ -74,7 +75,7 @@ class UserInfoService {
      * @return
      */
     Map getUserFromJWT(String authorizationHeader = null) {
-        if((config == null) || (directBearerAuthClient == null))
+        if((config == null) || (alaOidcClient == null))
             return
 
         GrailsWebRequest grailsWebRequest = GrailsWebRequest.lookup()
@@ -84,13 +85,18 @@ class UserInfoService {
             authorizationHeader = request?.getHeader(AUTHORIZATION_HEADER_FIELD)
         if (authorizationHeader?.startsWith("Bearer")) {
             final WebContext context = FindBest.webContextFactory(null, config, JEEContextFactory.INSTANCE).newContext(request, response)
-            def optCredentials = directBearerAuthClient.getCredentials(context, config.sessionStore)
+            def optCredentials = alaOidcClient.getCredentials(context, config.sessionStore)
             if (optCredentials.isPresent()) {
                 Credentials credentials = optCredentials.get()
-                def optUserProfile = directBearerAuthClient.getUserProfile(credentials, context, config.sessionStore)
+                def optUserProfile = alaOidcClient.getUserProfile(credentials, context, config.sessionStore)
                 if (optUserProfile.isPresent()) {
                     def userProfile = optUserProfile.get()
-                    return ['displayName': "${userProfile.getAttribute("given_name")} ${userProfile.getAttribute("family_name")}", 'userName': userProfile.getAttribute("email"), 'userId': userProfile.getAttribute("userid")]
+                    if(userProfile.userId) {
+                        UserDetails user = authService.getUserForUserId(userProfile.userId)
+                        if (user) {
+                            return ['displayName': user.displayName, 'userName': user.email, 'userId': userProfile.userId]
+                        }
+                    }
                 }
             }
         }
