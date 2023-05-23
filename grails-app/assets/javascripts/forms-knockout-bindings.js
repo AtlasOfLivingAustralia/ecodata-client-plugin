@@ -452,26 +452,27 @@
         }
     };
 
-    function forceSelect2ToRespectPercentageTableWidths(element) {
-        var parentColumn = $(element).parent('td') && $(element).parent('td')[0];
+    function forceSelect2ToRespectPercentageTableWidths(element, percentageWidth) {
+        var $parentColumn = $(element).parent('td');
+        var $parentTable = $parentColumn.closest('table');
         var resizeHandler = null;
-        if (parentColumn) {
-            var $parentColumn = $(parentColumn);
+        if ($parentColumn.length) {
             var select2 = $parentColumn.find('.select2-container');
-            select2.css('max-width', $parentColumn.width()+'px');
-
+            function calculateWidth() {
+                var columnWidth = $parentTable.width()*percentageWidth/100;
+                select2.css('max-width', columnWidth+'px');
+            }
             var debounce = null;
             resizeHandler = function() {
                 clearTimeout(debounce);
-                setTimeout(function() {
-                    select2.css('max-width', $parentColumn.width()+'px');
-                }, 300);
+                setTimeout(calculateWidth, 300);
             };
             $(window).on('resize', resizeHandler);
 
             ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
                 $(window).off('resize', resizeHandler);
             });
+            resizeHandler();
         }
 
     }
@@ -648,7 +649,7 @@
             });
 
             if (options.preserveColumnWidth) {
-                forceSelect2ToRespectPercentageTableWidths(element);
+                forceSelect2ToRespectPercentageTableWidths(element, options.preserveColumnWidth);
             }
 
             applySelect2ValidationCompatibility(element);
