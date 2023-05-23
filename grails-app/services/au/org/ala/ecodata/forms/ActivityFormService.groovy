@@ -10,6 +10,7 @@ import org.grails.web.json.JSONObject
 class ActivityFormService {
 
     static final String ACTIVITY_FORM_PATH = '/activityForm'
+    static final String ACTIVITY_FORM_SEARCH_PATH = '/activityForm/search'
     def webService
     def grailsApplication
 
@@ -64,6 +65,21 @@ class ActivityFormService {
         model.outputModels = formSections.collectEntries { [ it.name, it.template] }
 
         model
+    }
+
+    /**
+     * Returns a Map with keys: [resp:List<Map>, statusCode:<>]
+     * @param criteria Used to build a GORM criteria query, e.g. [category:'paratoo']
+     */
+    Map searchActivityForms(Map criteria) {
+        String url = grailsApplication.config.getProperty('ecodata.service.url') +
+                ACTIVITY_FORM_SEARCH_PATH
+        Map result = webService.doPost(url, criteria)
+        if (!result || result.error) {
+            result = null
+        }
+
+        result
     }
 
     private Map missingForm(String name, Integer version) {

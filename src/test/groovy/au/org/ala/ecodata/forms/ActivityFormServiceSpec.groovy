@@ -80,4 +80,12 @@ class ActivityFormServiceSpec extends Specification implements ServiceUnitTest<A
 
         result.outputModels["Not found"] != null
     }
+
+    void "The service can interface to ecodata to search available activity forms"() {
+        when:
+        service.searchActivityForms([type:'Protocol'])
+
+        then:
+        1 * webService.doPost({it.endsWith(ActivityFormService.ACTIVITY_FORM_SEARCH_PATH)}, [type:'Protocol'])
+    }
 }
