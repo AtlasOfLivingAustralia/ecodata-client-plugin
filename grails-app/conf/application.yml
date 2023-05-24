@@ -88,3 +88,16 @@ grails:
                 taglib: none
                 staticparts: none
 
+environments:
+    test:
+        server:
+            port: "8087"
+        spring:
+            autoconfigure:
+                exclude: "au.org.ala.ws.security.AlaWsSecurityConfiguration"
+    development:
+        server:
+            port: "8087"
+        spring:
+            autoconfigure:
+                exclude: "au.org.ala.ws.security.AlaWsSecurityConfiguration"

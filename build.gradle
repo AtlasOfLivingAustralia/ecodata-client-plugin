@@ -74,8 +74,6 @@ dependencies {
     implementation "org.grails.plugins:ala-auth:$alaSecurityLibsVersion"
     implementation "org.grails.plugins:ala-ws-security-plugin:$alaSecurityLibsVersion"
     implementation "au.org.ala:userdetails-service-client:$alaSecurityLibsVersion"
-    implementation 'org.pac4j:pac4j-core:5.3.1'
-    implementation 'org.pac4j:pac4j-http:5.3.1'
 
     console "org.grails:grails-console"
     profile "org.grails.profiles:web-plugin"
