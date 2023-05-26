@@ -46,11 +46,11 @@ class UserInfoService {
     private static ThreadLocal<UserDetails> _currentUser = new ThreadLocal<UserDetails>()
 
     String getCurrentUserDisplayName() {
-        _currentUser.get()?.displayName
+        getCurrentUser()?.displayName
     }
 
     UserDetails getCurrentUser() {
-        return _currentUser.get()
+        _currentUser.get()
     }
 
     /**
@@ -59,15 +59,13 @@ class UserInfoService {
      * @param userId
      */
     UserDetails setCurrentUser() {
-        UserDetails userDetails = getCurrentUser()
-        if (!userDetails) {
-            userDetails = getCurrentUserSupportedMethods()
+        clearCurrentUser()
+        UserDetails userDetails = getCurrentUserFromSupportedMethods()
 
-            if (userDetails) {
-                _currentUser.set(userDetails)
-            } else {
-                log.warn("Failed to get user details! No details set on thread local.")
-            }
+        if (userDetails) {
+            _currentUser.set(userDetails)
+        } else {
+            log.warn("Failed to get user details! No details set on thread local.")
         }
 
         userDetails
@@ -133,10 +131,9 @@ class UserInfoService {
     /**
      * Get details of the current user either from CAS or lookup to user details server.
      * Authentication details are provide in header userName and authKey
-     * @return Map with following key
-     * ['displayName': "", 'userName': "", 'userId': ""]
+     * @return UserDetails
      */
-    UserDetails getCurrentUserSupportedMethods() {
+    UserDetails getCurrentUserFromSupportedMethods() {
         def user
 
         // First, check if CAS can get logged in user details

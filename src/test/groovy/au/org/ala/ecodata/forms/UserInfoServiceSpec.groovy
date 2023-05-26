@@ -112,7 +112,7 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
         Optional<UserProfile> userProfile = new Optional<UserProfile>(person)
 
         when:
-        result = service.getCurrentUserSupportedMethods()
+        result = service.getCurrentUserFromSupportedMethods()
 
         then:
         1 * authService.userDetails() >> userDetails
@@ -121,7 +121,7 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
 
         when:
         request.addHeader('Authorization', 'Bearer abcdef')
-        result = service.getCurrentUserSupportedMethods()
+        result = service.getCurrentUserFromSupportedMethods()
 
         then:
         alaOidcClient.getCredentials(*_) >> credentials
@@ -134,7 +134,7 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
 
         when: "Authorization header is  not set and authKeyEnabled is false"
         request.removeHeader('Authorization')
-        result = service.getCurrentUserSupportedMethods()
+        result = service.getCurrentUserFromSupportedMethods()
 
         then:
         1 * authService.userDetails() >> null
@@ -145,7 +145,7 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
         request.removeHeader('Authorization')
         request.addHeader(UserInfoService.AUTH_KEY_HEADER_FIELD, key)
         request.addHeader(UserInfoService.USER_NAME_HEADER_FIELD, userName)
-        result = service.getCurrentUserSupportedMethods()
+        result = service.getCurrentUserFromSupportedMethods()
 
         then:
         1 * authService.userDetails() >> null
