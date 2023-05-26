@@ -43,6 +43,42 @@ class UserInfoService {
     static String AUTH_KEY_HEADER_FIELD = "authKey"
     static String AUTHORIZATION_HEADER_FIELD = "Authorization"
 
+    private static ThreadLocal<UserDetails> _currentUser = new ThreadLocal<UserDetails>()
+
+    String getCurrentUserDisplayName() {
+        _currentUser.get()?.displayName
+    }
+
+    UserDetails getCurrentUser() {
+        return _currentUser.get()
+    }
+
+    /**
+     * This method gets called by a filter at the beginning of the request (if a userId parameter is on the URL)
+     * It sets the user details in a thread local for extraction by the audit service.
+     * @param userId
+     */
+    UserDetails setCurrentUser() {
+        UserDetails userDetails = getCurrentUser()
+        if (!userDetails) {
+            userDetails = getCurrentUserSupportedMethods()
+
+            if (userDetails) {
+                _currentUser.set(userDetails)
+            } else {
+                log.warn("Failed to get user details! No details set on thread local.")
+            }
+        }
+
+        userDetails
+    }
+
+    def clearCurrentUser() {
+        if (_currentUser) {
+            _currentUser.remove()
+        }
+    }
+
     /**
      * Get User details for the given user name and auth key.
      *
@@ -51,18 +87,13 @@ class UserInfoService {
      * @return Map
      *
      **/
-    Map getUserFromAuthKey(String username, String key) {
+    UserDetails getUserFromAuthKey(String username, String key) {
         String url = grailsApplication.config.getProperty('mobile.auth.check.url')
         Map params = [userName: username, authKey: key]
         def result = webService.doPostWithParams(url, params)
 
         if (result.statusCode == HttpStatus.OK.value() && result.resp?.status == 'success') {
-            params = [userName: username]
-            url = grailsApplication.config.getProperty('userDetails.url') + "userDetails/getUserDetails"
-            result = webService.doPostWithParams(url, params)
-            if (result.statusCode == HttpStatus.OK.value() && result.resp) {
-                return ['displayName': "${result.resp.firstName} ${result.resp.lastName}", 'userName': result.resp.userName, 'userId': result.resp.userId]
-            }
+            return authService.getUserForEmailAddress(username, true)
         } else {
             log.error("Failed to get user details for parameters: ${params.toString()}")
             log.error(result.toString())
@@ -74,7 +105,7 @@ class UserInfoService {
      * @param authorizationHeader
      * @return
      */
-    Map getUserFromJWT(String authorizationHeader = null) {
+    UserDetails getUserFromJWT(String authorizationHeader = null) {
         if((config == null) || (alaOidcClient == null))
             return
 
@@ -92,10 +123,7 @@ class UserInfoService {
                 if (optUserProfile.isPresent()) {
                     def userProfile = optUserProfile.get()
                     if(userProfile.userId) {
-                        UserDetails user = authService.getUserForUserId(userProfile.userId)
-                        if (user) {
-                            return ['displayName': user.displayName, 'userName': user.email, 'userId': userProfile.userId]
-                        }
+                        return authService.getUserForUserId(userProfile.userId)
                     }
                 }
             }
@@ -108,14 +136,12 @@ class UserInfoService {
      * @return Map with following key
      * ['displayName': "", 'userName': "", 'userId': ""]
      */
-    def getCurrentUser() {
+    UserDetails getCurrentUserSupportedMethods() {
         def user
 
         // First, check if CAS can get logged in user details
         def userDetails = authService.userDetails()
-        if (userDetails) {
-            user = ['displayName': "${userDetails.firstName} ${userDetails.lastName}", 'userName': userDetails.userName, 'userId': userDetails.userId]
-        }
+        user = userDetails?:null
 
         // Second, check if request has headers to lookup user details.
         if (!user) {

@@ -36,11 +36,13 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
 
     def user
     def userName
+    def userDetails
     def key
     def setup() {
         userName = "test@gmail.com"
         key = "abcdefg"
         user = [firstName: "first", lastName: "last", userName: "test@gmail.com", 'userId': "4000"]
+        userDetails = new UserDetails(1, user.firstName, user.lastName, user.userName, user.userName, user.userId, false, true, null)
         grailsApplication.config.mobile = [auth:[check:[url: 'checkURL']], authKeyEnabled: false]
         grailsApplication.config.userDetails = [url: 'userDetails/']
         service.webService = webService
@@ -60,17 +62,17 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
 
         then:
         1 * webService.doPostWithParams(grailsApplication.config.mobile.auth.check.url, [userName: userName, authKey: key]) >> [ statusCode: 200, resp: [status: "success"]]
-        1 * webService.doPostWithParams("${grailsApplication.config.userDetails.url}userDetails/getUserDetails", [userName: userName]) >> [ statusCode: 200, resp: user]
-        result.size() == 3
-        result.firstName == null
+        1 * authService.getUserForEmailAddress(userName, true) >> userDetails
+        result.firstName == "first"
         result.displayName == "first last"
+        result.userId == "4000"
 
         when:
         result = service.getUserFromAuthKey(userName, key)
 
         then:
         1 * webService.doPostWithParams(grailsApplication.config.mobile.auth.check.url, [userName: userName, authKey: key]) >> [ statusCode: 404, resp: [status: "error"]]
-        0 * webService.doPostWithParams("${grailsApplication.config.userDetails.url}userDetails/getUserDetails", [userName: userName])
+        0 * authService.getUserForEmailAddress(userName, true)
         result == null
     }
 
@@ -92,8 +94,7 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
         then:
         alaOidcClient.getCredentials(*_) >> credentials
         alaOidcClient.getUserProfile(*_) >> userProfile
-        authService.getUserForUserId(user.userId)  >> new UserDetails(1, user.firstName, user.lastName, user.userName, user.userName, user.userId, false, true, null)
-        result.size() == 3
+        authService.getUserForUserId(user.userId)  >> userDetails
         result.userName == user.userName
         result.displayName == "${user.firstName} ${user.lastName}"
         result.userId == user.userId
@@ -111,29 +112,29 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
         Optional<UserProfile> userProfile = new Optional<UserProfile>(person)
 
         when:
-        result = service.getCurrentUser()
+        result = service.getCurrentUserSupportedMethods()
 
         then:
-        1 * authService.userDetails() >> user
-        result.size() == 3
+        1 * authService.userDetails() >> userDetails
+        result.userId == "4000"
+        result.displayName == "first last"
 
         when:
         request.addHeader('Authorization', 'Bearer abcdef')
-        result = service.getCurrentUser()
+        result = service.getCurrentUserSupportedMethods()
 
         then:
         alaOidcClient.getCredentials(*_) >> credentials
         alaOidcClient.getUserProfile(*_) >> userProfile
-        1 * authService.getUserForUserId(user.userId) >> new UserDetails(1, user.firstName, user.lastName, user.userName, user.userName, user.userId, false, true, null)
+        1 * authService.getUserForUserId(user.userId) >> userDetails
         1 * authService.userDetails() >> null
-        result.size() == 3
         result.userName == user.userName
         result.displayName == "first last"
         result.userId == user.userId
 
         when: "Authorization header is  not set and authKeyEnabled is false"
         request.removeHeader('Authorization')
-        result = service.getCurrentUser()
+        result = service.getCurrentUserSupportedMethods()
 
         then:
         1 * authService.userDetails() >> null
@@ -144,13 +145,12 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
         request.removeHeader('Authorization')
         request.addHeader(UserInfoService.AUTH_KEY_HEADER_FIELD, key)
         request.addHeader(UserInfoService.USER_NAME_HEADER_FIELD, userName)
-        result = service.getCurrentUser()
+        result = service.getCurrentUserSupportedMethods()
 
         then:
         1 * authService.userDetails() >> null
         1 * webService.doPostWithParams(grailsApplication.config.mobile.auth.check.url, [userName: userName, authKey: key]) >> [ statusCode: 200, resp: [status: "success"]]
-        1 * webService.doPostWithParams("${grailsApplication.config.userDetails.url}userDetails/getUserDetails", [userName: userName]) >> [ statusCode: 200, resp: user]
-        result.size() == 3
+        1 * authService.getUserForEmailAddress( userName, true) >> userDetails
         result.displayName == "first last"
         result.userName == user.userName
         result.userId == user.userId
@@ -160,10 +160,15 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
 class AuthService {
     def user = [firstName: "first", lastName: "last", userName: "test@gmail.com", 'userId': "4000"]
     def userDetails () {
-        [:]
+        new UserDetails(1, user.firstName, user.lastName, user.userName, user.userName, userId, false, true, null)
     }
 
     UserDetails getUserForUserId(String userId) {
         new UserDetails(1, user.firstName, user.lastName, user.userName, user.userName, userId, false, true, null)
+    }
+
+
+    UserDetails getUserForEmailAddress(String emailAddress, boolean includeProps = true) {
+        new UserDetails(1, user.firstName, user.lastName, user.userName, user.userName, user.userId, false, true, null)
     }
 }

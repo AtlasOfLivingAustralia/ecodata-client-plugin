@@ -53,7 +53,7 @@ class ModelService {
                         value = "'${value}'"
                     }
                 } else if(dataModel.name == 'recordedBy' && !value) {
-                    value = "'${userInfoService.getCurrentUser()?.displayName?:''}'"
+                    value = "'${userInfoService.getCurrentUserDisplayName()}'"
                 }
                 else if (value) {
                     value = JavaScriptCodec.ENCODER.encode(value)
