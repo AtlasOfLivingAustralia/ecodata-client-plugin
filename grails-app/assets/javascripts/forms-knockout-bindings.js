@@ -598,7 +598,7 @@
                 });
             }
             if (options.preserveColumnWidth) {
-                forceSelect2ToRespectPercentageTableWidths(element);
+                forceSelect2ToRespectPercentageTableWidths(element, options.preserveColumnWidth);
             }
         }
     };
