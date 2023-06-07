@@ -613,33 +613,43 @@
             };
             var options = valueAccessor();
             var model = options.value;
+
             if (!ko.isObservable(model, ko.observableArray)) {
                 throw "The options require a key with name 'value' with a value of type ko.observableArray";
+            }
+
+            var constraints;
+            if (model.hasOwnProperty('constraints')) {
+                constraints = model.constraints;
+            }
+            else {
+                // Attempt to use the options binding to see if we can observe changes to the constraints
+                constraints = allBindings.get('options');
             }
 
             // Because constraints can be initialised by an AJAX call, constraints can be added after initialisation
             // which can result in duplicate OPTIONS tags for pre-selected values, which confuses select2.
             // Here we watch for changes to the model constraints and make sure any  duplicates are removed.
-            if (model.hasOwnProperty('constraints')) {
-                if (ko.isObservable(model.constraints)) {
-                    model.constraints.subscribe(function(val) {
-                        var existing = {};
-                        var duplicates = [];
-                        var currentOptions = $(element).find("option").each(function() {
-                            var val = $(this).val();
-                            if (existing[val]) {
-                                duplicates.push(this);
-                            }
-                            else {
-                                existing[val] = true;
-                            }
-                        });
-                        // Remove any duplicates
-                        for (var i=0; i<duplicates.length; i++) {
-                            element.removeChild(duplicates[i]);
+            if (constraints && ko.isObservable(constraints)) {
+
+                constraints.subscribe(function(val) {
+                    var existing = {};
+                    var duplicates = [];
+                    var currentOptions = $(element).find("option").each(function() {
+                        var val = $(this).val();
+                        if (existing[val]) {
+                            duplicates.push(this);
+                        }
+                        else {
+                            existing[val] = true;
                         }
                     });
-                }
+                    // Remove any duplicates
+                    for (var i=0; i<duplicates.length; i++) {
+                        element.removeChild(duplicates[i]);
+                    }
+                });
+
             }
             delete options.value;
             var options = _.defaults(valueAccessor() || {}, defaults);
