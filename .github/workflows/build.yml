@@ -37,7 +37,7 @@ jobs:
       - name: Run tests and jacoco coverage report with Gradle
         uses: gradle/gradle-build-action@v2.4.2
         with:
-          arguments: -PenableJacoco=true check
+          arguments: -PenableJacoco=true check -Dwebdriver.chrome.driver=chromedriver
 
       - name: Run javascript unit tests
         run: node_modules/karma/bin/karma start karma.conf.js --single-run --browsers ChromeHeadless
