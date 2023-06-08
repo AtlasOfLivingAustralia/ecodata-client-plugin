@@ -460,11 +460,16 @@
             var select2 = $parentColumn.find('.select2-container');
             function calculateWidth() {
                 var columnWidth = $parentTable.width()*percentageWidth/100;
-                select2.css('max-width', columnWidth+'px');
+                if (columnWidth > 10) {
+                    select2.css('max-width', columnWidth+'px');
+                }
+                else {
+                    // The table is not visible yet, so wait a bit and try again.
+                    setTimeout(calculateWidth, 200);
+                }
             }
-            var debounce = null;
             resizeHandler = function() {
-                clearTimeout(debounce);
+                clearTimeout(calculateWidth);
                 setTimeout(calculateWidth, 300);
             };
             $(window).on('resize', resizeHandler);
@@ -472,7 +477,7 @@
             ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
                 $(window).off('resize', resizeHandler);
             });
-            resizeHandler();
+            setTimeout(calculateWidth, 100);
         }
 
     }
