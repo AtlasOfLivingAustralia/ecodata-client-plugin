@@ -125,6 +125,11 @@
             var progress = ko.observable();
             var error = ko.observable();
             var complete = ko.observable(true);
+            var db;
+
+            if (typeof getDB === 'function') {
+                db = getDB();
+            }
 
             var config = valueAccessor();
             config = $.extend({}, config, defaultConfig);
@@ -219,7 +224,27 @@
                 }
 
             }).on(eventPrefix+'fail', function(e, data) {
-                error(data.errorThrown);
+                if (isOffline()) {
+                    var file = data.files[0];
+                    db.file.put(file).then(function(fileId) {
+                        // var data = {
+                        //     thumbnailUrl: f.thumbnail_url,
+                        //     url: f.url,
+                        //     contentType: f.contentType,
+                        //     filename: f.name,
+                        //     name: f.name,
+                        //     filesize: f.size,
+                        //     dateTaken: f.isoDate,
+                        //     staged: true,
+                        //     attribution: f.attribution,
+                        //     licence: f.licence
+                        // };
+                        //
+                        // target.push(new ImageViewModel(data, true, context));
+                    });
+                } else {
+                    error(data.errorThrown);
+                }
             });
 
             ko.applyBindingsToDescendants(innerContext, element);
@@ -399,6 +424,84 @@
                 return result;
             };
 
+            function onlineQuery(url, data) {
+                return $.ajax({
+                    url: url,
+                    dataType:'json',
+                    data: data
+                });
+            }
+
+            function offlineQuery(url, data) {
+                var deferred = $.Deferred()
+
+                if ( typeof URLSearchParams == 'function') {
+                    var paramIndex = url.indexOf('?'),
+                        paramsString = paramIndex > -1 ? url.substring(paramIndex + 1) : url,
+                        params = new URLSearchParams(paramsString),
+                        limit = parseInt(params.get('limit') || "10"),
+                        db = getDB(),
+                        projectActivityId = params.get('projectActivityId'),
+                        dataFieldName = params.get('dataFieldName'),
+                        outputName = params.get('output');
+
+                    db.open().then(function () {
+                        db.taxon.where({'projectActivityId': projectActivityId,'dataFieldName': dataFieldName,'outputName': outputName})
+                            .count(function (count){
+                                if (count > 0) {
+                                    db.taxon.where({'projectActivityId': projectActivityId,'dataFieldName': dataFieldName,'outputName': outputName})
+                                        .and(function (item) {
+                                            if(data.q) {
+                                                var query = data.q.toLowerCase();
+                                                return (item.name && item.name.toLowerCase().startsWith(query)) ||
+                                                    (item.scientificName && item.scientificName.toLowerCase().startsWith(query)) ||
+                                                    (item.commonName && item.commonName.toLowerCase().startsWith(query));
+                                            }
+                                            else
+                                                return true
+                                        })
+                                        .limit(limit).toArray()
+                                        .then(function (data) {
+                                            deferred.resolve({autoCompleteList: data});
+                                        })
+                                        .catch(function (e) {
+                                            deferred.reject(e);
+                                        });
+                                }
+                                else {
+                                    var promises = []
+                                    promises.push(db.taxon.where('scientificName').startsWithAnyOfIgnoreCase(data.q)
+                                        .limit(limit).toArray());
+
+                                    promises.push(db.taxon.where('commonName').startsWithAnyOfIgnoreCase(data.q)
+                                        .limit(limit).toArray());
+
+                                    Promise.all(promises).then(function (responses) {
+                                        var data = [];
+                                        data.push.apply(data, responses[1]);
+                                        data.push.apply(data, responses[0]);
+                                        deferred.resolve({autoCompleteList: data})
+                                    })
+                                }
+                            });
+                    });
+
+                    return deferred.promise();
+                }
+
+                deferred.resolve({autoCompleteList: []});
+                return deferred.promise();
+            }
+
+            function searchSpecies(url, data) {
+                if (isOffline()) {
+                    return offlineQuery(url, data);
+                }
+                else {
+                    return onlineQuery(url, data);
+                }
+            }
+
             options.source = function(request, response) {
                 $(element).addClass("ac_loading");
 
@@ -409,29 +512,22 @@
                 if (list) {
                     $.extend(data, {listId: list});
                 }
-                $.ajax({
-                    url: url,
-                    dataType:'json',
-                    data: data,
-                    success: function(data) {
-                        var items = $.map(data.autoCompleteList, function(item) {
-                            return {
-                                label:item.name,
-                                value: item.name,
-                                source: item
-                            }
-                        });
-                        items = [{label:"Missing or unidentified species", value:request.term, source: {listId:'unmatched', name: request.term}}].concat(items);
-                        response(items);
 
-                    },
-                    error: function() {
-                        items = [{label:"Error during species lookup", value:request.term, source: {listId:'error-unmatched', name: request.term}}];
-                        response(items);
-                    },
-                    complete: function() {
-                        $(element).removeClass("ac_loading");
-                    }
+                searchSpecies(url,data).then(function(data) {
+                    var items = $.map(data.autoCompleteList, function(item) {
+                        return {
+                            label:item.name,
+                            value: item.name,
+                            source: item
+                        }
+                    });
+                    items = [{label:"Missing or unidentified species", value:request.term, source: {listId:'unmatched', name: request.term}}].concat(items);
+                    response(items);
+                }).fail(function(e) {
+                    items = [{label:"Error during species lookup", value:request.term, source: {listId:'error-unmatched', name: request.term}}];
+                    response(items);
+                }).always(function() {
+                    $(element).removeClass("ac_loading");
                 });
             };
             options.select = function(event, ui) {

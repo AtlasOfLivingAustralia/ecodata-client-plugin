@@ -229,3 +229,27 @@ function resolveSites(sites, addNotFoundSite) {
 
     return resolved;
 }
+
+/**
+ * Checks if the provided identifier matches the regex pattern for a UUID.
+ * @see UUID_ONLY_REGEX
+ *
+ * @param id the id to check
+ * @returns {boolean}
+ */
+var UUID_ONLY_REGEX = new RegExp("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", "i");
+function isUuid(id) {
+    var uuid = false;
+
+    if (id && id != null && typeof id === "string") {
+        var match = id.match(UUID_ONLY_REGEX);
+        uuid = match != null && match.length > 0;
+    }
+
+    return uuid;
+}
+
+function isOffline() {
+    var forceOffline = false;
+    return !navigator.onLine || forceOffline;
+}

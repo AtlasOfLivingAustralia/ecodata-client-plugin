@@ -106,25 +106,30 @@ class UserInfoService {
     UserDetails getUserFromJWT(String authorizationHeader = null) {
         if((config == null) || (alaOidcClient == null))
             return
-
-        GrailsWebRequest grailsWebRequest = GrailsWebRequest.lookup()
-        HttpServletRequest request = grailsWebRequest.getCurrentRequest()
-        HttpServletResponse response = grailsWebRequest.getCurrentResponse()
-        if (!authorizationHeader)
-            authorizationHeader = request?.getHeader(AUTHORIZATION_HEADER_FIELD)
-        if (authorizationHeader?.startsWith("Bearer")) {
-            final WebContext context = FindBest.webContextFactory(null, config, JEEContextFactory.INSTANCE).newContext(request, response)
-            def optCredentials = alaOidcClient.getCredentials(context, config.sessionStore)
-            if (optCredentials.isPresent()) {
-                Credentials credentials = optCredentials.get()
-                def optUserProfile = alaOidcClient.getUserProfile(credentials, context, config.sessionStore)
-                if (optUserProfile.isPresent()) {
-                    def userProfile = optUserProfile.get()
-                    if(userProfile.userId) {
-                        return authService.getUserForUserId(userProfile.userId)
+        try {
+            GrailsWebRequest grailsWebRequest = GrailsWebRequest.lookup()
+            HttpServletRequest request = grailsWebRequest.getCurrentRequest()
+            HttpServletResponse response = grailsWebRequest.getCurrentResponse()
+            if (!authorizationHeader)
+                authorizationHeader = request?.getHeader(AUTHORIZATION_HEADER_FIELD)
+            if (authorizationHeader?.startsWith("Bearer")) {
+                final WebContext context = FindBest.webContextFactory(null, config, JEEContextFactory.INSTANCE).newContext(request, response)
+                def optCredentials = alaOidcClient.getCredentials(context, config.sessionStore)
+                if (optCredentials.isPresent()) {
+                    Credentials credentials = optCredentials.get()
+                    def optUserProfile = alaOidcClient.getUserProfile(credentials, context, config.sessionStore)
+                    if (optUserProfile.isPresent()) {
+                        def userProfile = optUserProfile.get()
+                        String userId = userProfile.userId ?: userProfile.getAttribute('username')
+                        if (userId) {
+                            return authService.getUserForUserId(userId)
+                        }
                     }
                 }
             }
+        } catch (Throwable e) {
+            log.error("Failed to get user details from JWT", e)
+            return
         }
     }
 
@@ -142,17 +147,21 @@ class UserInfoService {
 
         // Second, check if request has headers to lookup user details.
         if (!user) {
-            GrailsWebRequest request = GrailsWebRequest.lookup()
-            if (request) {
-                String authorizationHeader = request?.getHeader(AUTHORIZATION_HEADER_FIELD)
-                String username = request.getHeader(UserInfoService.USER_NAME_HEADER_FIELD)
-                String key = request.getHeader(UserInfoService.AUTH_KEY_HEADER_FIELD)
+            try {
+                GrailsWebRequest request = GrailsWebRequest.lookup()
+                if (request) {
+                    String authorizationHeader = request?.getHeader(AUTHORIZATION_HEADER_FIELD)
+                    String username = request.getHeader(UserInfoService.USER_NAME_HEADER_FIELD)
+                    String key = request.getHeader(UserInfoService.AUTH_KEY_HEADER_FIELD)
 
-                if (authorizationHeader) {
-                    user = getUserFromJWT(authorizationHeader)
-                } else if (grailsApplication.config.getProperty("mobile.authKeyEnabled", Boolean) && username && key) {
-                    user = getUserFromAuthKey(username, key)
+                    if (authorizationHeader) {
+                        user = getUserFromJWT(authorizationHeader)
+                    } else if (grailsApplication.config.getProperty("mobile.authKeyEnabled", Boolean) && username && key) {
+                        user = getUserFromAuthKey(username, key)
+                    }
                 }
+            } catch (Throwable e) {
+                log.error("Failed to get user details from JWT or API key", e)
             }
         }
 

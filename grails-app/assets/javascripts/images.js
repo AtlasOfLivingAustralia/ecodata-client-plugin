@@ -22,9 +22,9 @@ function ImageViewModel(prop, skipFindingDocument, context){
 
     self.dateTaken = ko.observable(prop.dateTaken || (new Date()).toISOStringNoMillis()).extend({simpleDate:false});
     self.contentType = ko.observable(prop.contentType);
-    self.url = prop.url;
+    self.url = ko.observable(prop.url);
     self.filesize = prop.filesize;
-    self.thumbnailUrl = prop.thumbnailUrl;
+    self.thumbnailUrl = ko.observable(prop.thumbnailUrl);
     self.filename = prop.filename;
     self.attribution = ko.observable(prop.attribution);
     self.licence = ko.observable(prop.licence);
@@ -41,6 +41,7 @@ function ImageViewModel(prop, skipFindingDocument, context){
     self.activityId = prop.activityId;
     self.isEmbargoed = prop.isEmbargoed;
     self.identifier=prop.identifier;
+    self.blob = undefined;
 
 
     self.remove = function(images, data, event){
@@ -52,6 +53,21 @@ function ImageViewModel(prop, skipFindingDocument, context){
         }
     }
 
+    /**
+     * any document that is in index db. Their url will be prefixed with blob:.
+     */
+    self.isBlobDocument = function(){
+        return !!document.blob;
+    }
+
+    self.getBlob = function(){
+        return document.blobObject;
+    }
+
+    self.isBlobUrl = function(url){
+        return url && url.indexOf('blob:') === 0;
+    }
+
     self.getActivityLink = function(){
         return fcConfig.activityViewUrl + '/' + self.activityId;
     }
@@ -61,7 +77,30 @@ function ImageViewModel(prop, skipFindingDocument, context){
     }
 
     self.getImageViewerUrl = function(){
-        return fcConfig.imageLeafletViewer + '?file=' + encodeURIComponent(self.url);
+        return fcConfig.imageLeafletViewer + '?file=' + encodeURIComponent(self.url());
+    }
+
+    /**
+     * Check if the url is a valid object url.
+     */
+    self.fetchImage = function() {
+        if (!isUuid(self.documentId) && !isNaN(self.documentId)) {
+            var documentId = parseInt(self.documentId);
+            entities.offlineGetDocument(documentId).then(function(result) {
+                var doc = result.data;
+                document = doc;
+                if (self.isBlobDocument()) {
+                    var url = self.url();
+                    if (self.isBlobUrl(url)) {
+                        URL.revokeObjectURL(url);
+                    }
+
+                    url = ImageViewModel.createObjectURL(doc);
+                    self.url(url);
+                    self.thumbnailUrl(url);
+                }
+            });
+        }
     }
 
     self.summary = function(){
@@ -74,5 +113,15 @@ function ImageViewModel(prop, skipFindingDocument, context){
 
         message += takenOn;
         return "<p>" + self.notes() + '</p><i>' + message + '</i>';
+    }
+
+    self.fetchImage();
+}
+
+ImageViewModel.createObjectURL = function addObjectURL(document){
+    if (document.blob) {
+        var blob = document.blobObject = new Blob([document.blob], {type: document.contentType});
+        var url = URL.createObjectURL(blob);
+        return url;
     }
 }
