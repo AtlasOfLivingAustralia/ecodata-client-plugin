@@ -459,7 +459,22 @@
         if ($parentColumn.length) {
             var select2 = $parentColumn.find('.select2-container');
             function calculateWidth() {
-                var columnWidth = $parentTable.width()*percentageWidth/100;
+                var parentWidth = $parentTable.width();
+
+                // If the table has overflowed due to long selections then we need to try and find a parent div
+                // as the div won't have overflowed.
+                var windowWidth = window.innerWidth;
+                if (parentWidth > windowWidth) {
+                    var parent = $parentTable.parent('div');
+                    if (parent.length) {
+                        parentWidth = parent.width();
+                    }
+                    else {
+                        parentWidth = windowWidth;
+                    }
+                }
+                var columnWidth = parentWidth*percentageWidth/100;
+
                 if (columnWidth > 10) {
                     select2.css('max-width', columnWidth+'px');
                 }
@@ -477,7 +492,7 @@
             ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
                 $(window).off('resize', resizeHandler);
             });
-            setTimeout(calculateWidth, 100);
+            setTimeout(calculateWidth, 0);
         }
 
     }
