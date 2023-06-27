@@ -477,6 +477,7 @@
 
                 if (columnWidth > 10) {
                     select2.css('max-width', columnWidth+'px');
+                    $(element).validationEngine('updatePromptsPosition');
                 }
                 else {
                     // The table is not visible yet, so wait a bit and try again.
@@ -492,7 +493,7 @@
             ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
                 $(window).off('resize', resizeHandler);
             });
-            setTimeout(calculateWidth, 0);
+            calculateWidth();
         }
 
     }
@@ -619,6 +620,9 @@
             }
             if (options.preserveColumnWidth) {
                 forceSelect2ToRespectPercentageTableWidths(element, options.preserveColumnWidth);
+            }
+            else {
+                applySelect2ValidationCompatibility(element);
             }
         }
     };
