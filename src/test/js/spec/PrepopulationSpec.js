@@ -15,7 +15,11 @@ describe("Pre-population Spec", function () {
               params: [{
                   name:"p1",
                   value:"1"
-              }]
+              },
+                  {
+                      name:"p2",
+                      value:["2","3"]
+                  }]
           },
           mapping: []
         };
@@ -35,7 +39,9 @@ describe("Pre-population Spec", function () {
         var dataLoader = ecodata.forms.dataLoader(context, config);
         dataLoader.getPrepopData(prepopConfig).done(function(result) {
             expect(url).toEqual(config.prepopUrlPrefix+prepopConfig.source.url);
-            expect(params.data.p1).toEqual("1");
+            expect(params.data[0]).toEqual({name:"p1", value:"1"});
+            expect(params.data[1]).toEqual({name:"p2", value:"2"});
+            expect(params.data[2]).toEqual({name:"p2", value:"3"});
             expect(params.dataType).toEqual('json');
 
             expect(result).toEqual(context);

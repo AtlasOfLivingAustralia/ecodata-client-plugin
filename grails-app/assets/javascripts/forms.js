@@ -373,10 +373,16 @@ function orEmptyArray(v) {
             return ''.concat(result);
         }
 
+        function evaluateUntyped(expression, context) {
+            var result = evaluateInternal(expression, context);
+            return result;
+        }
+
         return {
             evaluate: evaluateNumber,
             evaluateBoolean: evaluateBoolean,
-            evaluateString: evaluateString
+            evaluateString: evaluateString,
+            evaluateUntyped: evaluateUntyped
         }
 
     }();
@@ -643,18 +649,26 @@ function orEmptyArray(v) {
             var source = conf.source;
             if (source.url) {
                 var url = (config.prepopUrlPrefix || window.location.href) + source.url;
-                var params = {};
+                var params = [];
                 _.each(source.params || [], function(param) {
                     var value;
                     if (param.type && param.type == 'computed') {
                         // evaluate the expression against the context.
-                        value = ecodata.forms.expressionEvaluator.evaluateString(param.expression, context);
+                        value = ecodata.forms.expressionEvaluator.evaluateUntyped(param.expression, context);
                     }
                     else {
                         // Treat it as a literal
                         value = param.value;
                     }
-                    params[param.name] = value;
+                    // Unroll the array to prevent jQuery appending [] to the array typed parameter name.
+                    if (_.isArray(value)) {
+                        for (var i=0; i<value.length; i++) {
+                            params.push({name:param.name, value: value[i]});
+                        }
+                    }
+                    else {
+                        params.push({name:param.name, value: value});
+                    }
                 });
                 return $.ajax(url, {data:params, dataType:source.dataType || 'json'});
             }
