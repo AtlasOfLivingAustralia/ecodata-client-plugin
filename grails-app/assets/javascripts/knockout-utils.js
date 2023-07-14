@@ -92,14 +92,12 @@
         };
         var _initialState = ko.observable(getRepresentation());
 
-        result.isDirty = ko.dependentObservable(function () {
+        result.isDirty = ko.pureComputed(function () {
+            console.log("isDirty called");
             var dirty = _isInitiallyDirty() || _initialState() !== getRepresentation();
-            /*if (dirty) {
-                console.log('Initial: ' + _initialState());
-                console.log('Actual: ' + getRepresentation());
-            }*/
+
             return dirty;
-        });
+        }).extend({rateLimit: 500});
 
         result.reset = function () {
             _initialState(getRepresentation());
