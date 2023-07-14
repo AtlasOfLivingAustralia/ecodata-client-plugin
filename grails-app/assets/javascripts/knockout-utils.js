@@ -82,7 +82,7 @@
      * @param isInitiallyDirty
      * @returns an object (function) with the methods 'isDirty' and 'reset'
      */
-    ko.dirtyFlag = function (root, isInitiallyDirty) {
+    ko.dirtyFlag = function (root, isInitiallyDirty, rateLimit) {
         var result = function () {
         };
         var _isInitiallyDirty = ko.observable(isInitiallyDirty || false);
@@ -93,11 +93,12 @@
         var _initialState = ko.observable(getRepresentation());
 
         result.isDirty = ko.pureComputed(function () {
-            console.log("isDirty called");
             var dirty = _isInitiallyDirty() || _initialState() !== getRepresentation();
-
             return dirty;
-        }).extend({rateLimit: 500});
+        });
+        if (rateLimit) {
+            result.isDirty = result.isDirty.extend({rateLimit: 500});
+        }
 
         result.reset = function () {
             _initialState(getRepresentation());
