@@ -459,7 +459,9 @@ describe("Enmapify Spec", function () {
 
     it("should zoom to project area if no site is selected", function() {
         result = enmapify(options);
-        expect(result.zoomToDefaultSite()).toEqual(options.activityLevelData.project.projectSiteId);
+        result.zoomToDefaultSite().then(function (siteId){
+            expect(siteId.toEqual(options.activityLevelData.project.projectSiteId));
+        })
 
         options.activityLevelData.activity.siteId = "site2";
         result = enmapify(options);

@@ -212,11 +212,12 @@ function resolveSites(sites, addNotFoundSite) {
     sites.forEach(function (siteId) {
         var site;
         if(typeof siteId === 'string'){
-            site = lookupSite(siteId);
+            // site = lookupSite(siteId);
 
-            if(site){
-                resolved.push(site);
-            } else if(addNotFoundSite && siteId) {
+            // if(site){
+            //     resolved.push(site);
+            // } else
+            if(addNotFoundSite && siteId) {
                 resolved.push({
                     name: 'User created site',
                     siteId: siteId

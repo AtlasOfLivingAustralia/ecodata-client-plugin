@@ -64,7 +64,7 @@ function enmapify(args) {
         centroidLatObservable = container[name + "CentroidLatitude"] = ko.observable(),
         centroidLonObservable = container[name + "CentroidLongitude"] = ko.observable(),
         //siteObservable filters out all private sites
-        sitesObservable = ko.observableArray(),
+        sitesObservable = ko.observableArray(resolveSites(mapConfiguration.sites)),
         //container[SitesArray] does not care about 'private' or not, only check if the site matches the survey configs
         surveySupportedSitesObservable = container[name + "SitesArray"] =  ko.computed(function(){
             return sitesObservable();
@@ -1103,7 +1103,7 @@ function enmapify(args) {
     function zoomToDefaultSite(){
         var defaultZoomArea = project.projectSiteId;
         if (!siteIdObservable()){
-            activityLevelData.UTILS.getProjectActivitySites().then(function (result) {
+            return activityLevelData.UTILS.getProjectActivitySites().then(function (result) {
                 var sites = result.data;
                 var defaultsite  = $.grep(sites, function(site){
                     if(site.siteId == defaultZoomArea)
@@ -1161,7 +1161,9 @@ var AddSiteViewModel = function (uniqueNameUrl, activityLevelData) {
     self.name = ko.observable();
     self.throttledName = ko.computed(this.name).extend({throttle: 400});
     self.nameStatus = ko.observable(AddSiteViewModel.NAME_STATUS.BLANK);
-    self.db = getDB();
+    if (typeof getDB === 'function') {
+        self.db = getDB();
+    }
     self.activityLevelData = activityLevelData;
 
     self.name.subscribe(function (name) {
@@ -1248,13 +1250,13 @@ AddSiteViewModel.prototype.checkUniqueName = function (name) {
         switch (entityType) {
             default:
             case "projectActivity":
-                self.db.site.where("projects").anyOf(activityLevelData.pActivity.projectId).and(function (site) {
+                self.db && self.db.site.where("projects").anyOf(activityLevelData.pActivity.projectId).and(function (site) {
                     return site.name === name;
                 }).count(countHandler);
                 break;
 
             case "project":
-                self.db.site.where("projects").anyOf(activityLevelData.pActivity.projectId).and(function (site) {
+                self.db && self.db.site.where("projects").anyOf(activityLevelData.pActivity.projectId).and(function (site) {
                     return site.name === name;
                 }).count(countHandler);
                 break;
