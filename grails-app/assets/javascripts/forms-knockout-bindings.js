@@ -452,6 +452,51 @@
         }
     };
 
+    function forceSelect2ToRespectPercentageTableWidths(element, percentageWidth) {
+        var $parentColumn = $(element).parent('td');
+        var $parentTable = $parentColumn.closest('table');
+        var resizeHandler = null;
+        if ($parentColumn.length) {
+            var select2 = $parentColumn.find('.select2-container');
+            function calculateWidth() {
+                var parentWidth = $parentTable.width();
+
+                // If the table has overflowed due to long selections then we need to try and find a parent div
+                // as the div won't have overflowed.
+                var windowWidth = window.innerWidth;
+                if (parentWidth > windowWidth) {
+                    var parent = $parentTable.parent('div');
+                    if (parent.length) {
+                        parentWidth = parent.width();
+                    }
+                    else {
+                        parentWidth = windowWidth;
+                    }
+                }
+                var columnWidth = parentWidth*percentageWidth/100;
+
+                if (columnWidth > 10) {
+                    select2.css('max-width', columnWidth+'px');
+                    $(element).validationEngine('updatePromptsPosition');
+                }
+                else {
+                    // The table is not visible yet, so wait a bit and try again.
+                    setTimeout(calculateWidth, 200);
+                }
+            }
+            resizeHandler = function() {
+                clearTimeout(calculateWidth);
+                setTimeout(calculateWidth, 300);
+            };
+            $(window).on('resize', resizeHandler);
+
+            ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
+                $(window).off('resize', resizeHandler);
+            });
+            calculateWidth();
+        }
+
+    }
     function applySelect2ValidationCompatibility(element) {
         var $element = $(element);
         var select2 = $element.next('.select2-container');
@@ -573,6 +618,12 @@
                     $element.trigger('change');
                 });
             }
+            if (options.preserveColumnWidth) {
+                forceSelect2ToRespectPercentageTableWidths(element, options.preserveColumnWidth);
+            }
+            else {
+                applySelect2ValidationCompatibility(element);
+            }
         }
     };
 
@@ -586,33 +637,43 @@
             };
             var options = valueAccessor();
             var model = options.value;
+
             if (!ko.isObservable(model, ko.observableArray)) {
                 throw "The options require a key with name 'value' with a value of type ko.observableArray";
+            }
+
+            var constraints;
+            if (model.hasOwnProperty('constraints')) {
+                constraints = model.constraints;
+            }
+            else {
+                // Attempt to use the options binding to see if we can observe changes to the constraints
+                constraints = allBindings.get('options');
             }
 
             // Because constraints can be initialised by an AJAX call, constraints can be added after initialisation
             // which can result in duplicate OPTIONS tags for pre-selected values, which confuses select2.
             // Here we watch for changes to the model constraints and make sure any  duplicates are removed.
-            if (model.hasOwnProperty('constraints')) {
-                if (ko.isObservable(model.constraints)) {
-                    model.constraints.subscribe(function(val) {
-                        var existing = {};
-                        var duplicates = [];
-                        var currentOptions = $(element).find("option").each(function() {
-                            var val = $(this).val();
-                            if (existing[val]) {
-                                duplicates.push(this);
-                            }
-                            else {
-                                existing[val] = true;
-                            }
-                        });
-                        // Remove any duplicates
-                        for (var i=0; i<duplicates.length; i++) {
-                            element.removeChild(duplicates[i]);
+            if (constraints && ko.isObservable(constraints)) {
+
+                constraints.subscribe(function(val) {
+                    var existing = {};
+                    var duplicates = [];
+                    var currentOptions = $(element).find("option").each(function() {
+                        var val = $(this).val();
+                        if (existing[val]) {
+                            duplicates.push(this);
+                        }
+                        else {
+                            existing[val] = true;
                         }
                     });
-                }
+                    // Remove any duplicates
+                    for (var i=0; i<duplicates.length; i++) {
+                        element.removeChild(duplicates[i]);
+                    }
+                });
+
             }
             delete options.value;
             var options = _.defaults(valueAccessor() || {}, defaults);
@@ -620,6 +681,10 @@
             $(element).select2(options).change(function(e) {
                 model($(element).val());
             });
+
+            if (options.preserveColumnWidth) {
+                forceSelect2ToRespectPercentageTableWidths(element, options.preserveColumnWidth);
+            }
 
             applySelect2ValidationCompatibility(element);
         },

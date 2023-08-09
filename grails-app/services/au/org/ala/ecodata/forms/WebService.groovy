@@ -30,4 +30,8 @@ class WebService {
     def doPostWithParams(String url, Map params) {
         [:]
     }
+
+    def doPost(String url, Map params) {
+        [:]
+    }
 }
