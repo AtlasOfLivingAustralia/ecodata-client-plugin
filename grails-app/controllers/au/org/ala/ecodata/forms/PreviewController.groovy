@@ -1,5 +1,6 @@
 package au.org.ala.ecodata.forms
 
+import au.org.ala.web.NoSSO
 import grails.converters.JSON
 import grails.util.Environment
 import org.apache.commons.io.FilenameUtils
@@ -47,6 +48,14 @@ class PreviewController {
         else {
             response.status = 404
         }
+    }
+
+    /**
+     * Used by BioCollect PWA to check for internet connectivity.
+     */
+    @NoSSO
+    def noop() {
+        render(['status':'ok'] as JSON)
     }
 
 

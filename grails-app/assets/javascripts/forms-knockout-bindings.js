@@ -224,7 +224,7 @@
                 }
 
             }).on(eventPrefix+'fail', function(e, data) {
-                if (isOffline()) {
+                isOffline().then(function (){
                     var file = data.files[0];
                     if(db) {
                         db.file.put(file).then(function(fileId) {
@@ -244,9 +244,9 @@
                             // target.push(new ImageViewModel(data, true, context));
                         });
                     }
-                } else {
+                }, function (){
                     error(data.errorThrown);
-                }
+                })
             });
 
             ko.applyBindingsToDescendants(innerContext, element);
@@ -499,12 +499,11 @@
             }
 
             function searchSpecies(url, data) {
-                if (isOffline()) {
+                return isOffline().then(function () {
                     return offlineQuery(url, data);
-                }
-                else {
+                }, function () {
                     return onlineQuery(url, data);
-                }
+                })
             }
 
             options.source = function(request, response) {

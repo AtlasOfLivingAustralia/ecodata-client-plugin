@@ -251,6 +251,15 @@ function isUuid(id) {
 }
 
 function isOffline() {
-    var forceOffline = false;
-    return !navigator.onLine || forceOffline;
+    var forceOffline = false, deferred = $.Deferred();
+
+    // check if website is offline
+    $.ajax({
+        url: "/noop",
+        timeout: 1000,
+        success: deferred.reject,
+        error: deferred.resolve
+    })
+
+    return deferred.promise();
 }

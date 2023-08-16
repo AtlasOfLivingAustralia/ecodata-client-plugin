@@ -97,12 +97,12 @@ function enmapify(args) {
     viewModel.mapElementId = name + "Map";
     activityLevelData.UTILS = {
         getProjectActivitySites: function () {
-            if (isOffline()) {
+            return isOffline().then(function () {
                 return offlineGetProjectActivitySites();
-            }
-            else {
+            },
+            function () {
                 return onlineGetProjectActivitySites();
-            }
+            });
         }
     };
     // add event handling functions
@@ -183,11 +183,11 @@ function enmapify(args) {
     }
 
     function canAddPointToMap (lat, lng, callback) {
-        if (isOffline()) {
+        isOffline().then( function () {
             offlineCanAddPointToMap(lat, lng, callback);
-        } else {
+        }, function () {
             onlineCanAddPointToMap(lat, lng, callback);
-        }
+        });
     }
 
     function onlineCanAddPointToMap(lat, lng, callback) {
@@ -537,11 +537,11 @@ function enmapify(args) {
     }
 
     function fetchSite(siteId) {
-        if (isOffline()) {
+        isOffline().then(function () {
             return offlineFetchSite(siteId);
-        } else {
+        }, function () {
             return onlineFetchSite(siteId);
-        }
+        });
     }
 
     function onlineFetchSite(siteId) {
@@ -860,11 +860,11 @@ function enmapify(args) {
     }
 
     function addSite(site) {
-        if (isOffline()) {
+        return isOffline().then(function () {
             return offlineAddSite(site);
-        } else {
+        }, function () {
             return onlineAddSite(site);
-        }
+        });
     }
 
     function onlineAddSite(site) {
@@ -1055,11 +1055,11 @@ function enmapify(args) {
     }
 
     function reloadSiteData() {
-        if(isOffline()) {
+        return isOffline().then(function () {
             return offlineReloadSiteData();
-        } else {
+        }, function () {
             return onlineReloadSiteData();
-        }
+        });
     }
 
     function onlineReloadSiteData() {
@@ -1231,11 +1231,11 @@ AddSiteViewModel.prototype.checkUniqueName = function (name) {
         });
     function siteNameCheck() {
         var forceOffline = true;
-        if (isOffline()) {
+        return isOffline().then(function () {
             return offlineSiteNameCheck()
-        } else {
+        }, function () {
             return onlineSiteNameCheck()
-        }
+        });
     }
 
     function onlineSiteNameCheck() {
