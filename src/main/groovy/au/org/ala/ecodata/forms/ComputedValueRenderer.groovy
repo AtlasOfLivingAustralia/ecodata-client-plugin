@@ -17,7 +17,17 @@ class ComputedValueRenderer {
         String expression = computed.expression
         int decimalPlaces = getNumberOfDecimalPlaces(model, computed)
 
-        out << "return ecodata.forms.expressionEvaluator.evaluate('${expression}', ${dependantContext}, ${decimalPlaces});\n";
+        String expressionType
+        switch (model.dataType) {
+            case 'text':
+            case 'date':
+                expressionType = 'evaluateString'
+                break
+            default:
+                expressionType = "evaluate"
+        }
+
+        out << "return ecodata.forms.expressionEvaluator.${expressionType}('${expression}', ${dependantContext}, ${decimalPlaces});\n";
     }
 
     private int getNumberOfDecimalPlaces(Map model, Map computed) {

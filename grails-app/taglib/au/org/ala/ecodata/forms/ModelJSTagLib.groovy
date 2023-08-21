@@ -130,7 +130,13 @@ class ModelJSTagLib {
      */
     void renderDataModelItem(JSModelRenderContext ctx) {
         Map mod = ctx.dataModel
-        if (mod.computed) {
+        if (mod.dataType == 'date') {
+            dateViewModel(ctx)
+        }
+        else if (mod.dataType == 'time') {
+            timeViewModel(ctx)
+        }
+        else if (mod.computed) {
             computedModel(ctx)
         }
         else if (mod.dataType == 'text') {
@@ -150,12 +156,6 @@ class ModelJSTagLib {
         }
         else if (mod.dataType == 'species') {
             speciesModel(ctx)
-        }
-        else if (mod.dataType == 'date') {
-            dateViewModel(ctx)
-        }
-        else if (mod.dataType == 'time') {
-            timeViewModel(ctx)
         }
         else if (mod.dataType == 'document') {
             documentViewModel(ctx)
@@ -624,7 +624,14 @@ class ModelJSTagLib {
     }
 
     def dateViewModel(JSModelRenderContext ctx) {
-        observable(ctx, ["{simpleDate: false}"])
+        List extenders =  ["{simpleDate: {includeTime:false}}"]
+        if (ctx.dataModel.computed) {
+            extenders = ["{simpleDate: {includeTime:false, readOnly:true}}"]
+            computedModel(ctx, extenders)
+        }
+        else {
+            observable(ctx, extenders)
+        }
     }
 
     def booleanViewModel(JSModelRenderContext ctx) {
@@ -670,7 +677,7 @@ class ModelJSTagLib {
         observable(ctx, ["{feature:config}"])
     }
 
-    def computedModel(JSModelRenderContext ctx) {
+    def computedModel(JSModelRenderContext ctx, List extenders = []) {
 
         // TODO computed values within tables are rendered differently to values outside tables for historical reasons
         // This should be tidied up.
@@ -681,9 +688,10 @@ class ModelJSTagLib {
             computedValueRenderer.computedViewModel(ctx.out, ctx.attrs, ctx.dataModel, ctx.propertyPath, ctx.propertyPath)
         }
 
-        if (requiresMetadataExtender(ctx.dataModel)) {
-            ctx.out << INDENT*3 << "${ctx.propertyPath}.${ctx.dataModel.name} = ${ctx.propertyPath}.${ctx.dataModel.name}${extenderJS(ctx, [])};\n"
+        if (extenders || requiresMetadataExtender(ctx.dataModel)) {
+            ctx.out << INDENT*3 << "${ctx.propertyPath}.${ctx.dataModel.name} = ${ctx.propertyPath}.${ctx.dataModel.name}${extenderJS(ctx, extenders)};\n"
         }
+
 
     }
 
