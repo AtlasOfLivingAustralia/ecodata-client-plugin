@@ -1,5 +1,5 @@
 {
-  "name": "ecodata-client-plugin",
+  "name": "@atlasoflivingaustralia/ecodata-client-plugin",
   "version": "6.2.0",
   "repository": {
     "type": "git",
