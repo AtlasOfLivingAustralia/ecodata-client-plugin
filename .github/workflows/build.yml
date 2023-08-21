@@ -27,10 +27,15 @@ jobs:
       - name: Install nodejs
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: '16.x'
+          registry-url: 'https://npm.pkg.github.com'
 
       - run: npm install
       - run: npm run package-turf
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
 
