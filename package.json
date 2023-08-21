@@ -1,9 +1,12 @@
 {
-  "name": "ecodata-client-plugin",
+  "name": "AtlasOfLivingAustralia/ecodata-client-plugin",
   "version": "6.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/AtlasOfLivingAustralia/ecodata-client-plugin.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
   },
   "description": "Karma / jasmine configuration for testing project javascript",
   "main": "test/unit/javascript",
