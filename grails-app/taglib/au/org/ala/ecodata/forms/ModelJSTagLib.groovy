@@ -268,7 +268,10 @@ class ModelJSTagLib {
                 if (requiresMetadataExtender(mod)) {
                     out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'].load(${value});\n"
                 }
-                out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'](${value});\n"
+                else {
+                    out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'](${value});\n"
+                }
+
             }
         }
         else if (mod.dataType in ['image', 'photoPoints', 'audio', 'set']) {
