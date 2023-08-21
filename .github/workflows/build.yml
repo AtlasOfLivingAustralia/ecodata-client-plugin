@@ -29,6 +29,7 @@ jobs:
         with:
           node-version: '16.x'
           registry-url: 'https://npm.pkg.github.com'
+          scope: 'AtlasOfLivingAustralia'
 
       - run: npm install
       - run: npm run package-turf
