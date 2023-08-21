@@ -10,7 +10,6 @@
   },
   "description": "Karma / jasmine configuration for testing project javascript",
   "main": "test/unit/javascript",
-  "private": true,
   "directories": {
     "test": "test"
   },
