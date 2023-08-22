@@ -246,6 +246,13 @@ function orEmptyArray(v) {
             return result;
         };
 
+        /** Finds an object in an array by matching the value of a single property */
+        parser.functions.find = function(list, property, value) {
+            var obj = {};
+            obj[property] = value;
+            return _.findWhere(list, obj);
+        };
+
         var specialBindings = function() {
 
             return {
