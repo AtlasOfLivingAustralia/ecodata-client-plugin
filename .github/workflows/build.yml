@@ -35,15 +35,9 @@ jobs:
       - run: npm run package-turf
 
 
-      - name: get-npm-version
-        id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.3.1
-
-      - uses: castlabs/get-package-version-id-action@v2.0
-        id: versions
-        with:
-          version: ${{steps.package-version.outputs.current-version}}
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update your package.json with an npm pre-release version
+        id: pre-release-version
+        uses: adobe/update-prerelease-npm-version@v1.0.0
 
       - run: npm publish
         env:
