@@ -329,14 +329,14 @@ function orEmptyArray(v) {
         var expressionCache = {};
 
         function evaluateInternal(expression, context) {
-            var parsedExpression = expressionCache[expression];
-            if (!parsedExpression) {
-                parsedExpression = parser.parse(expression);
-                expressionCache[expression] = parsedExpression;
-            }
+                var parsedExpression = expressionCache[expression];
+                if (!parsedExpression) {
+                    parsedExpression = parser.parse(expression);
+                    expressionCache[expression] = parsedExpression;
+                }
 
-            var variables = parsedExpression.variables();
-            var boundVariables = bindVariables(variables, context);
+                var variables = parsedExpression.variables();
+                var boundVariables = bindVariables(variables, context);
 
             var result;
             try {
@@ -655,6 +655,7 @@ function orEmptyArray(v) {
         self.getPrepopData = function (conf) {
             var source = conf.source;
             if (source.url) {
+                var failedValidation = false;
                 var url = (config.prepopUrlPrefix || window.location.href) + source.url;
                 var params = [];
                 _.each(source.params || [], function(param) {
@@ -662,11 +663,15 @@ function orEmptyArray(v) {
                     if (param.type && param.type == 'computed') {
                         // evaluate the expression against the context.
                         value = ecodata.forms.expressionEvaluator.evaluateUntyped(param.expression, context);
+                        if (param.required && !value) {
+                            failedValidation = true;
+                        }
                     }
                     else {
                         // Treat it as a literal
                         value = param.value;
                     }
+
                     // Unroll the array to prevent jQuery appending [] to the array typed parameter name.
                     if (_.isArray(value)) {
                         for (var i=0; i<value.length; i++) {
@@ -677,6 +682,9 @@ function orEmptyArray(v) {
                         params.push({name:param.name, value: value});
                     }
                 });
+                if (failedValidation) {
+                    return $.Deferred().resolve(source.defaultValue || null);
+                }
                 return $.ajax(url, {data:params, dataType:source.dataType || 'json'});
             }
             var deferred = $.Deferred();
@@ -690,6 +698,14 @@ function orEmptyArray(v) {
             else if (source && source.hasOwnProperty('literal')) {
                 data = source['literal'];
             }
+
+            // Support for converting array typed values to lookup tables.
+            // e.g. MERIT has a list of data sets that we want to be selectable from a list then
+            // the full data set to be available for lookup by id (using the lookupTable data type)
+            if (source['index-by']) {
+                data = _.indexBy(data, source['index-by'])
+            }
+
             deferred.resolve(data);
             return deferred;
         };
@@ -844,6 +860,7 @@ function orEmptyArray(v) {
                     }
                 }
                 else if (metadata.constraints.type == 'pre-populated') {
+                    console.log("******************** Encountered pre-pop constraints for "+self.getName()+"***************************************")
                     var defaultConstraints = metadata.constraints.defaults || [];
                     var constraintsObservable = ko.observableArray(defaultConstraints);
                     if (!includeExcludeDefined) {
@@ -898,14 +915,15 @@ function orEmptyArray(v) {
             self.displayOptions = metadata.displayOptions;
         }
         self.load = function(data) {
+            console.log("Loading data for "+self.getName()+" : "+data)
+            self(data);
             if (constraintsInititaliser) {
                 constraintsInititaliser.always(function() {
+                    console.log("Re-Loading data for "+self.getName()+" : "+data)
                     self(data);
                 })
             }
-            else {
-                self(data);
-            }
+
         }
     };
 

@@ -91,9 +91,16 @@
             return (typeof root.modelAsJSON === 'function') ? root.modelAsJSON() : ko.toJSON(root);
         };
         var _initialState = ko.observable(getRepresentation());
+        console.log("****************** Initial state ******************")
+        console.log( _initialState())
 
         result.isDirty = ko.pureComputed(function () {
+
             var dirty = _isInitiallyDirty() || _initialState() !== getRepresentation();
+            if (dirty) {
+                console.log("******************* new state *******************")
+                console.log(getRepresentation())
+            }
             return dirty;
         });
         if (rateLimit) {
@@ -102,6 +109,8 @@
 
         result.reset = function () {
             _initialState(getRepresentation());
+            console.log("****************** Reset initial state ******************")
+            console.log( _initialState())
             _isInitiallyDirty(false);
         };
 
@@ -137,14 +146,16 @@
 
                 //just for subscriptions
                 getRepresentation();
-
+                console.log("****************** Initial state ******************")
+                console.log(getRepresentation())
                 //next time return true and avoid ko.toJS
                 _initialized(true);
 
                 //on initialization this flag is not dirty
                 return false;
             }
-
+            console.log("****************** New state ******************")
+            console.log(getRepresentation())
             //on subsequent changes, flag is now dirty
             return true;
         });

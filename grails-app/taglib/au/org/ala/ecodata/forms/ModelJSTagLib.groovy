@@ -136,7 +136,7 @@ class ModelJSTagLib {
         else if (mod.dataType == 'time') {
             timeViewModel(ctx)
         }
-        else if (mod.computed) {
+        else if (mod.computed && !mod.computed.source) {
             computedModel(ctx)
         }
         else if (mod.dataType == 'text') {
@@ -572,6 +572,9 @@ class ModelJSTagLib {
         if (requiresMetadataExtender(ctx.dataModel)) {
             extenders.add("{metadata:{metadata:self.dataModel['${ctx.fieldName()}'], context:self.\$context, config:config}}")
         }
+        if (ctx.dataModel.computed?.source) {
+            extenders.add("{dataLoader:true}")
+        }
 
         extenders.each {
             extenderJS += ".extend(${it})"
@@ -581,7 +584,7 @@ class ModelJSTagLib {
     }
 
     private boolean requiresMetadataExtender(Map dataModel) {
-        dataModel.dataType == 'feature' || dataModel.behaviour || dataModel.warning || dataModel.constraints || dataModel.displayOptions || (dataModel.validate instanceof List) || dataModel.scores
+        dataModel.dataType == 'feature' || dataModel.behaviour || dataModel.warning || dataModel.constraints || dataModel.displayOptions || (dataModel.validate instanceof List) || dataModel.scores || dataModel.computed?.source
 
     }
 

@@ -1160,5 +1160,21 @@
         }
     };
 
+    ko.extenders.dataLoader = function(target, options) {
+
+        var dataLoader = new ecodata.forms.dataLoader(target.context, target.config);
+        var dataLoaderConfig = target.get('computed');
+        if (!dataLoaderConfig) {
+            throw "This extender can only be used with the metadata extender";
+        }
+        var dependencyTracker = ko.computed(function () {
+            return dataLoader.prepop(dataLoaderConfig).done( function(data) {
+                target(data);
+            });
+        });
+        //dependencyTracker.subscribe(function() { console.log("bananas")})
+        return target;
+    }
+
 })();
 
