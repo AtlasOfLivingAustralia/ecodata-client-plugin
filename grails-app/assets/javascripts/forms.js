@@ -860,7 +860,6 @@ function orEmptyArray(v) {
                     }
                 }
                 else if (metadata.constraints.type == 'pre-populated') {
-                    console.log("******************** Encountered pre-pop constraints for "+self.getName()+"***************************************")
                     var defaultConstraints = metadata.constraints.defaults || [];
                     var constraintsObservable = ko.observableArray(defaultConstraints);
                     if (!includeExcludeDefined) {
@@ -915,13 +914,13 @@ function orEmptyArray(v) {
             self.displayOptions = metadata.displayOptions;
         }
         self.load = function(data) {
-            console.log("Loading data for "+self.getName()+" : "+data)
-            self(data);
             if (constraintsInititaliser) {
                 constraintsInititaliser.always(function() {
-                    console.log("Re-Loading data for "+self.getName()+" : "+data)
                     self(data);
                 })
+            }
+            else {
+                    self(data);
             }
 
         }

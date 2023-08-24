@@ -75,4 +75,85 @@ describe("Pre-population Spec", function () {
             expect(result).toEqual({item1:"test"});
         });
     });
+
+    it("Should should support computing the pre-pop params via an expression", function() {
+        var context = {
+            data: {
+                item1: '1',
+                item2: '2'
+            }
+        };
+
+        var prepopConfig = {
+            source: {
+                url:'test',
+                params: [{
+                    "type":"computed",
+                    "expression":"2+2",
+                    name:"p1",
+                }]
+            },
+            mapping: []
+        };
+
+        var config = {
+            prepopUrlPrefix:'/'
+        };
+
+        var url;
+        var params;
+        spyOn($, 'ajax').and.callFake(function(p1,p2) {
+            url = p1;
+            params = p2;
+            return $.Deferred().resolve(context).promise();
+        });
+
+        var dataLoader = ecodata.forms.dataLoader(context, config);
+        dataLoader.getPrepopData(prepopConfig).done(function(result) {
+            expect(url).toEqual(config.prepopUrlPrefix+prepopConfig.source.url);
+            expect(params.data[0]).toEqual({name:"p1", value:4});
+            expect(params.dataType).toEqual('json');
+
+            expect(result).toEqual(context);
+        });
+    });
+
+    // This prevents making calls that will return errors
+    it("Should not make a remote call if required params are undefined", function() {
+        var context = {
+            data: {
+                item1: '1',
+                item2: '2'
+            }
+        };
+
+        var prepopConfig = {
+            source: {
+                url:'test',
+                params: [{
+                    "type":"computed",
+                    "expression":"x",
+                    name:"p1",
+                    required:true
+                }]
+            },
+            mapping: []
+        };
+
+        var config = {
+            prepopUrlPrefix:'/'
+        };
+
+        var called = false;
+
+        spyOn($, 'ajax').and.callFake(function(p1,p2) {
+            called = true;
+        });
+
+        var dataLoader = ecodata.forms.dataLoader(context, config);
+        dataLoader.getPrepopData(prepopConfig).done(function(result) {
+        });
+
+        expect(called).toEqual(false);
+    });
 });
