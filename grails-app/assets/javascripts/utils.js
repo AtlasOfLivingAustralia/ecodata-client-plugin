@@ -203,32 +203,59 @@ function formatBytes(bytes) {
  * e.g workprojects
  * @param sites
  * @param addNotFoundSite
+ * @param selectedSiteId
  * @returns {Array}
  */
-function resolveSites(sites, addNotFoundSite) {
-    var resolved = [];
+function resolveSites(sites, addNotFoundSite, selectedSiteId) {
+    var resolved = [],
+        selectedSiteAdded = false;
     sites = sites || [];
 
-    sites.forEach(function (siteId) {
-        var site;
-        if(typeof siteId === 'string'){
-            // site = lookupSite(siteId);
+    sites.forEach(function (site) {
+        selectedSiteAdded = resolveSite(site, addNotFoundSite, selectedSiteId, resolved, selectedSiteAdded);
 
-            // if(site){
-            //     resolved.push(site);
-            // } else
-            if(addNotFoundSite && siteId) {
-                resolved.push({
-                    name: 'User created site',
-                    siteId: siteId
-                });
-            }
-        } else if(typeof siteId === 'object'){
-            resolved.push(siteId);
-        }
     });
 
+    if (!selectedSiteAdded && selectedSiteId) {
+        resolveSite(selectedSiteId, addNotFoundSite, selectedSiteId, resolved, selectedSiteAdded);
+    }
+
     return resolved;
+}
+
+function resolveSite(site, addNotFoundSite, selectedSiteId, resolved, selectedSiteAdded) {
+    if(typeof site === 'string'){
+        // site = lookupSite(siteId);
+
+        // if(site){
+        //     resolved.push(site);
+        // } else
+        if (isUuid(site)) {
+            if (addNotFoundSite && site) {
+                resolved.push({
+                    name: 'User created site',
+                    siteId: site
+                });
+            }
+        }
+        // look in indexedDB
+        else if (window.entities) {
+            entities.getSite(site).then(function (result) {
+                sites.push(result.data);
+            })
+        }
+
+        if (site === selectedSiteId) {
+            selectedSiteAdded = true;
+        }
+    } else if(typeof site === 'object') {
+        resolved.push(site);
+        if (site.siteId === selectedSiteId) {
+            selectedSiteAdded = true;
+        }
+    }
+
+    return selectedSiteAdded
 }
 
 /**
