@@ -290,3 +290,23 @@ function isOffline() {
 
     return deferred.promise();
 }
+
+function checkOfflineForIntervalAndTriggerEvents (interval) {
+    interval = interval || 10000;
+    var isCurrentlyOffline = false;
+    return setInterval(function () {
+        isOffline().then(function () {
+            if (!isCurrentlyOffline) {
+                var event = new Event('offline');
+                document.dispatchEvent(event);
+                isCurrentlyOffline = true;
+            }
+        }, function () {
+            if (isCurrentlyOffline) {
+                var event = new Event('online');
+                document.dispatchEvent(event);
+                isCurrentlyOffline = false;
+            }
+        });
+    }, interval);
+}
