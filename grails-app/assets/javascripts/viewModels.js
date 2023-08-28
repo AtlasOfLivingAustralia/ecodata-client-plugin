@@ -37,6 +37,7 @@ function enmapify(args) {
         listSitesUrl = activityLevelData.listSitesUrl || args.listSitesUrl,
         getSiteUrl = activityLevelData.getSiteUrl || args.getSiteUrl,
         checkPointUrl = activityLevelData.checkPointUrl || args.checkPointUrl,
+        enableOffline = activityLevelData.enableOffline || args.enableOffline || false,
         context = args.context,
         uniqueNameUrl = (activityLevelData.uniqueNameUrl || args.uniqueNameUrl) + "/" + ( activityLevelData.pActivity.projectActivityId || activityLevelData.pActivity.projectId),
         projectId = activityLevelData.pActivity.projectId,
@@ -64,7 +65,7 @@ function enmapify(args) {
         centroidLatObservable = container[name + "CentroidLatitude"] = ko.observable(),
         centroidLonObservable = container[name + "CentroidLongitude"] = ko.observable(),
         //siteObservable filters out all private sites
-        sitesObservable = ko.observableArray(resolveSites(mapConfiguration.sites)),
+        sitesObservable = ko.observableArray(resolveSites(mapConfiguration.sites, true, siteIdObservable())),
         //container[SitesArray] does not care about 'private' or not, only check if the site matches the survey configs
         surveySupportedSitesObservable = container[name + "SitesArray"] =  ko.computed(function(){
             return sitesObservable();
@@ -97,12 +98,17 @@ function enmapify(args) {
     viewModel.mapElementId = name + "Map";
     activityLevelData.UTILS = {
         getProjectActivitySites: function () {
-            return isOffline().then(function () {
-                return offlineGetProjectActivitySites();
-            },
-            function () {
+            if (enableOffline) {
+                return isOffline().then(function () {
+                    return offlineGetProjectActivitySites();
+                },
+                function () {
+                    return onlineGetProjectActivitySites();
+                });
+            }
+            else {
                 return onlineGetProjectActivitySites();
-            });
+            }
         }
     };
     // add event handling functions
@@ -183,11 +189,16 @@ function enmapify(args) {
     }
 
     function canAddPointToMap (lat, lng, callback) {
-        isOffline().then( function () {
-            offlineCanAddPointToMap(lat, lng, callback);
-        }, function () {
+        if (enableOffline) {
+            isOffline().then( function () {
+                offlineCanAddPointToMap(lat, lng, callback);
+            }, function () {
+                onlineCanAddPointToMap(lat, lng, callback);
+            });
+        }
+        else {
             onlineCanAddPointToMap(lat, lng, callback);
-        });
+        }
     }
 
     function onlineCanAddPointToMap(lat, lng, callback) {
@@ -509,6 +520,8 @@ function enmapify(args) {
                         matchingSite = site;
                         map.clearBoundLimits();
                         map.setGeoJSON(Biocollect.MapUtilities.featureToValidGeoJson(matchingSite.extent.geometry));
+                        // Reassign since siteIdObservable value is cleared when the site is not listed in sitesObservable.
+                        siteIdObservable(siteId);
                     }
                 }).fail(function(result) {
                     console.log(result.message);
@@ -537,11 +550,21 @@ function enmapify(args) {
     }
 
     function fetchSite(siteId) {
-        isOffline().then(function () {
-            return offlineFetchSite(siteId);
-        }, function () {
+        if (enableOffline) {
+            if (isUuid(siteId)) {
+                return isOffline().then(function () {
+                    return offlineFetchSite(siteId);
+                }, function () {
+                    return onlineFetchSite(siteId);
+                });
+            }
+            else {
+                return offlineFetchSite(siteId);
+            }
+        }
+        else {
             return onlineFetchSite(siteId);
-        });
+        }
     }
 
     function onlineFetchSite(siteId) {
@@ -558,7 +581,11 @@ function enmapify(args) {
                 }
             },
             error: function () {
-                deferred.reject({message: "Failed to fetch site from server", success: false, arguments: arguments});
+                offlineFetchSite(siteId).then(function (result) {
+                    deferred.resolve(result);
+                }, function () {
+                    deferred.reject({message: "Failed to fetch site", success: false, arguments: arguments});
+                });
             }
         });
 
@@ -745,7 +772,7 @@ function enmapify(args) {
         subscribeOrDisposeSiteIdObservable(false);
         siteIdObservable(null);
         Biocollect.Modals.showModal({
-            viewModel: new AddSiteViewModel(uniqueNameUrl, activityLevelData)
+            viewModel: new AddSiteViewModel(uniqueNameUrl, activityLevelData, enableOffline)
         }).then(function (newSite) {
             loadingObservable(true);
             var extent = convertGeoJSONToExtent(map.getGeoJSON());
@@ -860,11 +887,16 @@ function enmapify(args) {
     }
 
     function addSite(site) {
-        return isOffline().then(function () {
-            return offlineAddSite(site);
-        }, function () {
+        if (enableOffline) {
+            return isOffline().then(function () {
+                return offlineAddSite(site);
+            }, function () {
+                return onlineAddSite(site);
+            });
+        }
+        else {
             return onlineAddSite(site);
-        });
+        }
     }
 
     function onlineAddSite(site) {
@@ -1055,11 +1087,16 @@ function enmapify(args) {
     }
 
     function reloadSiteData() {
-        return isOffline().then(function () {
-            return offlineReloadSiteData();
-        }, function () {
+        if (enableOffline) {
+            return isOffline().then(function () {
+                return offlineReloadSiteData();
+            }, function () {
+                return onlineReloadSiteData();
+            });
+        }
+        else {
             return onlineReloadSiteData();
-        });
+        }
     }
 
     function onlineReloadSiteData() {
@@ -1153,10 +1190,11 @@ function enmapify(args) {
     };
 }
 
-var AddSiteViewModel = function (uniqueNameUrl, activityLevelData) {
+var AddSiteViewModel = function (uniqueNameUrl, activityLevelData, enableOffline) {
     var self = this;
     self.uniqueNameUrl = uniqueNameUrl;
 
+    self.enableOffline = enableOffline || false;
     self.inflight = null;
     self.name = ko.observable();
     self.throttledName = ko.computed(this.name).extend({throttle: 400});
@@ -1231,11 +1269,16 @@ AddSiteViewModel.prototype.checkUniqueName = function (name) {
         });
     function siteNameCheck() {
         var forceOffline = true;
-        return isOffline().then(function () {
-            return offlineSiteNameCheck()
-        }, function () {
-            return onlineSiteNameCheck()
-        });
+        if (self.enableOffline) {
+            return isOffline().then(function () {
+                return offlineSiteNameCheck()
+            }, function () {
+                return onlineSiteNameCheck()
+            });
+        }
+        else {
+            return onlineSiteNameCheck();
+        }
     }
 
     function onlineSiteNameCheck() {

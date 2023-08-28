@@ -488,9 +488,15 @@ describe("Enmapify Spec", function () {
 
     describe("Test ajax call to manual create point", function() {
         var request, result;
-        jasmine.Ajax.install();
 
         beforeEach(function() {
+            jasmine.Ajax.install();
+            jasmine.Ajax.stubRequest('noop').andReturn({
+                "responseJSON": {"status": "ok"},
+                "status": 200,
+                "contentType": "application/json"
+            });
+
             result = enmapify(options);
             result.viewModel.transients.editCoordinates(true);
             options.container["TestLatitude"](0);
@@ -502,6 +508,10 @@ describe("Enmapify Spec", function () {
             request = jasmine.Ajax.requests.mostRecent();
             expect(request.url).toBe('?lat=10&lng=9&projectId=abc');
             expect(request.method).toBe('GET');
+        });
+
+        afterEach(function() {
+            jasmine.Ajax.uninstall();
         });
 
         it("should add point to map and dismiss coordinate fields", function() {
