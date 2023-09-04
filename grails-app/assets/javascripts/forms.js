@@ -605,8 +605,17 @@ function orEmptyArray(v) {
                 if (prepopData) {
                     var result = prepopData;
                     var mapping = conf.mapping;
+                    if (conf.filter && conf.filter.expression) {
+                        if (!_.isArray(prepopData)) {
+                            throw "Filtering is only supported for array typed prepop data."
+                        }
+                        result = _.filter(result, function(item) {
+                            var expression = conf.filter.expression;
+                            return ecodata.forms.expressionEvaluator().evaluateBoolean(expression, item);
+                        });
+                    }
                     if (mapping) {
-                        result = self.map(mapping, prepopData);
+                        result = self.map(mapping, result);
                     }
                     return result;
                 }
