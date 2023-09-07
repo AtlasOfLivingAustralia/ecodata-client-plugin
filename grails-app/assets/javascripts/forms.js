@@ -611,7 +611,8 @@ function orEmptyArray(v) {
                         }
                         result = _.filter(result, function(item) {
                             var expression = conf.filter.expression;
-                            return ecodata.forms.expressionEvaluator().evaluateBoolean(expression, item);
+                            var itemContext = _.extend({}, item, {$context:context, $config:config});
+                            return ecodata.forms.expressionEvaluator.evaluateBoolean(expression, itemContext);
                         });
                     }
                     if (mapping) {
