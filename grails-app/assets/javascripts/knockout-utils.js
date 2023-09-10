@@ -93,6 +93,7 @@
         var _initialState = ko.observable(getRepresentation());
 
         result.isDirty = ko.pureComputed(function () {
+
             var dirty = _isInitiallyDirty() || _initialState() !== getRepresentation();
             return dirty;
         });

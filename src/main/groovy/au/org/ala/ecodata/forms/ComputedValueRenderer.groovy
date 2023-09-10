@@ -17,7 +17,17 @@ class ComputedValueRenderer {
         String expression = computed.expression
         int decimalPlaces = getNumberOfDecimalPlaces(model, computed)
 
-        out << "return ecodata.forms.expressionEvaluator.evaluate('${expression}', ${dependantContext}, ${decimalPlaces});\n";
+        String expressionType
+        switch (model.dataType) {
+            case 'text':
+            case 'date':
+                expressionType = 'evaluateString'
+                break
+            default:
+                expressionType = "evaluate"
+        }
+
+        out << "return ecodata.forms.expressionEvaluator.${expressionType}('${expression}', ${dependantContext}, ${decimalPlaces});\n";
     }
 
     private int getNumberOfDecimalPlaces(Map model, Map computed) {
@@ -37,39 +47,53 @@ class ComputedValueRenderer {
     }
 
     def computedObservable(model, propertyContext, dependantContext, out) {
-        out << INDENT*5 << "${propertyContext}.${model.name} = ko.computed(function () {\n"
+
+        boolean needsDefer = model.computed.defer
+        String endFunction = "});\n"
+        String computedParams = "function ()"
+        if (needsDefer) {
+            computedParams = "{deferEvaluation:true, read:function ()"
+            endFunction = "}});\n"
+        }
+
+        out << INDENT*5 << "${propertyContext}.${model.name} = ko.computed($computedParams {\n"
 
         if (model.computed.expression) {
             renderJSExpression(model, "self", out)
         }
         else {
-            // must be at least one dependant
-            def numbers = []
-            def checkNumberness = []
-            model.computed.dependents.each {
-                def ref = it
-                def path = dependantContext
-                if (ref.startsWith('$')) {
-                    ref = ref[1..-1]
-                    path = "self.data"
-                }
-                numbers << "Number(${path}.${ref}())"
-                checkNumberness << "isNaN(Number(${path}.${ref}()))"
-            }
-            out << INDENT * 6 << "if (" + checkNumberness.join(' || ') + ") { return 0; }\n"
-            if (model.computed.operation == 'divide') {
-                // can't divide by zero
-                out << INDENT * 6 << "if (${numbers[-1]} === 0) { return 0; }\n"
-            }
-            def expression = numbers.join(" ${operators[model.computed.operation]} ")
-            if (model.computed.rounding) {
-                expression = "neat_number(${expression},${model.computed.rounding})"
-            }
-            out << INDENT * 6 << "return " + expression + ";\n"
+            renderLegacyComputed(model, dependantContext, out)
         }
-        out << INDENT * 5 << "});\n"
 
+        out << INDENT*5 << endFunction
     }
+
+    private void renderLegacyComputed(model, dependantContext, out) {
+        // must be at least one dependant
+        def numbers = []
+        def checkNumberness = []
+        model.computed.dependents.each {
+            def ref = it
+            def path = dependantContext
+            if (ref.startsWith('$')) {
+                ref = ref[1..-1]
+                path = "self.data"
+            }
+            numbers << "Number(${path}.${ref}())"
+            checkNumberness << "isNaN(Number(${path}.${ref}()))"
+        }
+        out << INDENT * 6 << "if (" + checkNumberness.join(' || ') + ") { return 0; }\n"
+        if (model.computed.operation == 'divide') {
+            // can't divide by zero
+            out << INDENT * 6 << "if (${numbers[-1]} === 0) { return 0; }\n"
+        }
+        def expression = numbers.join(" ${operators[model.computed.operation]} ")
+        if (model.computed.rounding) {
+            expression = "neat_number(${expression},${model.computed.rounding})"
+        }
+        out << INDENT * 6 << "return " + expression + ";\n"
+    }
+
 
     def computedViewModel(out, attrs, model, propertyContext, dependantContext) {
         computedViewModel(out, attrs, model, propertyContext, dependantContext, null)

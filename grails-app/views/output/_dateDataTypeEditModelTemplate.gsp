@@ -1,5 +1,5 @@
 <div id="${context.source}Date" class="input-group">
-    <input class="form-control form-control-sm inputDatePicker" data-bind="${context.databindAttrs}" type="text" size="12" ${context.validationAttr}/>
+    <input class="form-control form-control-sm inputDatePicker" ${context.attributes} data-bind="${context.databindAttrs}" type="text" size="12" ${context.validationAttr}/>
     <div class="input-group-append">
         <span class="add-on input-group-text open-datepicker"><i class="fa fa-th"></i></span>
     </div>

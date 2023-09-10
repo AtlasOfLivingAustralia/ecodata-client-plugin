@@ -130,7 +130,13 @@ class ModelJSTagLib {
      */
     void renderDataModelItem(JSModelRenderContext ctx) {
         Map mod = ctx.dataModel
-        if (mod.computed) {
+        if (mod.dataType == 'date') {
+            dateViewModel(ctx)
+        }
+        else if (mod.dataType == 'time') {
+            timeViewModel(ctx)
+        }
+        else if (mod.computed && !mod.computed.source) {
             computedModel(ctx)
         }
         else if (mod.dataType == 'text') {
@@ -150,12 +156,6 @@ class ModelJSTagLib {
         }
         else if (mod.dataType == 'species') {
             speciesModel(ctx)
-        }
-        else if (mod.dataType == 'date') {
-            dateViewModel(ctx)
-        }
-        else if (mod.dataType == 'time') {
-            timeViewModel(ctx)
         }
         else if (mod.dataType == 'document') {
             documentViewModel(ctx)
@@ -268,7 +268,10 @@ class ModelJSTagLib {
                 if (requiresMetadataExtender(mod)) {
                     out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'].load(${value});\n"
                 }
-                out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'](${value});\n"
+                else {
+                    out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'](${value});\n"
+                }
+
             }
         }
         else if (mod.dataType in ['image', 'photoPoints', 'audio', 'set']) {
@@ -569,6 +572,9 @@ class ModelJSTagLib {
         if (requiresMetadataExtender(ctx.dataModel)) {
             extenders.add("{metadata:{metadata:self.dataModel['${ctx.fieldName()}'], context:self.\$context, config:config}}")
         }
+        if (ctx.dataModel.computed?.source) {
+            extenders.add("{dataLoader:true}")
+        }
 
         extenders.each {
             extenderJS += ".extend(${it})"
@@ -578,7 +584,7 @@ class ModelJSTagLib {
     }
 
     private boolean requiresMetadataExtender(Map dataModel) {
-        dataModel.dataType == 'feature' || dataModel.behaviour || dataModel.warning || dataModel.constraints || dataModel.displayOptions || (dataModel.validate instanceof List) || dataModel.scores
+        dataModel.dataType == 'feature' || dataModel.behaviour || dataModel.warning || dataModel.constraints || dataModel.displayOptions || (dataModel.validate instanceof List) || dataModel.scores || dataModel.computed?.source
 
     }
 
@@ -624,7 +630,14 @@ class ModelJSTagLib {
     }
 
     def dateViewModel(JSModelRenderContext ctx) {
-        observable(ctx, ["{simpleDate: false}"])
+        List extenders =  ["{simpleDate: {includeTime:false}}"]
+        if (ctx.dataModel.computed) {
+            extenders = ["{simpleDate: {includeTime:false, readOnly:true}}"]
+            computedModel(ctx, extenders)
+        }
+        else {
+            observable(ctx, extenders)
+        }
     }
 
     def booleanViewModel(JSModelRenderContext ctx) {
@@ -670,7 +683,7 @@ class ModelJSTagLib {
         observable(ctx, ["{feature:config}"])
     }
 
-    def computedModel(JSModelRenderContext ctx) {
+    def computedModel(JSModelRenderContext ctx, List extenders = []) {
 
         // TODO computed values within tables are rendered differently to values outside tables for historical reasons
         // This should be tidied up.
@@ -681,9 +694,10 @@ class ModelJSTagLib {
             computedValueRenderer.computedViewModel(ctx.out, ctx.attrs, ctx.dataModel, ctx.propertyPath, ctx.propertyPath)
         }
 
-        if (requiresMetadataExtender(ctx.dataModel)) {
-            ctx.out << INDENT*3 << "${ctx.propertyPath}.${ctx.dataModel.name} = ${ctx.propertyPath}.${ctx.dataModel.name}${extenderJS(ctx, [])};\n"
+        if (extenders || requiresMetadataExtender(ctx.dataModel)) {
+            ctx.out << INDENT*3 << "${ctx.propertyPath}.${ctx.dataModel.name} = ${ctx.propertyPath}.${ctx.dataModel.name}${extenderJS(ctx, extenders)};\n"
         }
+
 
     }
 

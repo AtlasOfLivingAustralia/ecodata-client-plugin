@@ -246,6 +246,13 @@ function orEmptyArray(v) {
             return result;
         };
 
+        /** Finds an object in an array by matching the value of a single property */
+        parser.functions.find = function(list, property, value) {
+            var obj = {};
+            obj[property] = value;
+            return _.findWhere(list, obj);
+        };
+
         var specialBindings = function() {
 
             return {
@@ -322,14 +329,14 @@ function orEmptyArray(v) {
         var expressionCache = {};
 
         function evaluateInternal(expression, context) {
-            var parsedExpression = expressionCache[expression];
-            if (!parsedExpression) {
-                parsedExpression = parser.parse(expression);
-                expressionCache[expression] = parsedExpression;
-            }
+                var parsedExpression = expressionCache[expression];
+                if (!parsedExpression) {
+                    parsedExpression = parser.parse(expression);
+                    expressionCache[expression] = parsedExpression;
+                }
 
-            var variables = parsedExpression.variables();
-            var boundVariables = bindVariables(variables, context);
+                var variables = parsedExpression.variables();
+                var boundVariables = bindVariables(variables, context);
 
             var result;
             try {
@@ -598,8 +605,18 @@ function orEmptyArray(v) {
                 if (prepopData) {
                     var result = prepopData;
                     var mapping = conf.mapping;
+                    if (conf.filter && conf.filter.expression) {
+                        if (!_.isArray(prepopData)) {
+                            throw "Filtering is only supported for array typed prepop data."
+                        }
+                        result = _.filter(result, function(item) {
+                            var expression = conf.filter.expression;
+                            var itemContext = _.extend({}, item, {$context:context, $config:config});
+                            return ecodata.forms.expressionEvaluator.evaluateBoolean(expression, itemContext);
+                        });
+                    }
                     if (mapping) {
-                        result = self.map(mapping, prepopData);
+                        result = self.map(mapping, result);
                     }
                     return result;
                 }
@@ -648,6 +665,7 @@ function orEmptyArray(v) {
         self.getPrepopData = function (conf) {
             var source = conf.source;
             if (source.url) {
+                var failedValidation = false;
                 var url = (config.prepopUrlPrefix || window.location.href) + source.url;
                 var params = [];
                 _.each(source.params || [], function(param) {
@@ -655,11 +673,15 @@ function orEmptyArray(v) {
                     if (param.type && param.type == 'computed') {
                         // evaluate the expression against the context.
                         value = ecodata.forms.expressionEvaluator.evaluateUntyped(param.expression, context);
+                        if (param.required && !value) {
+                            failedValidation = true;
+                        }
                     }
                     else {
                         // Treat it as a literal
                         value = param.value;
                     }
+
                     // Unroll the array to prevent jQuery appending [] to the array typed parameter name.
                     if (_.isArray(value)) {
                         for (var i=0; i<value.length; i++) {
@@ -670,6 +692,9 @@ function orEmptyArray(v) {
                         params.push({name:param.name, value: value});
                     }
                 });
+                if (failedValidation) {
+                    return $.Deferred().resolve(source.defaultValue || null);
+                }
                 return $.ajax(url, {data:params, dataType:source.dataType || 'json'});
             }
             var deferred = $.Deferred();
@@ -683,6 +708,14 @@ function orEmptyArray(v) {
             else if (source && source.hasOwnProperty('literal')) {
                 data = source['literal'];
             }
+
+            // Support for converting array typed values to lookup tables.
+            // e.g. MERIT has a list of data sets that we want to be selectable from a list then
+            // the full data set to be available for lookup by id (using the lookupTable data type)
+            if (source['index-by']) {
+                data = _.indexBy(data, source['index-by'])
+            }
+
             deferred.resolve(data);
             return deferred;
         };
@@ -897,8 +930,9 @@ function orEmptyArray(v) {
                 })
             }
             else {
-                self(data);
+                    self(data);
             }
+
         }
     };
 
