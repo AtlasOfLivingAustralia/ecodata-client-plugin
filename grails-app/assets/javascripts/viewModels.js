@@ -37,8 +37,8 @@ function enmapify(args) {
         listSitesUrl = activityLevelData.listSitesUrl || args.listSitesUrl,
         getSiteUrl = activityLevelData.getSiteUrl || args.getSiteUrl,
         checkPointUrl = activityLevelData.checkPointUrl || args.checkPointUrl,
-        enableOffline = activityLevelData.enableOffline || args.enableOffline || false,
         context = args.context,
+        enableOffline = args.enableOffline || context.enableOffline || false,
         uniqueNameUrl = (activityLevelData.uniqueNameUrl || args.uniqueNameUrl) + "/" + ( activityLevelData.pActivity.projectActivityId || activityLevelData.pActivity.projectId),
         projectId = activityLevelData.pActivity.projectId,
         projectActivityId = activityLevelData.pActivity.projectActivityId,
@@ -92,8 +92,7 @@ function enmapify(args) {
             }
 
             return {validation:true};
-        },
-        db;
+        };
 
     viewModel.mapElementId = name + "Map";
     activityLevelData.UTILS = {
@@ -114,10 +113,6 @@ function enmapify(args) {
     // add event handling functions
     if(!viewModel.on){
         new Emitter(viewModel);
-    }
-
-    if (typeof getDB === 'function') {
-        db = getDB();
     }
 
     viewModel.transients = viewModel.transients || {};
@@ -595,12 +590,8 @@ function enmapify(args) {
     function offlineFetchSite(siteId) {
         var deferred = $.Deferred();
 
-        if (db) {
-            db.site.where('siteId').equals(siteId).first().then(function (site) {
-                deferred.resolve({message: "Failed to fetch site form db", success: false, data: site});
-            }).catch(function (error) {
-                deferred.reject({message: "Failed to fetch site form db", success: false, arguments: arguments});
-            });
+        if (window.entities) {
+            entities.offlineGetSite(siteId).then(deferred.resolve, deferred.reject);
         } else {
             deferred.reject({message: "No offline database available", success: false});
         }
@@ -610,11 +601,16 @@ function enmapify(args) {
 
     function offlineGetProjectActivitySites () {
         var deferred = $.Deferred();
-        db.projectActivity.where('projectActivityId').equals(projectActivityId).first().then(function (projectActivity) {
-            deferred.resolve({message: "Found project activity", success: true, data: projectActivity.sites});
-        }).catch(function (){
+        if (window.entities) {
+            entities.offlineFetchProjectActivity(projectActivityId).then(function (result) {
+                if (result.data)
+                    deferred.resolve({data: result.data.sites});
+                else
+                    deferred.reject({message: "Failed to get project activity", success: false});
+            }, deferred.reject);
+        } else {
             deferred.reject({message: "Failed to get project activity", success: false});
-        });
+        }
 
         return deferred.promise()
     }
@@ -771,7 +767,7 @@ function enmapify(args) {
     function createPublicSite() {
         subscribeOrDisposeSiteIdObservable(false);
         siteIdObservable(null);
-        Biocollect.Modals.showModal({
+        return Biocollect.Modals.showModal({
             viewModel: new AddSiteViewModel(uniqueNameUrl, activityLevelData, enableOffline)
         }).then(function (newSite) {
             loadingObservable(true);
@@ -935,7 +931,7 @@ function enmapify(args) {
             offlineAddSiteIdToProjectActivity(siteId, projectActivityId).then(function () {
                 // adding id to resolve parameter to be consistent with result returned from ajax call
                 deferred.resolve({message: "Site and project activity saved offline.", success: true, data: siteId, id: siteId});
-            }).fail(function (e) {
+            }, function () {
                 deferred.reject({message: "Site failed to save offline.", success: false});
             });
         });
@@ -945,11 +941,12 @@ function enmapify(args) {
 
     function offlineSaveSite(site) {
         var deferred = $.Deferred();
-        db.site.put(site).then(function (id) {
-            deferred.resolve({message: "Site saved to db.", success: true, data: id});
-        }).catch(function (){
+        if (window.entities) {
+            entities.saveSite(site).then(deferred.resolve, deferred.reject);
+        }
+        else {
             deferred.reject({message: "Site failed to save offline.", success: false});
-        });
+        }
 
         return deferred.promise();
     };
@@ -957,27 +954,31 @@ function enmapify(args) {
     function offlineSaveProjectActivity (pa) {
         var deferred = $.Deferred();
 
-        db.table('projectActivity').put(pa).then(function (id) {
-            deferred.resolve({message: "Project activity saved offline.", success: true, data: id});
-        }).catch(function (e) {
+        if(window.entities){
+            entities.saveProjectActivity(pa).then(deferred.resolve, deferred.reject);
+        }
+        else {
             deferred.reject({message: "Project activity failed to save offline.", success: false});
-        });
+        }
 
         return deferred.promise();
     }
 
     function offlineAddSiteIdToProjectActivity (siteId, pActivityId) {
         var deferred = $.Deferred();
-
-        db.table('projectActivity').where('projectActivityId').equals(pActivityId).first().then(function (pActivity) {
-            pActivity.sites = pActivity.sites || [];
-            pActivity.sites.push(siteId);
-            offlineSaveProjectActivity(pActivity).then(function () {
-                deferred.resolve({message: "Project activity updated offline.", success: true, data: pActivityId});
-            }).fail(function (e) {
-                deferred.reject({message: "Failed to update project activity - " + pActivityId, success: false});
-            });
-        });
+        if (window.entities) {
+            entities.offlineFetchProjectActivity(pActivityId).then(function (result) {
+                var pActivity = result.data;
+                pActivity.sites = pActivity.sites || [];
+                pActivity.sites.push(siteId);
+                entities.saveProjectActivity(pActivity).then(function () {
+                    deferred.resolve({message: "Project activity updated offline.", success: true, data: pActivityId});
+                }, function (){
+                    console.log("failed to save PA");
+                    deferred.reject();
+                });
+            })
+        }
 
         return deferred.promise();
     }
@@ -1113,21 +1114,28 @@ function enmapify(args) {
             case "projectActivity":
                 activityLevelData.UTILS.getProjectActivitySites().then(function (result) {
                     var siteIds = result.data;
-                    db.site.where("siteId").anyOf(siteIds).toArray(function (sites) {
-                        sitesObservable(sites);
-                        deferred.resolve({message: "Sites retrieved from db.", success: true, data: sites});
-                    }).catch(function (error) {
+                    siteIds = getSiteIdForSites(siteIds);
+                    if (window.entities) {
+                        entities.offlineGetSites(siteIds).then(function (result) {
+                            var sites = result.data;
+                            sitesObservable(sites);
+                            deferred.resolve({message: "Sites retrieved from db.", success: true, data: sites});
+                        }, deferred.reject);
+                    }
+                    else
                         deferred.reject({message: "An error occurred while retrieving sites from db.", success: false});
-                    });
                 });
                 break;
             case "project":
-                db.site.where("projects").equals(projectId).toArray(function (sites) {
-                    sitesObservable(sites);
-                    deferred.resolve({message: "Sites retrieved from db.", success: true, data: sites});
-                }).catch(function (error) {
+                if (window.entities) {
+                   entities.offlineGetSitesForProject(projectId).then(function (sites) {
+                       sitesObservable(sites);
+                       deferred.resolve({message: "Sites retrieved from db.", success: true, data: sites});
+                   }, deferred.reject);
+                }
+                else {
                     deferred.reject({message: "An error occurred while retrieving sites from db.", success: false});
-                });
+                }
                 break;
         }
         return deferred.promise();
@@ -1186,7 +1194,8 @@ function enmapify(args) {
         createPrivateSite: createPrivateSite,
         viewModel: viewModel,
         zoomToDefaultSite: zoomToDefaultSite,
-        shouldMarkerMove: shouldMarkerMove
+        shouldMarkerMove: shouldMarkerMove,
+        map: map
     };
 }
 
@@ -1199,9 +1208,6 @@ var AddSiteViewModel = function (uniqueNameUrl, activityLevelData, enableOffline
     self.name = ko.observable();
     self.throttledName = ko.computed(this.name).extend({throttle: 400});
     self.nameStatus = ko.observable(AddSiteViewModel.NAME_STATUS.BLANK);
-    if (typeof getDB === 'function') {
-        self.db = getDB();
-    }
     self.activityLevelData = activityLevelData;
 
     self.name.subscribe(function (name) {
@@ -1293,22 +1299,19 @@ AddSiteViewModel.prototype.checkUniqueName = function (name) {
         switch (entityType) {
             default:
             case "projectActivity":
-                self.db && self.db.site.where("projects").anyOf(activityLevelData.pActivity.projectId).and(function (site) {
-                    return site.name === name;
-                }).count(countHandler);
-                break;
-
             case "project":
-                self.db && self.db.site.where("projects").anyOf(activityLevelData.pActivity.projectId).and(function (site) {
-                    return site.name === name;
-                }).count(countHandler);
+                if (window.entities) {
+                    entities.offlineCheckSiteWithName(activityLevelData.pActivity.projectId, name, countHandler)
+                }
+                else {
+                    deferred.reject({status: 409});
+                }
                 break;
         }
 
         function countHandler(count) {
             count > 0 ? deferred.reject({status: 409}) : deferred.resolve();
         }
-
         return deferred.promise();
     }
 };

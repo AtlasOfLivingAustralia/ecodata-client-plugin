@@ -213,7 +213,6 @@ function resolveSites(sites, addNotFoundSite, selectedSiteId) {
 
     sites.forEach(function (site) {
         selectedSiteAdded = resolveSite(site, addNotFoundSite, selectedSiteId, resolved, selectedSiteAdded);
-
     });
 
     if (!selectedSiteAdded && selectedSiteId) {
@@ -223,7 +222,7 @@ function resolveSites(sites, addNotFoundSite, selectedSiteId) {
     return resolved;
 }
 
-function resolveSite(site, addNotFoundSite, selectedSiteId, resolved, selectedSiteAdded) {
+async function resolveSite(site, addNotFoundSite, selectedSiteId, resolved, selectedSiteAdded) {
     if(typeof site === 'string'){
         // site = lookupSite(siteId);
 
@@ -232,21 +231,28 @@ function resolveSite(site, addNotFoundSite, selectedSiteId, resolved, selectedSi
         // } else
         if (isUuid(site)) {
             if (addNotFoundSite && site) {
-                resolved.push({
+                site = {
                     name: 'User created site',
                     siteId: site
-                });
+                };
+
+                resolved.push(site);
             }
         }
         // look in indexedDB
         else if (window.entities) {
-            entities.getSite(site).then(function (result) {
-                sites.push(result.data);
-            })
+            site = await new Promise((resolve, reject) => {
+                entities.offlineGetSite(site).then(function (result) {
+                    resolve(result.data);
+                }, reject);
+            });
+
+            site && resolved.push(site);
         }
 
-        if (site === selectedSiteId) {
-            selectedSiteAdded = true;
+        if (site) {
+            if (site.siteId === selectedSiteId)
+                selectedSiteAdded = true;
         }
     } else if(typeof site === 'object') {
         resolved.push(site);
@@ -255,7 +261,19 @@ function resolveSite(site, addNotFoundSite, selectedSiteId, resolved, selectedSi
         }
     }
 
-    return selectedSiteAdded
+    return  selectedSiteAdded;
+}
+
+function getSiteIdForSites(sites) {
+    var siteIds = [];
+    sites.forEach(function (site) {
+        if (typeof site === 'string' || typeof site === 'number')
+            siteIds.push(site);
+        else if (site && typeof site === 'object')
+            siteIds.push(site.siteId);
+    });
+
+    return siteIds;
 }
 
 /**
@@ -294,7 +312,8 @@ function isOffline() {
 function checkOfflineForIntervalAndTriggerEvents (interval) {
     interval = interval || 10000;
     var isCurrentlyOffline = false;
-    return setInterval(function () {
+
+    function intervalHandler() {
         isOffline().then(function () {
             if (!isCurrentlyOffline) {
                 var event = new Event('offline');
@@ -308,5 +327,9 @@ function checkOfflineForIntervalAndTriggerEvents (interval) {
                 isCurrentlyOffline = false;
             }
         });
-    }, interval);
+    }
+
+    // run a check initially
+    intervalHandler();
+    return setInterval(intervalHandler, interval);
 }

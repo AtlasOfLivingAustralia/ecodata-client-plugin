@@ -2,23 +2,6 @@ function MetaModel(metaModel) {
     var self = this;
     self.metaModel = metaModel;
 
-    function findDataModelItemByNameInOutputModel(name, context) {
-        if (!context) {
-            return ;
-        }
-
-        return context.forEach(function (node) {
-            if (node.name === name) {
-                return node;
-            } else if (isNestedDataModelType(node)) {
-                const nested = getNestedDataModelNodes(node);
-                return findDataModelItemByName(name, nested);
-            } else {
-                return null;
-            }
-        });
-    }
-
     function getNamesForDataType(type) {
         var outputModels = self.metaModel.outputModels,
             result = {};
