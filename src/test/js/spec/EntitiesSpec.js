@@ -166,11 +166,11 @@ describe("Entities", function () {
 
         it("should get activities for a project activity", async function () {
             var activities = [
-                {activityId: "1", projectActivityId: "a", lastUpdated: new Date(2018, 1, 1)},
-                {activityId: "2", projectActivityId: "a", lastUpdated: new Date(2019, 1, 1)},
-                {activityId: "3", projectActivityId: "a", lastUpdated: new Date(2016, 1, 1)},
-                {activityId: "4", projectActivityId: "b", lastUpdated: new Date(2015, 1, 1)},
-                {activityId: "5", projectActivityId: "b", lastUpdated: new Date(2020, 1, 1)}
+                {activityId: 1, projectActivityId: "a", lastUpdated: new Date(2018, 1, 1)},
+                {activityId: 2, projectActivityId: "a", lastUpdated: new Date(2019, 1, 1)},
+                {activityId: 3, projectActivityId: "a", lastUpdated: new Date(2016, 1, 1)},
+                {activityId: 4, projectActivityId: "b", lastUpdated: new Date(2015, 1, 1)},
+                {activityId: 5, projectActivityId: "b", lastUpdated: new Date(2020, 1, 1)}
             ];
 
             var result = await new Promise((resolve, reject) => {
@@ -178,23 +178,23 @@ describe("Entities", function () {
             });
 
             result = await new Promise((resolve, reject) => {
-                entities.getActivitiesForProjectActivity("a", 2, 0, "lastUpdated", "DESC").then(resolve, reject);
+                entities.getActivitiesForProjectActivity("a", 2, 0, "activityId", "DESC").then(resolve, reject);
             });
 
             var activityData = result.data;
             expect(activityData.activities.length).toBe(2);
-            expect(activityData.activities[0].activityId).toBe("2");
-            expect(activityData.activities[1].activityId).toBe("1");
+            expect(activityData.activities[0].activityId).toBe(3);
+            expect(activityData.activities[1].activityId).toBe(2);
             expect(activityData.total).toBe(3);
 
             result = await new Promise((resolve, reject) => {
-                entities.getActivitiesForProjectActivity("b", 2, 0, "lastUpdated", "ASC").then(resolve, reject);
+                entities.getActivitiesForProjectActivity("b", 2, 0, "activityId", "ASC").then(resolve, reject);
             });
 
             activityData = result.data;
             expect(activityData.activities.length).toBe(2);
-            expect(activityData.activities[0].activityId).toBe("4");
-            expect(activityData.activities[1].activityId).toBe("5");
+            expect(activityData.activities[0].activityId).toBe(4);
+            expect(activityData.activities[1].activityId).toBe(5);
             expect(activityData.total).toBe(2);
 
             result = await new Promise((resolve, reject) => {
@@ -202,7 +202,7 @@ describe("Entities", function () {
             });
 
             result = await new Promise((resolve, reject) => {
-                entities.getActivitiesForProjectActivity("b", 2, 0, "lastUpdated", "ASC").then(resolve, reject);
+                entities.getActivitiesForProjectActivity("b", 2, 0, "activityId", "ASC").then(resolve, reject);
             })
 
             activityData = result.data;
@@ -212,11 +212,11 @@ describe("Entities", function () {
 
         it("should get activities for a project", async function () {
             var activities = [
-                {activityId: "1", projectActivityId: "a", projectId: "n", lastUpdated: new Date(2018, 1, 1)},
-                {activityId: "2", projectActivityId: "a", projectId: "n", lastUpdated: new Date(2019, 1, 1)},
-                {activityId: "3", projectActivityId: "a", projectId: "n", lastUpdated: new Date(2016, 1, 1)},
-                {activityId: "4", projectActivityId: "b", projectId: "m", lastUpdated: new Date(2015, 1, 1)},
-                {activityId: "5", projectActivityId: "b", projectId: "m", lastUpdated: new Date(2020, 1, 1)}
+                {activityId: 1, projectActivityId: "a", projectId: "n", lastUpdated: new Date(2018, 1, 1)},
+                {activityId: 2, projectActivityId: "a", projectId: "n", lastUpdated: new Date(2019, 1, 1)},
+                {activityId: 3, projectActivityId: "a", projectId: "n", lastUpdated: new Date(2016, 1, 1)},
+                {activityId: 4, projectActivityId: "b", projectId: "m", lastUpdated: new Date(2015, 1, 1)},
+                {activityId: 5, projectActivityId: "b", projectId: "m", lastUpdated: new Date(2020, 1, 1)}
             ];
 
             var result = await new Promise((resolve, reject) => {
@@ -224,23 +224,23 @@ describe("Entities", function () {
             });
 
             result = await new Promise((resolve, reject) => {
-                entities.offlineGetActivitiesForProject("n", 2, 0, "lastUpdated", "DESC").then(resolve, reject);
+                entities.offlineGetActivitiesForProject("n", 2, 0, "activityId", "DESC").then(resolve, reject);
             });
 
             var activityData = result.data;
             expect(activityData.activities.length).toBe(2);
-            expect(activityData.activities[0].activityId).toBe("2");
-            expect(activityData.activities[1].activityId).toBe("1");
+            expect(activityData.activities[0].activityId).toBe(3);
+            expect(activityData.activities[1].activityId).toBe(2);
             expect(activityData.total).toBe(3);
 
             result = await new Promise((resolve, reject) => {
-                entities.offlineGetActivitiesForProject("m", 2, 0, "lastUpdated", "ASC").then(resolve, reject);
+                entities.offlineGetActivitiesForProject("m", 2, 0, "activityId", "ASC").then(resolve, reject);
             });
 
             activityData = result.data;
             expect(activityData.activities.length).toBe(2);
-            expect(activityData.activities[0].activityId).toBe("4");
-            expect(activityData.activities[1].activityId).toBe("5");
+            expect(activityData.activities[0].activityId).toBe(4);
+            expect(activityData.activities[1].activityId).toBe(5);
             expect(activityData.total).toBe(2);
 
             result = await new Promise((resolve, reject) => {
@@ -248,7 +248,7 @@ describe("Entities", function () {
             });
 
             result = await new Promise((resolve, reject) => {
-                entities.getActivitiesForProjectActivity("b", 2, 0, "lastUpdated", "ASC").then(resolve, reject);
+                entities.getActivitiesForProjectActivity("b", 2, 0, "activityId", "ASC").then(resolve, reject);
             })
 
             activityData = result.data;
@@ -259,11 +259,11 @@ describe("Entities", function () {
 
         it("should get all activities", async function () {
             var activities = [
-                {activityId: "1", projectActivityId: "a", projectId: "n", lastUpdated: new Date(2018, 1, 1)},
-                {activityId: "2", projectActivityId: "a", projectId: "n", lastUpdated: new Date(2019, 1, 1)},
-                {activityId: "3", projectActivityId: "a", projectId: "n", lastUpdated: new Date(2016, 1, 1)},
-                {activityId: "4", projectActivityId: "b", projectId: "m", lastUpdated: new Date(2015, 1, 1)},
-                {activityId: "5", projectActivityId: "b", projectId: "m", lastUpdated: new Date(2020, 1, 1)}
+                {activityId: 1, projectActivityId: "a", projectId: "n", lastUpdated: new Date(2018, 1, 1)},
+                {activityId: 2, projectActivityId: "a", projectId: "n", lastUpdated: new Date(2019, 1, 1)},
+                {activityId: 3, projectActivityId: "a", projectId: "n", lastUpdated: new Date(2016, 1, 1)},
+                {activityId: 4, projectActivityId: "b", projectId: "m", lastUpdated: new Date(2015, 1, 1)},
+                {activityId: 5, projectActivityId: "b", projectId: "m", lastUpdated: new Date(2020, 1, 1)}
             ];
 
             var result = await new Promise((resolve, reject) => {
@@ -271,24 +271,23 @@ describe("Entities", function () {
             });
 
             result = await new Promise((resolve, reject) => {
-                entities.offlineGetAllActivities(10, 0, "lastUpdated", "DESC").then(resolve, reject);
+                entities.offlineGetAllActivities(10, 0, "activityId", "DESC").then(resolve, reject);
             });
 
             var activityData = result.data;
             expect(activityData.activities.length).toBe(5);
-            expect(activityData.activities[0].activityId).toBe("5");
-            expect(activityData.activities[1].activityId).toBe("2");
-            console.log(JSON.stringify(activityData));
+            expect(activityData.activities[0].activityId).toBe(5);
+            expect(activityData.activities[1].activityId).toBe(4);
             expect(activityData.total).toBe(5);
 
             result = await new Promise((resolve, reject) => {
-                entities.offlineGetAllActivities(2, 0, "lastUpdated", "ASC").then(resolve, reject);
+                entities.offlineGetAllActivities(2, 0, "activityId", "ASC").then(resolve, reject);
             });
 
             activityData = result.data;
             expect(activityData.activities.length).toBe(2);
-            expect(activityData.activities[0].activityId).toBe("4");
-            expect(activityData.activities[1].activityId).toBe("3");
+            expect(activityData.activities[0].activityId).toBe(1);
+            expect(activityData.activities[1].activityId).toBe(2);
             expect(activityData.total).toBe(5);
 
             await new Promise((resolve, reject) => {
@@ -296,7 +295,7 @@ describe("Entities", function () {
             });
 
             result = await new Promise((resolve, reject) => {
-                entities.offlineGetAllActivities(2, 0, "lastUpdated", "ASC").then(resolve, reject);
+                entities.offlineGetAllActivities(2, 0, "activityId", "ASC").then(resolve, reject);
             })
 
             activityData = result.data;
