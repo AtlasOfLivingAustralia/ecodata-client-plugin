@@ -298,7 +298,7 @@ class ModelJSTagLib {
                     if (data.${mod.name} && typeof data.${mod.name} !== 'undefined') {
                         self.data.${mod.name}(data.${mod.name});
                     } else {
-                        self.loadActivitySite({decimalLatitude: data.${mod.name}Latitude, decimalLongitude: data.${mod.name}Longitude);
+                        self.loadActivitySite({decimalLatitude: data.${mod.name}Latitude, decimalLongitude: data.${mod.name}Longitude});
                     }
                     
                     if (data.${mod.name}Accuracy){
