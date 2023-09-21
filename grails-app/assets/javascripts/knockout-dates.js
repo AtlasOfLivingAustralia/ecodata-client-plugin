@@ -61,6 +61,9 @@
                 if (!isNaN(widget.date)) {
                     widget.setDate(widget.date);
                 }
+                else {
+                    widget.setDate(null);
+                }
             }
         }
     };
