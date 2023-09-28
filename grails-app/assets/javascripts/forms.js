@@ -385,11 +385,20 @@ function orEmptyArray(v) {
             return result;
         }
 
+        function evaluateArray(expression, context) {
+            var result = evaluateInternal(expression, context);
+            if (!_.isArray(result))  {
+                result = [result];
+            }
+            return result;
+        }
+
         return {
             evaluate: evaluateNumber,
             evaluateBoolean: evaluateBoolean,
             evaluateString: evaluateString,
-            evaluateUntyped: evaluateUntyped
+            evaluateUntyped: evaluateUntyped,
+            evaluateArray: evaluateArray
         }
 
     }();

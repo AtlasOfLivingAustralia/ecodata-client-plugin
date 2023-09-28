@@ -23,6 +23,9 @@ class ComputedValueRenderer {
             case 'date':
                 expressionType = 'evaluateString'
                 break
+            case 'stringList':
+                expressionType = 'evaluateArray'
+                break
             default:
                 expressionType = "evaluate"
         }
