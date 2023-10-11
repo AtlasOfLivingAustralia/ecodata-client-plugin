@@ -1346,10 +1346,11 @@ function orEmptyArray(v) {
 
         self.attachDocument = function (target) {
             var url = config.documentUpdateUrl || fcConfig.documentUpdateUrl;
+            var documentOwner = config.documentOwner || {activityId: activityId, projectId: config.projectId};
             showDocumentAttachInModal(url, new DocumentViewModel({
                 role: 'information',
                 stage: config.stage
-            }, {activityId: activityId, projectId: config.projectId}), '#attachDocument')
+            }, documentOwner), '#attachDocument')
                 .done(function (result) {
                     // checking documentid to void adding empty document into the attachment table
                     // documentid only return true if document is successfully save
