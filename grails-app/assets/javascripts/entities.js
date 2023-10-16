@@ -459,10 +459,15 @@ var entities = (function () {
                 }).then(function (species) {
                     console.log("saving species");
                     updateProgress();
-                    saveSpeciesPaged(species).then(fetchNext, deferred.reject);
+                    saveSpeciesPaged(species).then(fetchNext, function () {
+                        console.error("Failed to save species to database.");
+                        console.log(arguments);
+                        deferred.reject();
+                    });
                 }, function () {
                     console.log("error retrieving species");
                     updateProgress();
+                    downloadingAllSpecies = false;
                     deferred.reject();
                 });
             }
@@ -839,11 +844,16 @@ var entities = (function () {
     }
 })();
 
-async function getDB() {
+function getDB() {
     if (navigator.storage && navigator.storage.persisted) {
-        const persistent = await navigator.storage.persisted();
-        if (!persistent && navigator.storage.persist)
-            const result = await navigator.storage.persist();
+        var persistentPromise = navigator.storage.persisted();
+        persistentPromise.then(async function (persistent) {
+            console.log(`Storage API - persistent - ${persistent}`);
+            if (!persistent && navigator.storage.persist) {
+                var result = await navigator.storage.persist();
+                console.log(`Storage API - persist - ${result}`);
+            }
+        });
     }
 
     var DB_NAME = "biocollect";
