@@ -839,7 +839,13 @@ var entities = (function () {
     }
 })();
 
-function getDB() {
+async function getDB() {
+    if (navigator.storage && navigator.storage.persisted) {
+        const persistent = await navigator.storage.persisted();
+        if (!persistent && navigator.storage.persist)
+            const result = await navigator.storage.persist();
+    }
+
     var DB_NAME = "biocollect";
     var db = new Dexie(DB_NAME);
     db.version(4).stores({
