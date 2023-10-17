@@ -348,17 +348,20 @@ var entities = (function () {
                             });
                     }
                     else {
-                        db.taxon.where({'listId': 'all' }).and(function (item) {
-                            if(data.q) {
-                                var query = data.q.toLowerCase();
-                                return (item.name && item.name.toLowerCase().startsWith(query)) ||
-                                    (item.scientificName && item.scientificName.toLowerCase().startsWith(query)) ||
-                                    (item.commonName && item.commonName.toLowerCase().startsWith(query));
-                            }
-                            else
-                                return true
-                        }).limit(limit).toArray().then(function (data) {
-                            deferred.resolve({autoCompleteList: data})
+                        var promises = [];
+                        limit = limit / 2;
+                        promises.push(db.taxon.where('scientificName').startsWithIgnoreCase(data.q).and(function (item){
+                            return item.listId === 'all'
+                        }).limit(limit).toArray());
+                        promises.push(db.taxon.where('commonName').startsWithIgnoreCase(data.q).and(function (item){
+                            return item.listId === 'all'
+                        }).limit(limit).toArray());
+
+                        Promise.all(promises).then(function (data){
+                            var data1 = data[0] || [],
+                                data2 = data[1] || [];
+                            data1.push.apply(data1, data2);
+                            deferred.resolve({autoCompleteList: data1});
                         })
                     }
                 });
@@ -447,7 +450,7 @@ var entities = (function () {
         total = 1,
         deferred = $.Deferred();
         if (downloadingAllSpecies)
-            return deferred.resolved().promise();
+            return deferred.resolve().promise();
 
         downloadingAllSpecies = true;
         function fetchNext () {
