@@ -784,6 +784,10 @@ function orEmptyArray(v) {
         self.context = context;
         self.config = config;
 
+        // This context is created for use by the expression evaluator.  It contains the data model item itself
+        // as well as the parent data model item and the output model.
+        var dataContext = context.parent;
+
         /**
          * Returns the value of the specified metadata property (e.g. validate, constraints etc)
          * @param property the name of the proprety to get.
@@ -828,7 +832,7 @@ function orEmptyArray(v) {
 
         self.evaluateBehaviour = function (type, defaultValue) {
             var rule = _.find(metadata.behaviour, function (rule) {
-                return rule.type === type && ecodata.forms.expressionEvaluator.evaluateBoolean(rule.condition, context);
+                return rule.type === type && ecodata.forms.expressionEvaluator.evaluateBoolean(rule.condition, dataContext);
             });
 
             return rule && rule.value || defaultValue;
