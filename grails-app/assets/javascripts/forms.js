@@ -310,6 +310,11 @@ function orEmptyArray(v) {
                         var parentContext = _.isObject(context['$parent'].data) ? context['$parent'].data : context['$parent'];
                         result = bindVariable(variable, parentContext);
                     }
+                    // Try to evaluate against the context - used when we are evaluating pre-pop data with a filter
+                    // expression that references a variable in the form context
+                    else if (context['$context']) {
+                        result = bindVariable(variable, context['$context']);
+                    }
                 }
 
             }
@@ -895,7 +900,8 @@ function orEmptyArray(v) {
                     }
 
                     constraintsInititaliser = $.Deferred();
-                    var dataLoader = ecodata.forms.dataLoader(context, config);
+                    var dataLoaderContext = _.extend({}, context, {$parent:context.parent});
+                    var dataLoader = ecodata.forms.dataLoader(dataLoaderContext, config);
                     dataLoader.prepop(metadata.constraints.config).done(function (data) {
                         constraintsObservable(data);
                         constraintsInititaliser.resolve();
