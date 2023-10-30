@@ -791,7 +791,28 @@ function orEmptyArray(v) {
 
         // This context is created for use by the expression evaluator.  It contains the data model item itself
         // as well as the parent data model item and the output model.
-        var dataContext = context.parent;
+        var dataContext = (context && context.parent) ? context.parent : context;
+        var constraintsInititaliser = null;
+        function buildPrepopConstraints(constraintsConfig, constraintsDeferred) {
+            var defaultConstraints = constraintsConfig.defaults || [];
+            var constraintsObservable = ko.observableArray(defaultConstraints);
+
+            return ko.computed(function() {
+                var dataLoaderContext = _.extend({}, context, {$parent:context.parent});
+                var dataLoader = ecodata.forms.dataLoader(dataLoaderContext, config);
+                dataLoader.prepop(constraintsConfig.config).done(function (data) {
+                    constraintsObservable(data);
+                    constraintsDeferred.resolve();
+                });
+                return constraintsObservable();
+            });
+        }
+
+        function attachIncludeExclude(constraints) {
+            return ko.computed(function() {
+                return applyIncludeExclude(metadata, context.outputModel, self, ko.utils.unwrapObservable(constraints));
+            });
+        }
 
         /**
          * Returns the value of the specified metadata property (e.g. validate, constraints etc)
@@ -843,7 +864,6 @@ function orEmptyArray(v) {
             return rule && rule.value || defaultValue;
         };
 
-        var constraintsInititaliser = null;
         if (metadata.constraints) {
             var valueProperty = 'id'; // For compatibility with select2 defaults
             var textProperty = 'text'; // For compatibility with select2 defaults
@@ -879,44 +899,22 @@ function orEmptyArray(v) {
                                 return ecodata.forms.expressionEvaluator.evaluateBoolean(option.condition, context);
                             });
                             var evaluatedConstraints = rule ? rule.value : metadata.constraints.default;
-                            return !includeExcludeDefined ? evaluatedConstraints : applyIncludeExclude(metadata, context.outputModel, self, metadata.constraints.default || []);
+                            return evaluatedConstraints || metadata.constraints.default || [];
                         });
                     } else if (includeExcludeDefined) {
-                        self.constraints = ko.computed(function () {
-                           return  applyIncludeExclude(metadata, context.outputModel, self, metadata.constraints.default || []);
-                        });
+                        self.constraints = metadata.constraints.default || [];
                     }
                 }
                 else if (metadata.constraints.type == 'pre-populated') {
-                    var defaultConstraints = metadata.constraints.defaults || [];
-                    var constraintsObservable = ko.observableArray(defaultConstraints);
-                    if (!includeExcludeDefined) {
-                        self.constraints = constraintsObservable;
-                    }
-                    else {
-                        self.constraints = ko.computed(function () {
-                            return applyIncludeExclude(metadata, context.outputModel, self, constraintsObservable());
-                        });
-                    }
-
                     constraintsInititaliser = $.Deferred();
-                    var dataLoaderContext = _.extend({}, context, {$parent:context.parent});
-                    var dataLoader = ecodata.forms.dataLoader(dataLoaderContext, config);
-                    dataLoader.prepop(metadata.constraints.config).done(function (data) {
-                        constraintsObservable(data);
-                        constraintsInititaliser.resolve();
-                    });
+                    self.constraints = buildPrepopConstraints(metadata.constraints, constraintsInititaliser);
                 }
                 else if (metadata.constraints.type == 'literal' || metadata.constraints.literal) {
+                    self.constraints = [].concat(metadata.constraints.literal);
+                }
 
-                    if (includeExcludeDefined) {
-                        self.constraints = ko.computed(function() {
-                            return applyIncludeExclude(metadata, context.outputModel, self, metadata.constraints.literal || []);
-                        });
-                    }
-                    else {
-                        self.constraints = [].concat(metadata.constraints.literal);
-                    }
+                if (includeExcludeDefined) {
+                    self.constraints = attachIncludeExclude(self.constraints);
                 }
             }
 
@@ -949,7 +947,7 @@ function orEmptyArray(v) {
                 })
             }
             else {
-                    self(data);
+                self(data);
             }
 
         }
