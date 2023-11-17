@@ -334,14 +334,14 @@ function orEmptyArray(v) {
         var expressionCache = {};
 
         function evaluateInternal(expression, context) {
-                var parsedExpression = expressionCache[expression];
-                if (!parsedExpression) {
-                    parsedExpression = parser.parse(expression);
-                    expressionCache[expression] = parsedExpression;
-                }
+            var parsedExpression = expressionCache[expression];
+            if (!parsedExpression) {
+                parsedExpression = parser.parse(expression);
+                expressionCache[expression] = parsedExpression;
+            }
 
-                var variables = parsedExpression.variables();
-                var boundVariables = bindVariables(variables, context);
+            var variables = parsedExpression.variables();
+            var boundVariables = bindVariables(variables, context);
 
             var result;
             try {
@@ -629,6 +629,16 @@ function orEmptyArray(v) {
                             return ecodata.forms.expressionEvaluator.evaluateBoolean(expression, itemContext);
                         });
                     }
+                    if (conf.find && conf.find.expression) {
+                        if (!_.isArray(result)) {
+                            throw "Find is only supported for array typed prepop data."
+                        }
+                        result = _.find(result, function(item) {
+                            var expression = conf.find.expression;
+                            var itemContext = _.extend({}, item, {$context:context, $config:config});
+                            return ecodata.forms.expressionEvaluator.evaluateBoolean(expression, itemContext);
+                        });
+                    }
                     if (mapping) {
                         result = self.map(mapping, result);
                     }
@@ -796,16 +806,29 @@ function orEmptyArray(v) {
         function buildPrepopConstraints(constraintsConfig, constraintsDeferred) {
             var defaultConstraints = constraintsConfig.defaults || [];
             var constraintsObservable = ko.observableArray(defaultConstraints);
+            var dataLoaderContext = _.extend({}, context, {$parent:context.parent});
+            var dataLoader = ecodata.forms.dataLoader(dataLoaderContext, config);
 
-            return ko.computed(function() {
-                var dataLoaderContext = _.extend({}, context, {$parent:context.parent});
-                var dataLoader = ecodata.forms.dataLoader(dataLoaderContext, config);
-                dataLoader.prepop(constraintsConfig.config).done(function (data) {
+            ko.computed(function() {
+                var prepopConf = constraintsConfig.config;
+                // If the prepop needs to post process the data, we need to execute the post processing
+                // in the context of the computed so as to register any dependencies on values used in
+                // the post-processing expressions.
+                // The dataloader won't execute post processing synchronously as retrieving the data can be done
+                // via a remote call.
+                if (prepopConf.filter) {
+                    ecodata.forms.expressionEvaluator.evaluate(prepopConf.filter.expression, dataLoaderContext);
+                }
+                if (prepopConf.find) {
+                    ecodata.forms.expressionEvaluator.evaluate(prepopConf.filter.expression, dataLoaderContext);
+                }
+                dataLoader.prepop(prepopConf).done(function (data) {
                     constraintsObservable(data);
                     constraintsDeferred.resolve();
                 });
-                return constraintsObservable();
             });
+
+            return constraintsObservable;
         }
 
         function attachIncludeExclude(constraints) {
