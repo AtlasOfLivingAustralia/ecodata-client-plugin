@@ -253,6 +253,10 @@ function orEmptyArray(v) {
             return _.findWhere(list, obj);
         };
 
+        parser.functions.deepEquals = function(value1, value2) {
+            return _.isEqual(value1, value2);
+        };
+
         var specialBindings = function() {
 
             return {
@@ -619,26 +623,32 @@ function orEmptyArray(v) {
                 if (prepopData) {
                     var result = prepopData;
                     var mapping = conf.mapping;
-                    if (conf.filter && conf.filter.expression) {
-                        if (!_.isArray(prepopData)) {
-                            throw "Filtering is only supported for array typed prepop data."
+
+                    function postProcessPrepopData(processingFunction, processingConfig, data) {
+                        if (!_.isArray(data)) {
+                            throw "Filter/find is only supported for array typed prepop data."
                         }
-                        result = _.filter(result, function(item) {
-                            var expression = conf.filter.expression;
-                            var itemContext = _.extend({}, item, {$context:context, $config:config});
-                            return ecodata.forms.expressionEvaluator.evaluateBoolean(expression, itemContext);
+                        if (!processingConfig.expression) {
+                            throw "Missing expression attribute in configuration"
+                        }
+                        return processingFunction(data, function(item) {
+                            var expression = processingConfig.expression;
+                            var namespace = processingConfig['namespace'] || 'item';
+                            var evalContext = {};
+                            evalContext[namespace] = item;
+
+                            var evalContext = _.extend(evalContext, {$context:context, $config:config});
+                            return ecodata.forms.expressionEvaluator.evaluateBoolean(expression, evalContext);
                         });
                     }
-                    if (conf.find && conf.find.expression) {
-                        if (!_.isArray(result)) {
-                            throw "Find is only supported for array typed prepop data."
-                        }
-                        result = _.find(result, function(item) {
-                            var expression = conf.find.expression;
-                            var itemContext = _.extend({}, item, {$context:context, $config:config});
-                            return ecodata.forms.expressionEvaluator.evaluateBoolean(expression, itemContext);
-                        });
+
+                    if (conf.filter) {
+                        result = postProcessPrepopData(_.filter, conf.filter, result);
                     }
+                    else if (conf.find) {
+                        result = postProcessPrepopData(_.find, conf.find, result);
+                    }
+
                     if (mapping) {
                         result = self.map(mapping, result);
                     }
