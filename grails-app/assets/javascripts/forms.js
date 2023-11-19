@@ -841,6 +841,32 @@ function orEmptyArray(v) {
             return constraintsObservable;
         }
 
+        /**
+         * Finds the model attribute with the specified name searching from the context of this
+         * DataModelItem if no context is supplied.
+         * This is so that for nested items we can find the nearest neighbour with the specified name. (e.g.
+         * when the model represents a repeating section or table row)
+         */
+        self.findNearestByName = function(targetName, context) {
+            if (!context) {
+                context = self.context;
+            }
+
+            var result = null;
+            if (!_.isUndefined(context[targetName])) {
+                result = context[targetName];
+            } else if (context['$data']) {
+                result = find(context['$data'], targetName)
+            }
+            else if (context['$parent'] || context['parent']) {
+                var parentContext = context['$parent'] || context['parent']
+                // If the parent is the output model, we want to evaluate against the "data" property
+                parentContext = _.isObject(parentContext.data) ? parentContext.data : parentContext;
+                result = self.findNearestByName(targetName, parentContext);
+            }
+            return result;
+        }
+
         function attachIncludeExclude(constraints) {
             return ko.computed(function() {
                 return applyIncludeExclude(metadata, context.outputModel, self, ko.utils.unwrapObservable(constraints));
