@@ -180,6 +180,49 @@ function orEmptyArray(v) {
     };
 
     /**
+     * Traverses the model or binding context starting from a nested context and
+     * working backwards towards the root until a property with the supplied name
+     * is matched.  That property is then passed to the supplied callback.
+     * Traversing backwards is simpler than forwards as we don't need to take into
+     * account repeating model values (e.g. for repeating sections and table rows)
+     * @param targetName the name of the model variable / property to find.
+     * @param context the starting context
+     * @param callback a function to invoke when the target variable is found.
+     */
+    ecodata.forms.navigateModel = function(targetName, context, callback) {
+        if (!context) {
+            return;
+        }
+        if (!_.isUndefined(context[targetName])) {
+            callback(context[targetName]);
+        }
+        // If the context is a knockout binding context, $data will be the current object
+        // being bound to the view.
+        else if (context['$data']) {
+            ecodata.forms.navigateModel(targetName, context['$data'], callback);
+        }
+        // The root data model is constructed with fields inside a nested "data" object.
+        else if (_.isObject(context['data'])) {
+            ecodata.forms.navigateModel(targetName, context['data'], callback);
+        }
+        // Try to evaluate against the parent - the bindingContext uses $parent and the
+        // ecodata.forms.DataModelItem uses parent
+        else if (context['$parent']) {
+            ecodata.forms.navigateModel(targetName, context['$parent'], callback);
+        }
+        else if (context['parent']) {
+            ecodata.forms.navigateModel(targetName, context['parent'], callback);
+        }
+        // Try to evaluate against the context - this is setup as a model / binding context
+        // variable and refers to data external to the form - e.g. the project or activity the
+        // form is related to.
+        else if (context['$context']) {
+            ecodata.forms.navigateModel(targetName, context['$context'], callback);
+        }
+
+    }
+
+    /**
      * Helper function for evaluating expressions defined in the metadata.  These may be used to compute values
      * or make decisions on which constraints to apply to individual data model items.
      * The expressions are parsed and evaluated using: https://github.com/silentmatt/expr-eval
@@ -300,27 +343,9 @@ function orEmptyArray(v) {
                 result = specialBindings[contextVariable];
             }
             else {
-                if (!_.isUndefined(context[contextVariable])) {
-                    result = ko.utils.unwrapObservable(context[contextVariable]);
-                }
-                else {
-                    // The root view model is constructed with fields inside a nested "data" object.
-                    if (_.isObject(context['data'])) {
-                        result = bindVariable(variable, context['data']);
-                    }
-                    // Try to evaluate against the parent
-                    else if (context['$parent']) {
-                        // If the parent is the output model, we want to evaluate against the "data" property
-                        var parentContext = _.isObject(context['$parent'].data) ? context['$parent'].data : context['$parent'];
-                        result = bindVariable(variable, parentContext);
-                    }
-                    // Try to evaluate against the context - used when we are evaluating pre-pop data with a filter
-                    // expression that references a variable in the form context
-                    else if (context['$context']) {
-                        result = bindVariable(variable, context['$context']);
-                    }
-                }
-
+                ecodata.forms.navigateModel(contextVariable, context, function(target) {
+                    result = ko.utils.unwrapObservable(target);
+                });
             }
             return _.isUndefined(result) ? null : result;
         }
@@ -851,19 +876,10 @@ function orEmptyArray(v) {
             if (!context) {
                 context = self.context;
             }
-
             var result = null;
-            if (!_.isUndefined(context[targetName])) {
-                result = context[targetName];
-            } else if (context['$data']) {
-                result = find(context['$data'], targetName)
-            }
-            else if (context['$parent'] || context['parent']) {
-                var parentContext = context['$parent'] || context['parent']
-                // If the parent is the output model, we want to evaluate against the "data" property
-                parentContext = _.isObject(parentContext.data) ? parentContext.data : parentContext;
-                result = self.findNearestByName(targetName, parentContext);
-            }
+            ecodata.forms.navigateModel(targetName, context, function(target) {
+                result = target;
+            })
             return result;
         }
 

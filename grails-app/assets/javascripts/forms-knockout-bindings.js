@@ -1206,9 +1206,15 @@
                             dataModelItem(); // register dependency on the observable.
                             dataLoader.prepop(config).done(function (data) {
                                 data = data || {};
-                                var target = dataModelItem.findNearestByName(bindingContext, config.target);
+                                var target = config.target;
                                 if (!target) {
                                     target = viewModel;
+                                }
+                                else {
+                                    target = dataModelItem.findNearestByName(target, bindingContext);
+                                }
+                                if (!target) {
+                                    throw "Unable to locate target for pre-population: "+target;
                                 }
                                 if (_.isFunction(target.loadData)) {
                                     target.loadData(data);
