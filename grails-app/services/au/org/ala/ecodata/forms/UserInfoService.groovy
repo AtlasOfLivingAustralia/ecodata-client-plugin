@@ -120,7 +120,7 @@ class UserInfoService {
                     def optUserProfile = alaOidcClient.getUserProfile(credentials, context, config.sessionStore)
                     if (optUserProfile.isPresent()) {
                         def userProfile = optUserProfile.get()
-                        String userId = userProfile.userId ?: userProfile.getAttribute('username')
+                        String userId = userProfile?.userId ?: userProfile?.getAttribute(grailsApplication.config.getProperty('userProfile.userIdAttribute'))
                         if (userId) {
                             return authService.getUserForUserId(userId)
                         }

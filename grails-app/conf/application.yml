@@ -88,6 +88,9 @@ grails:
                 taglib: none
                 staticparts: none
 
+userProfile:
+    userIdAttribute: "username"
+
 environments:
     test:
         server:
