@@ -2,6 +2,7 @@ package au.org.ala.ecodata.forms
 
 import geb.spock.GebReportingSpec
 import grails.testing.mixin.integration.Integration
+import org.springframework.boot.test.context.SpringBootTest
 import pages.PreviewPage
 
 /*
@@ -22,6 +23,7 @@ import pages.PreviewPage
  */
 
 @Integration
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class GeoMapSpec extends GebReportingSpec {
     def "GeoMap smoke test" () {
         when:
