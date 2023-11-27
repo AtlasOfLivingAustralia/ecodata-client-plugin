@@ -679,7 +679,10 @@
             var options = _.defaults(valueAccessor() || {}, defaults);
 
             $(element).select2(options).change(function(e) {
-                model($(element).val());
+                if (ko.isWritableObservable(model)) { // Don't try and write the value to a computed.
+                    model($(element).val());
+                }
+
             });
 
             if (options.preserveColumnWidth) {
