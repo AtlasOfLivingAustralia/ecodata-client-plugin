@@ -88,3 +88,14 @@ grails:
                 taglib: none
                 staticparts: none
 
+userProfile:
+    userIdAttribute: "username"
+
+---
+environments:
+    test:
+        server:
+            port: "8087"
+        spring:
+            autoconfigure:
+                exclude: "au.org.ala.ws.security.AlaWsSecurityConfiguration"

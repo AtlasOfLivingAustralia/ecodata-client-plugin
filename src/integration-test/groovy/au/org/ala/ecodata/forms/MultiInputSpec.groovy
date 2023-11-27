@@ -2,6 +2,7 @@ package au.org.ala.ecodata.forms
 
 import geb.spock.GebReportingSpec
 import grails.testing.mixin.integration.Integration
+import org.springframework.boot.test.context.SpringBootTest
 import pages.PreviewPage
 
 /*
@@ -21,6 +22,7 @@ import pages.PreviewPage
  * Created by Temi on 26/11/19.
  */
 @Integration
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class MultiInputSpec extends GebReportingSpec{
     def "multi input tests"() {
         when:
