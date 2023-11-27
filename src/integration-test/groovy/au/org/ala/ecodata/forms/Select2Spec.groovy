@@ -2,9 +2,11 @@ package au.org.ala.ecodata.forms
 
 import geb.spock.GebReportingSpec
 import grails.testing.mixin.integration.Integration
+import org.springframework.boot.test.context.SpringBootTest
 import pages.PreviewPage
 
 @Integration
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class Select2Spec extends GebReportingSpec {
 
     def "We can enter data into select2 dropdowns"() {
