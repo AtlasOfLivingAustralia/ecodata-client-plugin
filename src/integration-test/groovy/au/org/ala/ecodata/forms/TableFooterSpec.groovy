@@ -2,9 +2,11 @@ package au.org.ala.ecodata.forms
 
 import geb.spock.GebReportingSpec
 import grails.testing.mixin.integration.Integration
+import org.springframework.boot.test.context.SpringBootTest
 import pages.PreviewPage
 
 @Integration
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class TableFooterSpec extends GebReportingSpec {
 
     def "Table footers can be displayed"() {

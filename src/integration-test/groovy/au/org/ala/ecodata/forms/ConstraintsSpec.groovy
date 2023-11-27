@@ -4,9 +4,11 @@ import geb.module.Checkbox
 import geb.module.Select
 import geb.spock.GebReportingSpec
 import grails.testing.mixin.integration.Integration
+import org.springframework.boot.test.context.SpringBootTest
 import pages.PreviewPage
 
 @Integration
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class ConstraintsSpec extends GebReportingSpec {
 
     def "Constraints can be specified such that each constraint may be selected only once on a form"() {
