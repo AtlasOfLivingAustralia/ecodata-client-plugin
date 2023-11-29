@@ -180,6 +180,49 @@ function orEmptyArray(v) {
     };
 
     /**
+     * Traverses the model or binding context starting from a nested context and
+     * working backwards towards the root until a property with the supplied name
+     * is matched.  That property is then passed to the supplied callback.
+     * Traversing backwards is simpler than forwards as we don't need to take into
+     * account repeating model values (e.g. for repeating sections and table rows)
+     * @param targetName the name of the model variable / property to find.
+     * @param context the starting context
+     * @param callback a function to invoke when the target variable is found.
+     */
+    ecodata.forms.navigateModel = function(targetName, context, callback) {
+        if (!context) {
+            return;
+        }
+        if (!_.isUndefined(context[targetName])) {
+            callback(context[targetName]);
+        }
+        // If the context is a knockout binding context, $data will be the current object
+        // being bound to the view.
+        else if (context['$data']) {
+            ecodata.forms.navigateModel(targetName, context['$data'], callback);
+        }
+        // The root data model is constructed with fields inside a nested "data" object.
+        else if (_.isObject(context['data'])) {
+            ecodata.forms.navigateModel(targetName, context['data'], callback);
+        }
+        // Try to evaluate against the parent - the bindingContext uses $parent and the
+        // ecodata.forms.DataModelItem uses parent
+        else if (context['$parent']) {
+            ecodata.forms.navigateModel(targetName, context['$parent'], callback);
+        }
+        else if (context['parent']) {
+            ecodata.forms.navigateModel(targetName, context['parent'], callback);
+        }
+        // Try to evaluate against the context - this is setup as a model / binding context
+        // variable and refers to data external to the form - e.g. the project or activity the
+        // form is related to.
+        else if (context['$context']) {
+            ecodata.forms.navigateModel(targetName, context['$context'], callback);
+        }
+
+    }
+
+    /**
      * Helper function for evaluating expressions defined in the metadata.  These may be used to compute values
      * or make decisions on which constraints to apply to individual data model items.
      * The expressions are parsed and evaluated using: https://github.com/silentmatt/expr-eval
@@ -253,6 +296,10 @@ function orEmptyArray(v) {
             return _.findWhere(list, obj);
         };
 
+        parser.functions.deepEquals = function(value1, value2) {
+            return _.isEqual(value1, value2);
+        };
+
         var specialBindings = function() {
 
             return {
@@ -296,27 +343,9 @@ function orEmptyArray(v) {
                 result = specialBindings[contextVariable];
             }
             else {
-                if (!_.isUndefined(context[contextVariable])) {
-                    result = ko.utils.unwrapObservable(context[contextVariable]);
-                }
-                else {
-                    // The root view model is constructed with fields inside a nested "data" object.
-                    if (_.isObject(context['data'])) {
-                        result = bindVariable(variable, context['data']);
-                    }
-                    // Try to evaluate against the parent
-                    else if (context['$parent']) {
-                        // If the parent is the output model, we want to evaluate against the "data" property
-                        var parentContext = _.isObject(context['$parent'].data) ? context['$parent'].data : context['$parent'];
-                        result = bindVariable(variable, parentContext);
-                    }
-                    // Try to evaluate against the context - used when we are evaluating pre-pop data with a filter
-                    // expression that references a variable in the form context
-                    else if (context['$context']) {
-                        result = bindVariable(variable, context['$context']);
-                    }
-                }
-
+                ecodata.forms.navigateModel(contextVariable, context, function(target) {
+                    result = ko.utils.unwrapObservable(target);
+                });
             }
             return _.isUndefined(result) ? null : result;
         }
@@ -334,14 +363,14 @@ function orEmptyArray(v) {
         var expressionCache = {};
 
         function evaluateInternal(expression, context) {
-                var parsedExpression = expressionCache[expression];
-                if (!parsedExpression) {
-                    parsedExpression = parser.parse(expression);
-                    expressionCache[expression] = parsedExpression;
-                }
+            var parsedExpression = expressionCache[expression];
+            if (!parsedExpression) {
+                parsedExpression = parser.parse(expression);
+                expressionCache[expression] = parsedExpression;
+            }
 
-                var variables = parsedExpression.variables();
-                var boundVariables = bindVariables(variables, context);
+            var variables = parsedExpression.variables();
+            var boundVariables = bindVariables(variables, context);
 
             var result;
             try {
@@ -619,16 +648,32 @@ function orEmptyArray(v) {
                 if (prepopData) {
                     var result = prepopData;
                     var mapping = conf.mapping;
-                    if (conf.filter && conf.filter.expression) {
-                        if (!_.isArray(prepopData)) {
-                            throw "Filtering is only supported for array typed prepop data."
+
+                    function postProcessPrepopData(processingFunction, processingConfig, data) {
+                        if (!_.isArray(data)) {
+                            throw "Filter/find is only supported for array typed prepop data."
                         }
-                        result = _.filter(result, function(item) {
-                            var expression = conf.filter.expression;
-                            var itemContext = _.extend({}, item, {$context:context, $config:config});
-                            return ecodata.forms.expressionEvaluator.evaluateBoolean(expression, itemContext);
+                        if (!processingConfig.expression) {
+                            throw "Missing expression attribute in configuration"
+                        }
+                        return processingFunction(data, function(item) {
+                            var expression = processingConfig.expression;
+                            var namespace = processingConfig['namespace'] || 'item';
+                            var evalContext = {};
+                            evalContext[namespace] = item;
+
+                            var evalContext = _.extend(evalContext, {$context:context, $config:config});
+                            return ecodata.forms.expressionEvaluator.evaluateBoolean(expression, evalContext);
                         });
                     }
+
+                    if (conf.filter) {
+                        result = postProcessPrepopData(_.filter, conf.filter, result);
+                    }
+                    else if (conf.find) {
+                        result = postProcessPrepopData(_.find, conf.find, result);
+                    }
+
                     if (mapping) {
                         result = self.map(mapping, result);
                     }
@@ -796,16 +841,46 @@ function orEmptyArray(v) {
         function buildPrepopConstraints(constraintsConfig, constraintsDeferred) {
             var defaultConstraints = constraintsConfig.defaults || [];
             var constraintsObservable = ko.observableArray(defaultConstraints);
+            var dataLoaderContext = _.extend({}, context, {$parent:context.parent});
+            var dataLoader = ecodata.forms.dataLoader(dataLoaderContext, config);
 
-            return ko.computed(function() {
-                var dataLoaderContext = _.extend({}, context, {$parent:context.parent});
-                var dataLoader = ecodata.forms.dataLoader(dataLoaderContext, config);
-                dataLoader.prepop(constraintsConfig.config).done(function (data) {
+            ko.computed(function() {
+                var prepopConf = constraintsConfig.config;
+                // If the prepop needs to post process the data, we need to execute the post processing
+                // in the context of the computed so as to register any dependencies on values used in
+                // the post-processing expressions.
+                // The dataloader won't execute post processing synchronously as retrieving the data can be done
+                // via a remote call.
+                if (prepopConf.filter) {
+                    ecodata.forms.expressionEvaluator.evaluate(prepopConf.filter.expression, dataLoaderContext);
+                }
+                if (prepopConf.find) {
+                    ecodata.forms.expressionEvaluator.evaluate(prepopConf.filter.expression, dataLoaderContext);
+                }
+                dataLoader.prepop(prepopConf).done(function (data) {
                     constraintsObservable(data);
                     constraintsDeferred.resolve();
                 });
-                return constraintsObservable();
             });
+
+            return constraintsObservable;
+        }
+
+        /**
+         * Finds the model attribute with the specified name searching from the context of this
+         * DataModelItem if no context is supplied.
+         * This is so that for nested items we can find the nearest neighbour with the specified name. (e.g.
+         * when the model represents a repeating section or table row)
+         */
+        self.findNearestByName = function(targetName, context) {
+            if (!context) {
+                context = self.context;
+            }
+            var result = null;
+            ecodata.forms.navigateModel(targetName, context, function(target) {
+                result = target;
+            })
+            return result;
         }
 
         function attachIncludeExclude(constraints) {

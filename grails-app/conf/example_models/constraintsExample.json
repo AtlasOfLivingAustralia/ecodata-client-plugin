@@ -20,7 +20,19 @@
             "type": "pre-populated",
             "config": {
               "source": {
-                "url": "/preview/prepopulateConstraints"
+                "url": "/preview/prepopulateConstraints",
+                "params" : [
+                  {
+                    "name":"p1",
+                    "value":"1"
+                  },
+                  {
+                    "name": "p2",
+                    "type": "computed",
+                    "expression": "number1"
+                  }
+
+                ]
               }
             },
             "excludePath": "list.value1"
@@ -65,7 +77,7 @@
       "items": [
         {
           "type": "literal",
-          "source": "<p>This example illustrates the use of computed constraints</p><p>The 'Value 2' field will only allow each item in the dropdown to be selected once, no matter how many times 'Value 2' appears on the page.</p><p>For each selection made in a 'Value 2' field, that value will be added as a selectable option in the 'Value 3' field.</p>"
+          "source": "<p>This example illustrates the use of computed constraints</p><p>The 'Value 2' field will only allow each item in the dropdown to be selected once, no matter how many times 'Value 2' appears on the page.</p><p>For each selection made in a 'Value 2' field, that value will be added as a selectable option in the 'Value 3' field.</p><p>Note also that the constraints for 'value1' include a parameter that references a form variable.  When that variable changes, the constraint pre-population is re-executed</p>"
         }
       ]
     },

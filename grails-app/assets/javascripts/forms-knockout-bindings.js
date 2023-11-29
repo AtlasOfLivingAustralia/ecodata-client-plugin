@@ -679,7 +679,10 @@
             var options = _.defaults(valueAccessor() || {}, defaults);
 
             $(element).select2(options).change(function(e) {
-                model($(element).val());
+                if (ko.isWritableObservable(model)) { // Don't try and write the value to a computed.
+                    model($(element).val());
+                }
+
             });
 
             if (options.preserveColumnWidth) {
@@ -1173,7 +1176,54 @@
             });
         }); // This is a computed rather than a pureComputed as it has a side effect.
         return target;
-    }
+    };
+
+    ko.bindingHandlers['triggerPrePopulate'] = {
+        'update': function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+
+
+            var dataModelItem = valueAccessor();
+            var behaviours = dataModelItem.get('behaviour');
+            for (var i = 0; i < behaviours.length; i++) {
+                var behaviour = behaviours[i];
+
+                if (behaviour.type == 'pre_populate') {
+                    var config = behaviour.config;
+                    var dataLoaderContext = dataModelItem.context;
+
+                    var dataLoader = new ecodata.forms.dataLoader(dataLoaderContext, dataModelItem.config);
+
+                    var dependencyTracker = ko.computed(function () {
+                        dataModelItem(); // register dependency on the observable.
+                        dataLoader.prepop(config).done(function (data) {
+                            data = data || {};
+                            var target = config.target;
+                            if (!target) {
+                                target = viewModel;
+                            }
+                            else {
+                                target = dataModelItem.findNearestByName(target, bindingContext);
+                            }
+                            if (!target) {
+                                throw "Unable to locate target for pre-population: "+target;
+                            }
+                            if (_.isFunction(target.loadData)) {
+                                target.loadData(data);
+                            } else if (_.isFunction(target.load)) {
+                                target.load(data);
+                            } else if (ko.isObservable(target)) {
+                                target(data);
+                            } else {
+                                console.log("Warning: target for pre-populate is invalid");
+                            }
+
+                        }); // This is a computed rather than a pureComputed as it has a side effect.
+                    });
+                }
+            }
+
+        }
+    };
 
 })();
 
