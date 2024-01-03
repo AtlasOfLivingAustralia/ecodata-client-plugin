@@ -29,8 +29,8 @@ class ComputedValueRenderer {
             default:
                 expressionType = "evaluate"
         }
-
-        out << "return ecodata.forms.expressionEvaluator.${expressionType}('${expression}', ${dependantContext}, ${decimalPlaces});\n";
+        out << "var expression = '${expression.encodeAsJavaScript()}';\n"
+        out << "return ecodata.forms.expressionEvaluator.${expressionType}(expression, ${dependantContext}, ${decimalPlaces});\n";
     }
 
     private int getNumberOfDecimalPlaces(Map model, Map computed) {
