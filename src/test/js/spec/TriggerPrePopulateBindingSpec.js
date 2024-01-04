@@ -25,7 +25,9 @@ describe("triggerPrePopulate binding handler Spec", function () {
                         source: {
                             "context-path":"test"
                         },
-                        target: "item2"
+                        target: {
+                            name:"item2"
+                        }
 
                     }
                 }

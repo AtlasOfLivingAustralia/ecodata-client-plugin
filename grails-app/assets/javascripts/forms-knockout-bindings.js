@@ -1226,8 +1226,8 @@
                                 // direct observable accepts geojson.
                                 target(data);
                             }
-                            else if (configTarget.type = "singleLoad") {
-                                loadData(target, data);
+                            else if (configTarget.type == "singleLoad") {
+                                doLoad(target, data);
                             }
                             else {
                                 target = target.data || target;
