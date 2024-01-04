@@ -1193,36 +1193,51 @@
 
                     var dataLoader = new ecodata.forms.dataLoader(dataLoaderContext, dataModelItem.config);
 
+                    function doLoad(propTarget, value) {
+
+                        if (_.isFunction(propTarget.loadData)) {
+                            propTarget.loadData(value);
+                        } else if (_.isFunction(propTarget.load)) {
+                            propTarget.load(value);
+                        } else if (ko.isObservable(propTarget)) {
+                            propTarget(value);
+                        } else {
+                            console.log("Warning: target for pre-populate is invalid");
+                        }
+                    }
                     var dependencyTracker = ko.computed(function () {
                         dataModelItem(); // register dependency on the observable.
                         dataLoader.prepop(config).done(function (data) {
                             data = data || {};
-                            var target = config.target;
-                            if (!target) {
+                            var configTarget = config.target;
+                            var target;
+                            if (!configTarget) {
                                 target = viewModel;
                             }
                             else {
-                                target = dataModelItem.findNearestByName(target, bindingContext);
+                                target = dataModelItem.findNearestByName(configTarget.name, bindingContext);
                             }
                             if (!target) {
                                 throw "Unable to locate target for pre-population: "+target;
                             }
-                            target = target.data || target;
-                            for (var prop in data) {
-                                if (target.hasOwnProperty(prop)) {
-                                    var propTarget = target[prop];
-                                    if (_.isFunction(propTarget.loadData)) {
-                                        propTarget.loadData(data[prop]);
-                                    } else if (_.isFunction(propTarget.load)) {
-                                        propTarget.load(data[prop]);
-                                    } else if (ko.isObservable(propTarget)) {
-                                        propTarget(data[prop]);
-                                    } else {
-                                        console.log("Warning: target for pre-populate is invalid");
+                            if (configTarget.type == "singleValue") {
+                                // This needs to be done to load data into the feature data type due to the awkward
+                                // way the loadData method uses the feature id from the reporting site and the
+                                // direct observable accepts geojson.
+                                target(data);
+                            }
+                            else if (configTarget.type = "singleLoad") {
+                                loadData(target, data);
+                            }
+                            else {
+                                target = target.data || target;
+                                for (var prop in data) {
+                                    if (target.hasOwnProperty(prop)) {
+                                        var propTarget = target[prop];
+                                        doLoad(propTarget, data[prop]);
                                     }
                                 }
                             }
-
 
                         }); // This is a computed rather than a pureComputed as it has a side effect.
                     });
