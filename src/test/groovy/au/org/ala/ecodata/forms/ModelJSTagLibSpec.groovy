@@ -136,7 +136,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace(
-                "data.test = ko.computed(function() { return ecodata.forms.expressionEvaluator.evaluate('test1+1', data, 2); });",
+                "data.test=ko.computed(function(){varexpression='test1+1';returnecodata.forms.expressionEvaluator.evaluate(expression,data,2);});",
                 actualOut.toString())
     }
 
@@ -153,7 +153,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace(
-                "data.test = ko.computed(function() { return ecodata.forms.expressionEvaluator.evaluate('test1+1', data, 2); });",
+                "data.test=ko.computed(function(){varexpression='test1+1';returnecodata.forms.expressionEvaluator.evaluate(expression,data,2);});",
                 actualOut.toString())
     }
 
@@ -170,7 +170,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace(
-                "data.test = ko.computed(function() { return ecodata.forms.expressionEvaluator.evaluate('test1+1', data, 3); });",
+                "data.test=ko.computed(function(){varexpression='test1+1';returnecodata.forms.expressionEvaluator.evaluate(expression,data,3);});",
                 actualOut.toString())
     }
 
@@ -187,7 +187,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace(
-                "data.test = ko.computed(function() { return ecodata.forms.expressionEvaluator.evaluate('test1+1', data, 4); });",
+                "data.test=ko.computed(function(){varexpression='test1+1';returnecodata.forms.expressionEvaluator.evaluate(expression,data,4);});",
                 actualOut.toString())
     }
 
@@ -208,7 +208,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace(
-                "self.test = ko.computed(function() { return ecodata.forms.expressionEvaluator.evaluate('test1+1', self, 2); });",
+                " self.test=ko.computed(function(){varexpression='test1+1';returnecodata.forms.expressionEvaluator.evaluate(expression,self,2);});",
                 actualOut.toString())
     }
 
@@ -226,7 +226,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace(
-                "data.test = ko.computed(function() { return ecodata.forms.expressionEvaluator.evaluate('test1+1', data, 2); });"+
+                "data.test=ko.computed(function(){varexpression='test1+1';returnecodata.forms.expressionEvaluator.evaluate(expression,data,2);});"+
                 "data.test = data.test.extend({metadata:{metadata:self.dataModel['test'],context:self.\$context,config:config}});",
                 actualOut.toString())
     }
