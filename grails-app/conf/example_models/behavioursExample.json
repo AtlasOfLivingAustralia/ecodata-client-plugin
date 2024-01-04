@@ -45,11 +45,6 @@
                   "name": "param",
                   "type": "computed",
                   "expression": "item5"
-                },
-                {
-                  "name": "item5",
-                  "type": "computed",
-                  "expression": "item5"
                 }
               ]
             },
@@ -57,10 +52,6 @@
               {
                 "source-path": "param",
                 "target": "item6"
-              },
-              {
-                "source-path": "item5",
-                "target": "item5"
               }
             ],
             "target": "$data"
@@ -119,7 +110,7 @@
           "items": [
             {
               "type": "literal",
-              "source": "Note for this example, data entered into item5 will trigger a pre-pop call and be mapped back to item5 and item6.  Note that the target of the pre-pop is $data which is the current binding context (or the root object in this case).  A current limitation is the load method is used, which means if the pre-pop result does not contain keys for all data in the target object, the data for missing fields will be set to undefined.   A planned enhancement is to only replace data where keys in the pre-pop data exist."
+              "source": "Note for this example, data entered into item5 will trigger a pre-pop call and be mapped back to item6.  Note that the target of the pre-pop is $data which is the current binding context (or the root object in this case).  A current limitation is the load method is used for all keys in the returned data, which means if the data is nested and the pre-pop result does not contain keys for all nested data in the nested target object, the data for missing fields will be set to undefined."
             }
           ]
         }

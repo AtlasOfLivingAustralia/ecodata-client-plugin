@@ -1207,15 +1207,22 @@
                             if (!target) {
                                 throw "Unable to locate target for pre-population: "+target;
                             }
-                            if (_.isFunction(target.loadData)) {
-                                target.loadData(data);
-                            } else if (_.isFunction(target.load)) {
-                                target.load(data);
-                            } else if (ko.isObservable(target)) {
-                                target(data);
-                            } else {
-                                console.log("Warning: target for pre-populate is invalid");
+                            target = target.data || target;
+                            for (var prop in data) {
+                                if (target.hasOwnProperty(prop)) {
+                                    var propTarget = target[prop];
+                                    if (_.isFunction(propTarget.loadData)) {
+                                        propTarget.loadData(data[prop]);
+                                    } else if (_.isFunction(propTarget.load)) {
+                                        propTarget.load(data[prop]);
+                                    } else if (ko.isObservable(propTarget)) {
+                                        propTarget(data[prop]);
+                                    } else {
+                                        console.log("Warning: target for pre-populate is invalid");
+                                    }
+                                }
                             }
+
 
                         }); // This is a computed rather than a pureComputed as it has a side effect.
                     });
