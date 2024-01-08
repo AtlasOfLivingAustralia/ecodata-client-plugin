@@ -243,7 +243,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         tagLib.renderInitialiser(ctx)
 
         then:
-        compareWithoutWhiteSpace("data['test'].load(ecodata.forms.orDefault(data['test'],undefined));", actualOut.toString())
+        compareWithoutWhiteSpace("initialisers.push(data['test'].load(ecodata.forms.orDefault(data['test'],undefined)));", actualOut.toString())
     }
 
     def "Input data is null/undefined checked before calling loadData() on SpeciesViewModel"() {

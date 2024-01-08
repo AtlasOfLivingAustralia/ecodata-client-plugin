@@ -200,7 +200,7 @@ class ModelJSTagLib {
     void renderLoad(List items, JSModelRenderContext ctx) {
 
         ctx.out << "self.loadData = function(data) {\n"
-
+        out << INDENT * 1 << "var initialisers = [];\n"
         JSModelRenderContext child = ctx.createChildContext()
 
         Map attrs = ctx.attrs
@@ -209,7 +209,7 @@ class ModelJSTagLib {
             child.dataModel = mod
 
             if (mod.dataType == 'list') {
-                out << INDENT * 1 << "self.load${mod.name}(data.${mod.name});\n"
+                out << INDENT * 1 << "initialisers = initialisers.concat(self.load${mod.name}(data.${mod.name}));\n"
                 loadColumnTotals out, attrs, mod
             } else if (mod.dataType == 'matrix') {
                 out << INDENT * 1 << "self.load${mod.name.capitalize()}(data.${mod.name});\n"
@@ -217,7 +217,7 @@ class ModelJSTagLib {
                 renderInitialiser(child)
             }
         }
-
+        out << INDENT * 1 << "return initialisers;\n"
         ctx.out << "};\n"
     }
 
@@ -266,7 +266,7 @@ class ModelJSTagLib {
                 out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'](ecodata.forms.orDefault(data['${mod.name}'], '${attrs.user.displayName}'));\n"
             } else {
                 if (requiresMetadataExtender(mod)) {
-                    out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'].load(${value});\n"
+                    out << INDENT*4 << "initialisers.push(${ctx.propertyPath}['${mod.name}'].load(${value}));\n"
                 }
                 else {
                     out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'](${value});\n"
@@ -531,8 +531,6 @@ class ModelJSTagLib {
         }
         renderLoad(ctx.dataModel.columns, childCtx)
 
-        out << INDENT*4 << "self.loadData(data || {});\n"
-
         out << INDENT*2 << "};\n"
     }
 
@@ -748,13 +746,13 @@ class ModelJSTagLib {
         boolean userAddedRows = Boolean.valueOf(viewModel?.userAddedRows)
         def defaultRows = []
         model.defaultRows?.eachWithIndex { row, i ->
-            defaultRows << INDENT*5 + "${ctx.propertyPath}.${model.name}.addRow(${row.toString()});"
+            defaultRows << INDENT*5 + "rowInitalisers.push(${ctx.propertyPath}.${model.name}.addRow(${row.toString()}));"
         }
         def insertDefaultModel = defaultRows.join('\n')
 
         // If there are no default rows, insert a single blank row and make it available for editing.
         if (attrs.edit && model.defaultRows == null) {
-            insertDefaultModel = "${ctx.propertyPath}.${model.name}.addRow();"
+            insertDefaultModel = "rowInitalisers.push(${ctx.propertyPath}.${model.name}.addRow());"
         }
 
         out << """var context = _.extend({}, context, {parent:self, listName:'${model.name}'});"""
@@ -762,7 +760,9 @@ class ModelJSTagLib {
         observableArray(ctx, [extender], false)
         out << """    
             ${ctx.propertyPath}.${model.name}.loadDefaults = function() {
+                var rowInitalisers = [];
                 ${insertDefaultModel}
+                return rowInitialisers;
             };
         """
 
