@@ -1204,7 +1204,7 @@
                         }
                     }
                     var dependencyTracker = ko.computed(function () {
-                        var initialised = (dataModelItem.context.lifecycleState && dataModelItem.context.lifecycleState() == 'initialised');
+                        var initialised = (dataModelItem.context.lifecycleState && dataModelItem.context.lifecycleState.state == 'initialised');
 
                         dataLoader.prepop(config).done(function (data) {
 
