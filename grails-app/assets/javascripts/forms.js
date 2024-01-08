@@ -1161,7 +1161,7 @@ function orEmptyArray(v) {
                 self([]);
             }
             if (data === undefined) {
-                self.loadDefaults();
+                initialisers = initialisers.concat(self.loadDefaults());
             }
             else {
                 _.each(data, function (row, i) {

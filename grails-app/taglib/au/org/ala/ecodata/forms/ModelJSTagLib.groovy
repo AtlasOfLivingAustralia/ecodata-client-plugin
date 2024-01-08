@@ -746,13 +746,13 @@ class ModelJSTagLib {
         boolean userAddedRows = Boolean.valueOf(viewModel?.userAddedRows)
         def defaultRows = []
         model.defaultRows?.eachWithIndex { row, i ->
-            defaultRows << INDENT*5 + "rowInitialisers.push(${ctx.propertyPath}.${model.name}.addRow(${row.toString()}));"
+            defaultRows << INDENT*5 + "rowInitialisers = rowInitialisers.concat(${ctx.propertyPath}.${model.name}.addRow(${row.toString()}));"
         }
         def insertDefaultModel = defaultRows.join('\n')
 
         // If there are no default rows, insert a single blank row and make it available for editing.
         if (attrs.edit && model.defaultRows == null) {
-            insertDefaultModel = "rowInitialisers.push(${ctx.propertyPath}.${model.name}.addRow());"
+            insertDefaultModel = "rowInitialisers = rowInitialisers.concat(${ctx.propertyPath}.${model.name}.addRow());"
         }
 
         out << """var context = _.extend({}, context, {parent:self, listName:'${model.name}'});"""
