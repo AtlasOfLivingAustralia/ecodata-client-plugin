@@ -1179,9 +1179,7 @@
     };
 
     ko.bindingHandlers['triggerPrePopulate'] = {
-        'update': function (element, valueAccessor, allBindings, viewModel, bindingContext) {
-
-
+        'init': function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             var dataModelItem = valueAccessor();
             var behaviours = dataModelItem.get('behaviour');
             for (var i = 0; i < behaviours.length; i++) {
@@ -1206,8 +1204,15 @@
                         }
                     }
                     var dependencyTracker = ko.computed(function () {
-                        dataModelItem(); // register dependency on the observable.
+                        var initialised = (dataModelItem.context.lifecycleState && dataModelItem.context.lifecycleState.state == 'initialised');
+
                         dataLoader.prepop(config).done(function (data) {
+
+                            if (config.waitForInitialisation && !initialised) {
+                                console.log("Not applying any updates during initialisation")
+                                return;
+                            }
+
                             data = data || {};
                             var configTarget = config.target;
                             var target;

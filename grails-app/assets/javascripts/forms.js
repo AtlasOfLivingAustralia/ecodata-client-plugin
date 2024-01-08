@@ -1024,7 +1024,7 @@ function orEmptyArray(v) {
             else {
                 self(data);
             }
-
+            return constraintsInititaliser;
         }
     };
 
@@ -1066,6 +1066,7 @@ function orEmptyArray(v) {
         self.addRow = function (data) {
             var newItem = self.newItem(data, self.rowCount());
             self.push(newItem);
+            return newItem.loadData(data || {});
         };
         self.newItem = function (data, index) {
             var itemDataModel = _.indexBy(dataModel[listName].columns, 'name');
@@ -1155,17 +1156,19 @@ function orEmptyArray(v) {
         };
 
         parent['load' + listName] = function (data, append) {
+            var initialisers = [];
             if (!append) {
                 self([]);
             }
             if (data === undefined) {
-                self.loadDefaults();
+                initialisers = initialisers.concat(self.loadDefaults());
             }
             else {
                 _.each(data, function (row, i) {
-                    self.push(self.newItem(row, i));
+                    initialisers = initialisers.concat(self.addRow(row));
                 });
             }
+            return initialisers;
         };
     };
 
@@ -1560,12 +1563,16 @@ function orEmptyArray(v) {
         };
 
         self.initialise = function (outputData) {
+            var deferred = $.Deferred();
+            self.loadOrPrepop(outputData).done(function (data) {
+                var initialisers = self.loadData(data);
 
-            return self.loadOrPrepop(outputData).done(function (data) {
-                self.loadData(data);
-                self.transients.dummy.notifySubscribers();
+                $.when.apply($, initialisers).then(function () {
+                    deferred.resolve();
+                    self.transients.dummy.notifySubscribers();
+                });
             });
-
+            return deferred;
         };
 
 
