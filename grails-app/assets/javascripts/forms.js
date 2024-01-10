@@ -855,7 +855,7 @@ function orEmptyArray(v) {
                     ecodata.forms.expressionEvaluator.evaluate(prepopConf.filter.expression, dataLoaderContext);
                 }
                 if (prepopConf.find) {
-                    ecodata.forms.expressionEvaluator.evaluate(prepopConf.filter.expression, dataLoaderContext);
+                    ecodata.forms.expressionEvaluator.evaluate(prepopConf.find.expression, dataLoaderContext);
                 }
                 dataLoader.prepop(prepopConf).done(function (data) {
                     constraintsObservable(data);
