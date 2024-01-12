@@ -18,8 +18,14 @@
                 $element.data('date', initialDateStr);
             }
 
-            var defaults = {format: 'dd-mm-yyyy', autoclose: true};
+            var defaults = {format: 'dd-mm-yyyy', autoclose: true, enableOnReadonly: false};
             var options = _.defaults(allBindingsAccessor().datepickerOptions || {}, defaults);
+
+            $element.click(function() {
+                if ($element.prop('disabled') && $element.prop('readonly')) {
+                    e.preventDefault();
+                }
+            });
 
             //initialize datepicker with some optional options
             $element.datepicker(options);
@@ -27,7 +33,7 @@
             // if the parent container holds any element with the class 'open-datepicker'
             // then add a hook to do so
             $element.parent().find('.open-datepicker').click(function () {
-                if (!$element.prop('disabled')) {
+                if (!$element.prop('disabled') && !$element.prop('readonly')) {
                     $element.datepicker('show');
                 }
             });

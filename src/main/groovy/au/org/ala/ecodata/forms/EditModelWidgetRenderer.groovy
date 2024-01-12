@@ -116,6 +116,9 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
 
         context.databindAttrs.add 'optionsCaption', '"Please select"'
         context.attributes.addSpan("form-control form-control-sm")
+        if (isReadOnly(context)) { // HTML Select elements don't support the readonly attribute so we add disabled.  This will break validation though.
+            context.databindAttrs.add('disableClick', 'true')
+        }
 
         context.writer <<  "<select${context.attributes.toString()} class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select>"
     }
