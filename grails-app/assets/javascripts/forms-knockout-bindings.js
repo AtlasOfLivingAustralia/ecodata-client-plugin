@@ -1252,5 +1252,23 @@
         }
     };
 
+    ko.bindingHandlers['disableClick'] = {
+        'update': function (element, valueAccessor) {
+            var value = ko.utils.unwrapObservable(valueAccessor());
+            if (value) {
+                this.eventHandler = $(element).on('mousedown.disableClick keydown.disableClick touchstart.disableClick', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+            }
+            else {
+                if (this.eventHandler) {
+                    $(element).off('mousedown.disableClick keydown.disableClick touchstart.disableClick');
+                }
+            }
+
+        }
+    };
+
 })();
 
