@@ -614,6 +614,8 @@ ecodata.forms.maps.showMapInModal = function(options) {
 
     })
     .one('hidden.bs.modal', function (e) {
+        $ok.unbind('click', okPressed); // This is done because otherwise when cancel is pressed the listener isn't removed.
+
         // This check is necessary because the accordion also fires these events which bubble to the modal.
         if (e.target == this) {
             self.featureMapInstance.clearDrawnItems();
