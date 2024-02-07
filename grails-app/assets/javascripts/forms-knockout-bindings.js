@@ -62,12 +62,13 @@
 
             var config = valueAccessor();
             config = $.extend({}, config, defaultConfig);
-
+            var dropzone = $(element);
             var target = config.target; // Expected to be a ko.observableArray
             $(element).fileupload({
                 url:config.url,
                 autoUpload:true,
-                dataType:'json'
+                dataType:'json',
+                dropZone: dropzone
             }).on('fileuploadadd', function(e, data) {
                 complete(false);
                 progress(1);
