@@ -861,7 +861,7 @@ function getDB() {
 
     var DB_NAME = "biocollect";
     var db = new Dexie(DB_NAME);
-    db.version(4).stores({
+    db.version(5).stores({
         taxon: `
            ++id,
            projectActivityId,

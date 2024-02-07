@@ -2,7 +2,7 @@
 <div class="image-gallery">
     <ul class="thumbnails list-unstyled" data-bind="visible: ${name}().length">
         <!-- ko foreach: ${name} -->
-        <li>
+        <li data-bind="visible: $data.status() !== 'deleted'">
             <div class="projectLogo">
                 <a href=""
                    data-bind="attr:{href:getImageViewerUrl()}, fancybox: {nextEffect:'fade', preload:0, 'prevEffect':'fade', type: 'iframe', width: '80%', title: function(){ return $(this).next().find('.metadata').html()}}"

@@ -22,7 +22,8 @@
 function enmapify(args) {
     "use strict";
 
-    var SITE_CREATE = 'sitecreate', SITE_PICK = 'sitepick', SITE_PICK_CREATE = 'sitepickcreate';
+    var SITE_CREATE = 'sitecreate', SITE_PICK = 'sitepick', SITE_PICK_CREATE = 'sitepickcreate',
+        SITE_NAME='Location of the sighting';
     var viewModel = args.viewModel,
         container = args.container,
         validationContainer = args.validationContainer || '#validation-container',
@@ -493,6 +494,7 @@ function enmapify(args) {
      * @param siteId
      */
     function updateMapForSite(siteId) {
+        console.trace(`Updating map for site ${siteId}`);
         if (typeof siteId !== "undefined" && siteId) {
             if (lonObservable()) {
                 previousLonObservable(lonObservable());
@@ -506,21 +508,8 @@ function enmapify(args) {
                 return siteId == site.siteId
             })[0];
             //search from site collection in case it is a private site
-            if (!matchingSite){
-                fetchSite(siteId).done(function (result) {
-                    if (result.data) {
-                        var site = result.data;
-                        site.name='Location of the sighting';
-                        sitesObservable.push(site);
-                        matchingSite = site;
-                        map.clearBoundLimits();
-                        map.setGeoJSON(Biocollect.MapUtilities.featureToValidGeoJson(matchingSite.extent.geometry));
-                        // Reassign since siteIdObservable value is cleared when the site is not listed in sitesObservable.
-                        siteIdObservable(siteId);
-                    }
-                }).fail(function(result) {
-                    console.log(result.message);
-                });
+            if (!matchingSite) {
+                offlineGetSiteAndAddToSiteList(siteId)
             }
 
             // TODO: OPTIMISE THE PROCEDUE
@@ -542,6 +531,53 @@ function enmapify(args) {
                 map.resetMap()
             }
         }
+    }
+
+    function offlineGetSiteAndAddToSiteList(siteId) {
+        addFakeSiteObject(siteId);
+        offlineFetchSite(siteId).then(function (result) {
+            var site = result.data;
+            if (site) {
+                site.name = site.name || SITE_NAME;
+                sitesObservable.push(site);
+                nameObservable(site.name);
+                map.clearBoundLimits();
+                map.setGeoJSON(Biocollect.MapUtilities.featureToValidGeoJson(site.extent.geometry));
+
+                subscribeOrDisposeSiteIdObservable(false);
+                siteIdObservable(siteId);
+                removeFakeSiteObject(siteId);
+                subscribeOrDisposeSiteIdObservable(true);
+            }
+        });
+    }
+
+    /**
+     * Adding fake object so that knockout select binding does not rewrite siteIdObservable due to it not finding
+     * site object in sitesObservable.
+     * @param siteId
+     */
+    function addFakeSiteObject (siteId) {
+        sitesObservable.push({
+            siteId: siteId,
+            name: SITE_NAME,
+            fakeObject: true,
+            extent:{
+                geometry: {
+                    type: ALA.MapConstants.DRAW_TYPE.POINT_TYPE
+                }
+            }
+        });
+    }
+
+    function removeFakeSiteObject (siteId) {
+        var sites = $.grep(sitesObservable(), function (site) {
+            return (siteId == site.siteId) && (site.fakeObject === true);
+        });
+
+        sites.forEach(function (site) {
+            sitesObservable.remove(site);
+        });
     }
 
     function fetchSite(siteId) {
@@ -1087,6 +1123,34 @@ function enmapify(args) {
         return type;
     }
 
+    function mergeSitesObservable(sites) {
+        var originalSites = sitesObservable(),
+            updatedSites = [];
+
+        for (var i = 0; i < sites.length; i++) {
+            var site = sites[i], originalIndex;
+            var originalSite = $.grep(originalSites, function (s, index) {
+                if (s.siteId === site.siteId){
+                    originalIndex = index;
+                    return true;
+                }
+            })[0];
+
+            if (originalSite) {
+                updatedSites.push(site);
+                originalSites.splice(originalIndex, 1);
+            } else {
+                updatedSites.push(site);
+            }
+        }
+
+        if (originalSites.length > 0) {
+            updatedSites.push.apply(updatedSites, originalSites);
+        }
+
+        sitesObservable(updatedSites);
+    }
+
     function reloadSiteData() {
         if (enableOffline) {
             return isOffline().then(function () {
@@ -1103,7 +1167,7 @@ function enmapify(args) {
     function onlineReloadSiteData() {
         var entityType = activityLevelData.pActivity.projectActivityId ? "projectActivity" : "project"
         return $.getJSON(listSitesUrl + '/' + (activityLevelData.pActivity.projectActivityId || activityLevelData.pActivity.projectId) + "?entityType=" + entityType).then(function (data, textStatus, jqXHR) {
-            sitesObservable(data);
+            mergeSitesObservable(data);
         });
     }
 
@@ -1118,7 +1182,7 @@ function enmapify(args) {
                     if (window.entities) {
                         entities.offlineGetSites(siteIds).then(function (result) {
                             var sites = result.data;
-                            sitesObservable(sites);
+                            mergeSitesObservable(sites);
                             deferred.resolve({message: "Sites retrieved from db.", success: true, data: sites});
                         }, deferred.reject);
                     }
@@ -1129,7 +1193,7 @@ function enmapify(args) {
             case "project":
                 if (window.entities) {
                    entities.offlineGetSitesForProject(projectId).then(function (sites) {
-                       sitesObservable(sites);
+                       mergeSitesObservable(sites);
                        deferred.resolve({message: "Sites retrieved from db.", success: true, data: sites});
                    }, deferred.reject);
                 }
