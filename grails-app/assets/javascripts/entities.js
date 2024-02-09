@@ -428,6 +428,25 @@ var entities = (function () {
         return $.when.apply($, promises);
     }
 
+    function deleteSpeciesForProjectActivity(pa) {
+        var promises = [];
+        pa.speciesFields && pa.speciesFields.forEach(function (field) {
+            var config = field.config, type = config.type;
+            console.log("fetching species");
+            switch (type) {
+                case GROUP:
+                case SINGLE:
+                    promises.push(deleteSpeciesEntries(pa.projectActivityId, field.dataFieldName, field.output));
+                    break;
+                case ALL:
+                    promises.push(deleteAllSpecies());
+                    break;
+            }
+        });
+
+        return $.when.apply($, promises);
+    }
+
     function onlineGetSpeciesForProjectActivityAndFieldInOutput(offset, projectActivityId, dataFieldName, outputName, limit) {
         return $.ajax({
             url: fcConfig.fetchSpeciesUrl, data: {
@@ -833,6 +852,7 @@ var entities = (function () {
         countAllSpecies: countAllSpecies,
         offlineGetDocument: offlineGetDocument,
         getProjectActivityMetadata: getProjectActivityMetadata,
+        deleteSpeciesForProjectActivity: deleteSpeciesForProjectActivity,
         getSpeciesForProjectActivity: getSpeciesForProjectActivity,
         bulkDeleteDocuments: bulkDeleteDocuments,
         deleteSites: deleteSites,
