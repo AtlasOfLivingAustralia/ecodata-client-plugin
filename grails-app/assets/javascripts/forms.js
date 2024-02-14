@@ -455,7 +455,7 @@ function orEmptyArray(v) {
                 return value.value;
             }
             else if (value.expression) {
-                return ecodata.forms.expressionEvaluator.evaluate(value.expression, context);
+                return ecodata.forms.expressionEvaluator.evaluate(value.expression, context, value.decimalPlaces);
             }
         }
         else {
