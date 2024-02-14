@@ -1575,6 +1575,11 @@ function orEmptyArray(v) {
             return deferred;
         };
 
+        self.clearDataIfOutputMarkedAsNotCompleted = function() {
+            if (self.outputNotCompleted() && self.dirtyFlag && self.dirtyFlag.isDirty()) {
+                self.loadData({});
+            }
+        }
 
     };
 }());
