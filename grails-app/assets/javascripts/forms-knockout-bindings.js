@@ -829,6 +829,44 @@
     };
 
     /**
+     * Applies an attribute to the supplied element that controls the validation error displayed
+     * if a particular validation rule triggers
+     */
+    function addJQueryValidationEngineErrorMessageForRule(rule, message, element){
+         // This comes from the private _validityProp method in the validation engine.
+         // The purpose of reproducing it here is to allow the correct error message attribute to
+         // be applied to the element
+         var validationEngineErrorMessageAttributeLookup = {
+             "required": "value-missing",
+             "custom": "custom-error",
+             "groupRequired": "value-missing",
+             "ajax": "custom-error",
+             "minSize": "range-underflow",
+             "maxSize": "range-overflow",
+             "min": "range-underflow",
+             "max": "range-overflow",
+             "past": "type-mismatch",
+             "future": "type-mismatch",
+             "dateRange": "type-mismatch",
+             "dateTimeRange": "type-mismatch",
+             "maxCheckbox": "range-overflow",
+             "minCheckbox": "range-underflow",
+             "equals": "pattern-mismatch",
+             "funcCall": "custom-error",
+             "funcCallRequired": "custom-error",
+             "creditCard": "pattern-mismatch",
+             "condRequired": "value-missing"
+         };
+
+         var errorAttribute = 'data-errormessage';
+         var errorAttributeSuffix = validationEngineErrorMessageAttributeLookup[rule];
+         if (errorAttributeSuffix) {
+             errorAttribute += '-' + errorAttributeSuffix;
+         }
+         $(element).attr(errorAttribute, message);
+     };
+
+    /**
      * Adds or removes the jqueryValidationEngine validation attributes 'data-validation-engine' and 'data-errormessage'
      * to/from the supplied element.
      * @param element the HTML element to modify.
@@ -874,7 +912,13 @@
             var modelItem = valueAccessor();
 
             var validationAttributes = ko.pureComputed(function() {
-                return createValidationString(modelItem, viewModel);
+                var validationString = createValidationString(modelItem, viewModel);
+                _.each(modelItem || [], function(ruleConfig) {
+                    if (ruleConfig.message) {
+                        addJQueryValidationEngineErrorMessageForRule(ruleConfig.rule, ruleConfig.message, element);
+                    }
+                });
+                return validationString;
             });
             validationAttributes.subscribe(function(value) {
                 updateJQueryValidationEngineAttributes(element, value);
