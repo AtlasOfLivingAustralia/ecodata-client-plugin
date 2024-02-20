@@ -1051,9 +1051,12 @@
                 element.removeAttribute("disabled");
             else if ((!value) && (!element.disabled)) {
                 element.disabled = true;
-                var value = allBindings.get('value');
-                if (ko.isObservable(value)) {
-                    value(undefined);
+                var possibleValueBindings = ['value', 'datepicker'];
+                for (var i=0; i<possibleValueBindings.length; i++) {
+                    var value = allBindings.get(possibleValueBindings[i]);
+                    if (ko.isObservable(value)) {
+                        value(undefined);
+                    }
                 }
             }
 
