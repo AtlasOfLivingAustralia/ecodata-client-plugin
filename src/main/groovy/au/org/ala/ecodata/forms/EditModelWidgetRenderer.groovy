@@ -86,7 +86,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     @Override
     void renderSimpleDate(WidgetRenderContext context) {
         context.databindAttrs.add 'datepicker', context.source + '.date'
-        context.writer << "<input${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr} type='text' class='form-control form-control-sm input-small'/>"
+        context.writer << "<input${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr} type='text' autocomplete='off' class='form-control form-control-sm input-small'/>"
     }
 
     @Override
