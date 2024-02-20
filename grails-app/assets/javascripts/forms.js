@@ -300,6 +300,14 @@ function orEmptyArray(v) {
             return _.isEqual(value1, value2);
         };
 
+        parser.functions.formatDateForValidation = function(value) {
+            if (!value) {
+                return '';
+            }
+
+            return moment(value).format('DD-MM-YYYY');
+        }
+
         var specialBindings = function() {
 
             return {
