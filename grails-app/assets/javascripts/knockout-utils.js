@@ -164,7 +164,22 @@
      * @param precision the number of decimal places allowed.
      * @returns {Computed<any>}
      */
-    ko.extenders.numericString = function(target, precision) {
+    ko.extenders.numericString = function(target, options) {
+        var defaults = {
+            decimalPlaces: 2,
+            removeTrailingZeros: true // backwards compatibility
+        };
+        if (_.isNumber(options)) {
+            options = {decimalPlaces: options};
+        }
+        options = _.extend({}, defaults, options);
+
+        function roundAndToString(value) {
+            var roundingMultiplier = Math.pow(10, options.decimalPlaces);
+            var roundedValue = Math.round(value * roundingMultiplier) / roundingMultiplier;
+            return roundedValue.toString();
+        }
+
         //create a writable computed observable to intercept writes to our observable
         var result = ko.computed({
             read: target,  //always return the original observables value
@@ -173,18 +188,18 @@
                 if (typeof val === 'string') {
                     val = newValue.replace(/,|\$/g, '');
                 }
-                var current = target(),
-                    roundingMultiplier = Math.pow(10, precision),
-                    newValueAsNum = isNaN(val) ? 0 : parseFloat(+val),
-                    valueToWrite = Math.round(newValueAsNum * roundingMultiplier) / roundingMultiplier;
+                var current = target();
+                var newValueAsNum = isNaN(val) ? 0 : parseFloat(+val);
+
+                var valueToWrite = options.removeTrailingZeros ? roundAndToString(newValueAsNum) : newValueAsNum.toFixed(options.decimalPlaces);
 
                 //only write if it changed
-                if (valueToWrite.toString() !== current || isNaN(val)) {
-                    target(isNaN(val) ? newValue : valueToWrite.toString());
+                if (valueToWrite !== current || isNaN(val)) {
+                    target(isNaN(val) ? newValue : valueToWrite);
                 }
                 else {
                     if (newValue !== current) {
-                        target.notifySubscribers(valueToWrite.toString());
+                        target.notifySubscribers(valueToWrite);
                     }
                 }
             }

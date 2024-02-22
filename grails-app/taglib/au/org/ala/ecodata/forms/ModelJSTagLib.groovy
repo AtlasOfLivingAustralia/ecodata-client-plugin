@@ -624,7 +624,11 @@ class ModelJSTagLib {
 
     def numberViewModel(JSModelRenderContext ctx) {
         int decimalPlaces = ctx.dataModel.decimalPlaces ?: 2
-        observable(ctx, ["{numericString:${decimalPlaces}}"])
+
+        Map options = new HashMap(ctx.viewModel()?.displayOptions ?: [:])
+        options.decimalPlaces = decimalPlaces
+        String optionString = (options as JSON).toString()
+        observable(ctx, ["{numericString:${optionString}}"])
     }
 
     def dateViewModel(JSModelRenderContext ctx) {
