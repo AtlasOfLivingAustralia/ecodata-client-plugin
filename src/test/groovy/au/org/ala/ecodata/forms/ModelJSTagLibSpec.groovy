@@ -44,7 +44,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         tagLib.renderDataModelItem(ctx)
 
         then:
-        actualOut.toString().trim() == 'data.myField = ko.observable().extend({numericString:2}).extend({metadata:{metadata:self.dataModel[\'myField\'], context:self.\$context, config:config}});'
+        actualOut.toString().trim() == 'data.myField = ko.observable().extend({numericString:{"decimalPlaces":2}}).extend({metadata:{metadata:self.dataModel[\'myField\'], context:self.\$context, config:config}});'
     }
 
     void "the feature data type doesn't need any special initialisation behaviour"() {
@@ -84,7 +84,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         tagLib.numberViewModel(ctx)
 
         then: "the default is 2"
-        actualOut.toString().trim() == "data.item1 = ko.observable().extend({numericString:2});"
+        actualOut.toString().trim() == "data.item1 = ko.observable().extend({numericString:{\"decimalPlaces\":2}});"
 
         when: "a number of decimal places is specified"
         ctx.dataModel.decimalPlaces = 3
@@ -93,7 +93,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         tagLib.numberViewModel(ctx)
 
         then:
-        actualOut.toString().trim() == "data.item1 = ko.observable().extend({numericString:3});"
+        actualOut.toString().trim() == "data.item1 = ko.observable().extend({numericString:{\"decimalPlaces\":3}});"
 
     }
 
