@@ -849,7 +849,7 @@ function orEmptyArray(v) {
         function buildPrepopConstraints(constraintsConfig, constraintsDeferred) {
             var defaultConstraints = constraintsConfig.defaults || [];
             var constraintsObservable = ko.observableArray(defaultConstraints);
-            var dataLoaderContext = _.extend({}, context, {$parent:context.parent});
+            var dataLoaderContext = _.extend({}, context);
             var dataLoader = ecodata.forms.dataLoader(dataLoaderContext, config);
 
             ko.computed(function() {
