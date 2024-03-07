@@ -306,7 +306,21 @@ function orEmptyArray(v) {
             }
 
             return moment(value).format('DD-MM-YYYY');
-        }
+        };
+
+        parser.functions.findAll = function(list, property, value) {
+            var obj = {};
+            obj[property] = value;
+            return _.where(list, obj);
+        };
+
+        parser.functions.pluck = function(list, property, defaultValue) {
+            var result = _.pluck(list, property);
+            if (!result || result.length == 0) {
+                result = [defaultValue];
+            }
+            return result;
+        };
 
         var specialBindings = function() {
 
