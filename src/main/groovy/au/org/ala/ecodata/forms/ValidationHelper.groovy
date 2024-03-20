@@ -92,7 +92,7 @@ class ValidationHelper {
         criteria.each {
             switch (it.rule) {
                 case 'required':
-                    if (model.type == 'selectMany') {
+                    if (model.type == 'selectMany' && !model.readonly && !dataModel.readonly) {
                         values << 'minCheckbox[1]'
                     }
                     else {

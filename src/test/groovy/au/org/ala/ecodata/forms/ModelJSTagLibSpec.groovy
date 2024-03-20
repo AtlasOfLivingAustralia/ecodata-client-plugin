@@ -44,7 +44,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         tagLib.renderDataModelItem(ctx)
 
         then:
-        actualOut.toString().trim() == 'data.myField = ko.observable().extend({numericString:2}).extend({metadata:{metadata:self.dataModel[\'myField\'], context:self.\$context, config:config}});'
+        actualOut.toString().trim() == 'data.myField = ko.observable().extend({numericString:{"decimalPlaces":2}}).extend({metadata:{metadata:self.dataModel[\'myField\'], context:self.\$context, config:config}});'
     }
 
     void "the feature data type doesn't need any special initialisation behaviour"() {
@@ -84,7 +84,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         tagLib.numberViewModel(ctx)
 
         then: "the default is 2"
-        actualOut.toString().trim() == "data.item1 = ko.observable().extend({numericString:2});"
+        actualOut.toString().trim() == "data.item1 = ko.observable().extend({numericString:{\"decimalPlaces\":2}});"
 
         when: "a number of decimal places is specified"
         ctx.dataModel.decimalPlaces = 3
@@ -93,7 +93,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         tagLib.numberViewModel(ctx)
 
         then:
-        actualOut.toString().trim() == "data.item1 = ko.observable().extend({numericString:3});"
+        actualOut.toString().trim() == "data.item1 = ko.observable().extend({numericString:{\"decimalPlaces\":3}});"
 
     }
 
@@ -136,7 +136,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace(
-                "data.test = ko.computed(function() { return ecodata.forms.expressionEvaluator.evaluate('test1+1', data, 2); });",
+                "data.test=ko.computed(function(){varexpression='test1+1';returnecodata.forms.expressionEvaluator.evaluate(expression,data,2);});",
                 actualOut.toString())
     }
 
@@ -153,7 +153,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace(
-                "data.test = ko.computed(function() { return ecodata.forms.expressionEvaluator.evaluate('test1+1', data, 2); });",
+                "data.test=ko.computed(function(){varexpression='test1+1';returnecodata.forms.expressionEvaluator.evaluate(expression,data,2);});",
                 actualOut.toString())
     }
 
@@ -170,7 +170,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace(
-                "data.test = ko.computed(function() { return ecodata.forms.expressionEvaluator.evaluate('test1+1', data, 3); });",
+                "data.test=ko.computed(function(){varexpression='test1+1';returnecodata.forms.expressionEvaluator.evaluate(expression,data,3);});",
                 actualOut.toString())
     }
 
@@ -187,7 +187,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace(
-                "data.test = ko.computed(function() { return ecodata.forms.expressionEvaluator.evaluate('test1+1', data, 4); });",
+                "data.test=ko.computed(function(){varexpression='test1+1';returnecodata.forms.expressionEvaluator.evaluate(expression,data,4);});",
                 actualOut.toString())
     }
 
@@ -208,7 +208,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace(
-                "self.test = ko.computed(function() { return ecodata.forms.expressionEvaluator.evaluate('test1+1', self, 2); });",
+                " self.test=ko.computed(function(){varexpression='test1+1';returnecodata.forms.expressionEvaluator.evaluate(expression,self,2);});",
                 actualOut.toString())
     }
 
@@ -226,7 +226,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
 
         compareWithoutWhiteSpace(
-                "data.test = ko.computed(function() { return ecodata.forms.expressionEvaluator.evaluate('test1+1', data, 2); });"+
+                "data.test=ko.computed(function(){varexpression='test1+1';returnecodata.forms.expressionEvaluator.evaluate(expression,data,2);});"+
                 "data.test = data.test.extend({metadata:{metadata:self.dataModel['test'],context:self.\$context,config:config}});",
                 actualOut.toString())
     }
@@ -243,7 +243,7 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         tagLib.renderInitialiser(ctx)
 
         then:
-        compareWithoutWhiteSpace("data['test'].load(ecodata.forms.orDefault(data['test'],undefined));data['test'](ecodata.forms.orDefault(data['test'],undefined));", actualOut.toString())
+        compareWithoutWhiteSpace("initialisers.push(data['test'].load(ecodata.forms.orDefault(data['test'],undefined)));", actualOut.toString())
     }
 
     def "Input data is null/undefined checked before calling loadData() on SpeciesViewModel"() {

@@ -130,7 +130,13 @@ class ModelJSTagLib {
      */
     void renderDataModelItem(JSModelRenderContext ctx) {
         Map mod = ctx.dataModel
-        if (mod.computed) {
+        if (mod.dataType == 'date') {
+            dateViewModel(ctx)
+        }
+        else if (mod.dataType == 'time') {
+            timeViewModel(ctx)
+        }
+        else if (mod.computed && !mod.computed.source) {
             computedModel(ctx)
         }
         else if (mod.dataType == 'text') {
@@ -150,12 +156,6 @@ class ModelJSTagLib {
         }
         else if (mod.dataType == 'species') {
             speciesModel(ctx)
-        }
-        else if (mod.dataType == 'date') {
-            dateViewModel(ctx)
-        }
-        else if (mod.dataType == 'time') {
-            timeViewModel(ctx)
         }
         else if (mod.dataType == 'document') {
             documentViewModel(ctx)
@@ -200,7 +200,7 @@ class ModelJSTagLib {
     void renderLoad(List items, JSModelRenderContext ctx) {
 
         ctx.out << "self.loadData = function(data) {\n"
-
+        out << INDENT * 1 << "var initialisers = [];\n"
         JSModelRenderContext child = ctx.createChildContext()
 
         Map attrs = ctx.attrs
@@ -209,7 +209,7 @@ class ModelJSTagLib {
             child.dataModel = mod
 
             if (mod.dataType == 'list') {
-                out << INDENT * 1 << "self.load${mod.name}(data.${mod.name});\n"
+                out << INDENT * 1 << "initialisers = initialisers.concat(self.load${mod.name}(data.${mod.name}));\n"
                 loadColumnTotals out, attrs, mod
             } else if (mod.dataType == 'matrix') {
                 out << INDENT * 1 << "self.load${mod.name.capitalize()}(data.${mod.name});\n"
@@ -217,7 +217,7 @@ class ModelJSTagLib {
                 renderInitialiser(child)
             }
         }
-
+        out << INDENT * 1 << "return initialisers;\n"
         ctx.out << "};\n"
     }
 
@@ -266,9 +266,12 @@ class ModelJSTagLib {
                 out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'](ecodata.forms.orDefault(data['${mod.name}'], '${attrs.user.displayName}'));\n"
             } else {
                 if (requiresMetadataExtender(mod)) {
-                    out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'].load(${value});\n"
+                    out << INDENT*4 << "initialisers.push(${ctx.propertyPath}['${mod.name}'].load(${value}));\n"
                 }
-                out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'](${value});\n"
+                else {
+                    out << INDENT*4 << "${ctx.propertyPath}['${mod.name}'](${value});\n"
+                }
+
             }
         }
         else if (mod.dataType in ['image', 'photoPoints', 'audio', 'set']) {
@@ -528,8 +531,6 @@ class ModelJSTagLib {
         }
         renderLoad(ctx.dataModel.columns, childCtx)
 
-        out << INDENT*4 << "self.loadData(data || {});\n"
-
         out << INDENT*2 << "};\n"
     }
 
@@ -569,6 +570,9 @@ class ModelJSTagLib {
         if (requiresMetadataExtender(ctx.dataModel)) {
             extenders.add("{metadata:{metadata:self.dataModel['${ctx.fieldName()}'], context:self.\$context, config:config}}")
         }
+        if (ctx.dataModel.computed?.source) {
+            extenders.add("{dataLoader:true}")
+        }
 
         extenders.each {
             extenderJS += ".extend(${it})"
@@ -578,7 +582,7 @@ class ModelJSTagLib {
     }
 
     private boolean requiresMetadataExtender(Map dataModel) {
-        dataModel.dataType == 'feature' || dataModel.behaviour || dataModel.warning || dataModel.constraints || dataModel.displayOptions || (dataModel.validate instanceof List) || dataModel.scores
+        dataModel.dataType == 'feature' || dataModel.behaviour || dataModel.warning || dataModel.constraints || dataModel.displayOptions || (dataModel.validate instanceof List) || dataModel.scores || dataModel.computed?.source
 
     }
 
@@ -620,11 +624,22 @@ class ModelJSTagLib {
 
     def numberViewModel(JSModelRenderContext ctx) {
         int decimalPlaces = ctx.dataModel.decimalPlaces ?: 2
-        observable(ctx, ["{numericString:${decimalPlaces}}"])
+
+        Map options = new HashMap(ctx.viewModel()?.displayOptions ?: [:])
+        options.decimalPlaces = decimalPlaces
+        String optionString = (options as JSON).toString()
+        observable(ctx, ["{numericString:${optionString}}"])
     }
 
     def dateViewModel(JSModelRenderContext ctx) {
-        observable(ctx, ["{simpleDate: false}"])
+        List extenders =  ["{simpleDate: {includeTime:false}}"]
+        if (ctx.dataModel.computed) {
+            extenders = ["{simpleDate: {includeTime:false, readOnly:true}}"]
+            computedModel(ctx, extenders)
+        }
+        else {
+            observable(ctx, extenders)
+        }
     }
 
     def booleanViewModel(JSModelRenderContext ctx) {
@@ -670,7 +685,7 @@ class ModelJSTagLib {
         observable(ctx, ["{feature:config}"])
     }
 
-    def computedModel(JSModelRenderContext ctx) {
+    def computedModel(JSModelRenderContext ctx, List extenders = []) {
 
         // TODO computed values within tables are rendered differently to values outside tables for historical reasons
         // This should be tidied up.
@@ -681,9 +696,10 @@ class ModelJSTagLib {
             computedValueRenderer.computedViewModel(ctx.out, ctx.attrs, ctx.dataModel, ctx.propertyPath, ctx.propertyPath)
         }
 
-        if (requiresMetadataExtender(ctx.dataModel)) {
-            ctx.out << INDENT*3 << "${ctx.propertyPath}.${ctx.dataModel.name} = ${ctx.propertyPath}.${ctx.dataModel.name}${extenderJS(ctx, [])};\n"
+        if (extenders || requiresMetadataExtender(ctx.dataModel)) {
+            ctx.out << INDENT*3 << "${ctx.propertyPath}.${ctx.dataModel.name} = ${ctx.propertyPath}.${ctx.dataModel.name}${extenderJS(ctx, extenders)};\n"
         }
+
 
     }
 
@@ -734,13 +750,13 @@ class ModelJSTagLib {
         boolean userAddedRows = Boolean.valueOf(viewModel?.userAddedRows)
         def defaultRows = []
         model.defaultRows?.eachWithIndex { row, i ->
-            defaultRows << INDENT*5 + "${ctx.propertyPath}.${model.name}.addRow(${row.toString()});"
+            defaultRows << INDENT*5 + "rowInitialisers = rowInitialisers.concat(${ctx.propertyPath}.${model.name}.addRow(${row.toString()}));"
         }
         def insertDefaultModel = defaultRows.join('\n')
 
         // If there are no default rows, insert a single blank row and make it available for editing.
         if (attrs.edit && model.defaultRows == null) {
-            insertDefaultModel = "${ctx.propertyPath}.${model.name}.addRow();"
+            insertDefaultModel = "rowInitialisers = rowInitialisers.concat(${ctx.propertyPath}.${model.name}.addRow());"
         }
 
         out << """var context = _.extend({}, context, {parent:self, listName:'${model.name}'});"""
@@ -748,7 +764,9 @@ class ModelJSTagLib {
         observableArray(ctx, [extender], false)
         out << """    
             ${ctx.propertyPath}.${model.name}.loadDefaults = function() {
+                var rowInitialisers = [];
                 ${insertDefaultModel}
+                return rowInitialisers;
             };
         """
 

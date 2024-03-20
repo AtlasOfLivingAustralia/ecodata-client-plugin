@@ -18,8 +18,14 @@
                 $element.data('date', initialDateStr);
             }
 
-            var defaults = {format: 'dd-mm-yyyy', autoclose: true};
+            var defaults = {format: 'dd-mm-yyyy', autoclose: true, enableOnReadonly: false};
             var options = _.defaults(allBindingsAccessor().datepickerOptions || {}, defaults);
+
+            $element.click(function() {
+                if ($element.prop('disabled') && $element.prop('readonly')) {
+                    e.preventDefault();
+                }
+            });
 
             //initialize datepicker with some optional options
             $element.datepicker(options);
@@ -27,7 +33,7 @@
             // if the parent container holds any element with the class 'open-datepicker'
             // then add a hook to do so
             $element.parent().find('.open-datepicker').click(function () {
-                if (!$element.prop('disabled')) {
+                if (!$element.prop('disabled') && !$element.prop('readonly')) {
                     $element.datepicker('show');
                 }
             });
@@ -61,6 +67,9 @@
                 if (!isNaN(widget.date)) {
                     widget.setDate(widget.date);
                 }
+                else {
+                    widget.setDate(null);
+                }
             }
         }
     };
@@ -69,13 +78,26 @@
 //  a JS Date object - useful with datepicker; and
 //  a simple formatted date of the form dd-mm-yyyy useful for display.
 // The formatted date will include hh:MM if the includeTime argument is true
-    ko.extenders.simpleDate = function (target, includeTime) {
+ko.extenders.simpleDate = function (target, options) {
+    var includeTime = false;
+    var isReadOnly = false;
+    if (_.isObject(options)) {
+        includeTime = options.includeTime || false;
+        isReadOnly = options.readOnly || false;
+    }
+    else {
+        includeTime = options || false;
+    }
+
         target.date = ko.computed({
             read: function () {
                 return Date.fromISO(target());
             },
 
             write: function (newValue) {
+            if (isReadOnly) {
+                return;
+            }
                 if (newValue) {
                     var current = target(),
                         valueToWrite = convertToIsoDate(newValue);
@@ -95,6 +117,9 @@
             },
 
             write: function (newValue) {
+            if (isReadOnly) {
+                return;
+            }
                 if (newValue) {
                     var current = target(),
                         valueToWrite = convertToIsoDate(newValue);

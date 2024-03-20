@@ -12,7 +12,8 @@ enum ConstraintType {
     ENABLE("enable", true, false),
     ENABLE_AND_CLEAR("enableAndClear", true, false),
     DISABLE("disable", true, false),
-    CONDITIONAL_VALIDATION("conditionalValidation", false, false)
+    CONDITIONAL_VALIDATION("conditionalValidation", false, false),
+    PRE_POPULATE("triggerPrePopulate", false, false)
 
     /** The knockout data binding that implements this constraint */
     String binding

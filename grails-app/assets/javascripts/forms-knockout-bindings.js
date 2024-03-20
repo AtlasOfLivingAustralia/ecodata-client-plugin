@@ -62,12 +62,13 @@
 
             var config = valueAccessor();
             config = $.extend({}, config, defaultConfig);
-
+            var dropzone = $(element);
             var target = config.target; // Expected to be a ko.observableArray
             $(element).fileupload({
                 url:config.url,
                 autoUpload:true,
-                dataType:'json'
+                dataType:'json',
+                dropZone: dropzone
             }).on('fileuploadadd', function(e, data) {
                 complete(false);
                 progress(1);
@@ -679,7 +680,10 @@
             var options = _.defaults(valueAccessor() || {}, defaults);
 
             $(element).select2(options).change(function(e) {
-                model($(element).val());
+                if (ko.isWritableObservable(model)) { // Don't try and write the value to a computed.
+                    model($(element).val());
+                }
+
             });
 
             if (options.preserveColumnWidth) {
@@ -825,6 +829,44 @@
     };
 
     /**
+     * Applies an attribute to the supplied element that controls the validation error displayed
+     * if a particular validation rule triggers
+     */
+    function addJQueryValidationEngineErrorMessageForRule(rule, message, element){
+         // This comes from the private _validityProp method in the validation engine.
+         // The purpose of reproducing it here is to allow the correct error message attribute to
+         // be applied to the element
+         var validationEngineErrorMessageAttributeLookup = {
+             "required": "value-missing",
+             "custom": "custom-error",
+             "groupRequired": "value-missing",
+             "ajax": "custom-error",
+             "minSize": "range-underflow",
+             "maxSize": "range-overflow",
+             "min": "range-underflow",
+             "max": "range-overflow",
+             "past": "type-mismatch",
+             "future": "type-mismatch",
+             "dateRange": "type-mismatch",
+             "dateTimeRange": "type-mismatch",
+             "maxCheckbox": "range-overflow",
+             "minCheckbox": "range-underflow",
+             "equals": "pattern-mismatch",
+             "funcCall": "custom-error",
+             "funcCallRequired": "custom-error",
+             "creditCard": "pattern-mismatch",
+             "condRequired": "value-missing"
+         };
+
+         var errorAttribute = 'data-errormessage';
+         var errorAttributeSuffix = validationEngineErrorMessageAttributeLookup[rule];
+         if (errorAttributeSuffix) {
+             errorAttribute += '-' + errorAttributeSuffix;
+         }
+         $(element).attr(errorAttribute, message);
+     };
+
+    /**
      * Adds or removes the jqueryValidationEngine validation attributes 'data-validation-engine' and 'data-errormessage'
      * to/from the supplied element.
      * @param element the HTML element to modify.
@@ -870,7 +912,13 @@
             var modelItem = valueAccessor();
 
             var validationAttributes = ko.pureComputed(function() {
-                return createValidationString(modelItem, viewModel);
+                var validationString = createValidationString(modelItem, viewModel);
+                _.each(modelItem || [], function(ruleConfig) {
+                    if (ruleConfig.message) {
+                        addJQueryValidationEngineErrorMessageForRule(ruleConfig.rule, ruleConfig.message, element);
+                    }
+                });
+                return validationString;
             });
             validationAttributes.subscribe(function(value) {
                 updateJQueryValidationEngineAttributes(element, value);
@@ -1003,9 +1051,12 @@
                 element.removeAttribute("disabled");
             else if ((!value) && (!element.disabled)) {
                 element.disabled = true;
-                var value = allBindings.get('value');
-                if (ko.isObservable(value)) {
-                    value(undefined);
+                var possibleValueBindings = ['value', 'datepicker'];
+                for (var i=0; i<possibleValueBindings.length; i++) {
+                    var value = allBindings.get(possibleValueBindings[i]);
+                    if (ko.isObservable(value)) {
+                        value(undefined);
+                    }
                 }
             }
 
@@ -1156,6 +1207,113 @@
                 html: true
             }
             $(element).popover(options);
+
+        }
+    };
+
+    ko.extenders.dataLoader = function(target, options) {
+
+        var dataLoader = new ecodata.forms.dataLoader(target.context, target.config);
+        var dataLoaderConfig = target.get('computed');
+        if (!dataLoaderConfig) {
+            throw "This extender can only be used with the metadata extender and expects a computed property to be defined";
+        }
+        var dependencyTracker = ko.computed(function () {
+            return dataLoader.prepop(dataLoaderConfig).done( function(data) {
+                target(data);
+            });
+        }); // This is a computed rather than a pureComputed as it has a side effect.
+        return target;
+    };
+
+    ko.bindingHandlers['triggerPrePopulate'] = {
+        'init': function (element, valueAccessor, allBindings, viewModel, bindingContext) {
+            var dataModelItem = valueAccessor();
+            var behaviours = dataModelItem.get('behaviour');
+            for (var i = 0; i < behaviours.length; i++) {
+                var behaviour = behaviours[i];
+
+                if (behaviour.type == 'pre_populate') {
+                    var config = behaviour.config;
+                    var dataLoaderContext = dataModelItem.context;
+
+                    var dataLoader = new ecodata.forms.dataLoader(dataLoaderContext, dataModelItem.config);
+
+                    function doLoad(propTarget, value) {
+
+                        if (_.isFunction(propTarget.loadData)) {
+                            propTarget.loadData(value);
+                        } else if (_.isFunction(propTarget.load)) {
+                            propTarget.load(value);
+                        } else if (ko.isObservable(propTarget)) {
+                            propTarget(value);
+                        } else {
+                            console.log("Warning: target for pre-populate is invalid");
+                        }
+                    }
+                    var dependencyTracker = ko.computed(function () {
+                        var initialised = (dataModelItem.context.lifecycleState && dataModelItem.context.lifecycleState.state == 'initialised');
+
+                        dataLoader.prepop(config).done(function (data) {
+
+                            if (config.waitForInitialisation && !initialised) {
+                                console.log("Not applying any updates during initialisation")
+                                return;
+                            }
+
+                            data = data || {};
+                            var configTarget = config.target;
+                            var target;
+                            if (!configTarget) {
+                                target = viewModel;
+                            }
+                            else {
+                                target = dataModelItem.findNearestByName(configTarget.name, bindingContext);
+                            }
+                            if (!target) {
+                                throw "Unable to locate target for pre-population: "+target;
+                            }
+                            if (configTarget.type == "singleValue") {
+                                // This needs to be done to load data into the feature data type due to the awkward
+                                // way the loadData method uses the feature id from the reporting site and the
+                                // direct observable accepts geojson.
+                                target(data);
+                            }
+                            else if (configTarget.type == "singleLoad") {
+                                doLoad(target, data);
+                            }
+                            else {
+                                target = target.data || target;
+                                for (var prop in data) {
+                                    if (target.hasOwnProperty(prop)) {
+                                        var propTarget = target[prop];
+                                        doLoad(propTarget, data[prop]);
+                                    }
+                                }
+                            }
+
+                        }); // This is a computed rather than a pureComputed as it has a side effect.
+                    });
+                }
+            }
+
+        }
+    };
+
+    ko.bindingHandlers['disableClick'] = {
+        'update': function (element, valueAccessor) {
+            var value = ko.utils.unwrapObservable(valueAccessor());
+            if (value) {
+                this.eventHandler = $(element).on('mousedown.disableClick keydown.disableClick touchstart.disableClick', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+            }
+            else {
+                if (this.eventHandler) {
+                    $(element).off('mousedown.disableClick keydown.disableClick touchstart.disableClick');
+                }
+            }
 
         }
     };
