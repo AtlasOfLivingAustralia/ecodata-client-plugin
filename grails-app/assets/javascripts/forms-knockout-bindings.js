@@ -1230,9 +1230,7 @@
         'init': function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             var dataModelItem = valueAccessor();
             var behaviours = dataModelItem.get('behaviour');
-            for (var i = 0; i < behaviours.length; i++) {
-                var behaviour = behaviours[i];
-
+            behaviours && behaviours.forEach(function(behaviour) {
                 if (behaviour.type == 'pre_populate') {
                     var config = behaviour.config;
                     var dataLoaderContext = dataModelItem.context;
@@ -1295,8 +1293,7 @@
                         }); // This is a computed rather than a pureComputed as it has a side effect.
                     });
                 }
-            }
-
+            });
         }
     };
 
