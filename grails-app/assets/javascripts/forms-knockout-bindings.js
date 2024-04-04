@@ -1243,6 +1243,8 @@
                             propTarget.loadData(value);
                         } else if (_.isFunction(propTarget.load)) {
                             propTarget.load(value);
+                        } else if (propTarget && propTarget.$parent && _.isFunction(propTarget.$parent["load" + propTarget.listName])) {
+                            propTarget.$parent["load" + propTarget.listName](value);
                         } else if (ko.isObservable(propTarget)) {
                             propTarget(value);
                         } else {
