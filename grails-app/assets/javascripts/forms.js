@@ -1084,6 +1084,7 @@ function orEmptyArray(v) {
         var listName = context.listName;
         var modelName = context.outputModel.name;
 
+        self.listParent = context.parent;
         self.listName = listName;
         self.addRow = function (data) {
             var newItem = self.newItem(data, self.rowCount());
