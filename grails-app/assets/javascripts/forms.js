@@ -297,6 +297,21 @@ function orEmptyArray(v) {
         };
 
         parser.functions.deepEquals = function(value1, value2) {
+            // Sort arrays in nested objects to ensure that lodash compares arrays correctly
+            function sortArraysInObject(obj) {
+                if (Array.isArray(obj)) {
+                    obj.sort();
+                } else if (typeof obj === 'object' && obj !== null) {
+                    for (var key in obj) {
+                        sortArraysInObject(obj[key]); // Recursively call to sort arrays in nested objects
+                    }
+                }
+
+                return obj;
+            }
+
+            sortArraysInObject(value1);
+            sortArraysInObject(value2);
             return _.isEqual(value1, value2);
         };
 

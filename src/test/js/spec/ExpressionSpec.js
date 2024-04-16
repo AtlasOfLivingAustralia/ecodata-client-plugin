@@ -124,4 +124,27 @@ describe("Expression Spec", function () {
 
     });
 
+    it("Should be able to compare two unsorted arrays", function() {
+        var data  = {
+            a: [1, 2, 3],
+            b: [3, 2, 1]
+        };
+        var result = ecodata.forms.expressionEvaluator.evaluateBoolean("deepEquals(a, b)", data);
+        expect(result).toEqual(true);
+
+        data  = {
+            a: {c: [1, 2, 3]},
+            b: {c: [3, 2, 1]}
+        };
+        var result = ecodata.forms.expressionEvaluator.evaluateBoolean("deepEquals(a, b)", data);
+        expect(result).toEqual(true);
+
+        data  = {
+            a: {c: [1, 2]},
+            b: {c: [3, 2, 1]}
+        };
+        var result = ecodata.forms.expressionEvaluator.evaluateBoolean("deepEquals(a, b)", data);
+        expect(result).toEqual(false);
+    })
+
 });
