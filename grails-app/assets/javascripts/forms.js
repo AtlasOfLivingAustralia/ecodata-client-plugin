@@ -296,7 +296,27 @@ function orEmptyArray(v) {
             return _.findWhere(list, obj);
         };
 
-        parser.functions.deepEquals = function(value1, value2) {
+        parser.functions.deepEquals = function(value1, value2, isSortArray) {
+            // set isSortArray to true if content of array is important and not the order i.e. [1,2,3] == [3,2,1]
+            isSortArray = isSortArray || false;
+            // Sort arrays in nested objects to ensure that lodash compares arrays correctly
+            function sortArraysInObject(obj) {
+                if (_.isArray(obj)) {
+                    obj.sort();
+                } else if (typeof obj === 'object' && obj !== null) {
+                    for (var key in obj) {
+                        sortArraysInObject(obj[key]); // Recursively call to sort arrays in nested objects
+                    }
+                }
+
+                return obj;
+            }
+
+            if (isSortArray) {
+                sortArraysInObject(value1);
+                sortArraysInObject(value2);
+            }
+
             return _.isEqual(value1, value2);
         };
 
