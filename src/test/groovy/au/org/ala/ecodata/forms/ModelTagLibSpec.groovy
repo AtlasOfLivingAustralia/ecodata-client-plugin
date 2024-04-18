@@ -147,4 +147,26 @@ class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLi
 
     }
 
+    def "The allowRowDelete method supports nested tables"() {
+        setup:
+        Map attrs = [model:[dataModel:[
+                [dataType:'list', name:"test", columns:[], allowRowDelete:true],
+                [dataType:'list', name:"test2", columns:[], allowRowDelete:"true"],
+                [dataType:'list', name:"test3", columns:[], allowRowDelete:"false"],
+                [dataType:'list', name:"test4", columns:[], allowRowDelete:false],
+
+                [dataType:'list', name:"test5", columns:[
+                        [dataType:'list', name:"test6", allowRowDelete: false]
+                ]]
+        ]]]
+
+        expect:
+        ModelTagLib.getAllowRowDelete(attrs, "test", null) == true
+        ModelTagLib.getAllowRowDelete(attrs, "test2", null) == true
+        ModelTagLib.getAllowRowDelete(attrs, "test3", null) == false
+        ModelTagLib.getAllowRowDelete(attrs, "test4", null) == false
+        ModelTagLib.getAllowRowDelete(attrs, "test5", null) == true // default is true
+        ModelTagLib.getAllowRowDelete(attrs, "test6", null) == false
+    }
+
 }
