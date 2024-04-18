@@ -1009,8 +1009,12 @@ class ModelTagLib {
     }
 
     static boolean getAllowRowDelete(attrs, name, context) {
-        def ard = getAttribute(attrs, name, context, 'allowRowDelete') ?: 'true'
-        return ard.toBoolean()
+        Map dataModel = getAttribute(attrs.model.dataModel, name)
+        def allowRowDelete = true
+        if (dataModel?.allowRowDelete != null) {
+            allowRowDelete = Boolean.valueOf(dataModel.allowRowDelete)
+        }
+        allowRowDelete
     }
 
 
@@ -1031,7 +1035,7 @@ class ModelTagLib {
         return target ? target[attribute] : null
     }
 
-    def getAttribute(model, name) {
+    static def getAttribute(Collection model, String name) {
         return model.findResult( {
 
             if (it.name == name) {
