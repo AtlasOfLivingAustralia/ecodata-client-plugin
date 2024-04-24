@@ -1230,9 +1230,7 @@
         'init': function (element, valueAccessor, allBindings, viewModel, bindingContext) {
             var dataModelItem = valueAccessor();
             var behaviours = dataModelItem.get('behaviour');
-            for (var i = 0; i < behaviours.length; i++) {
-                var behaviour = behaviours[i];
-
+            behaviours && behaviours.forEach(function(behaviour) {
                 if (behaviour.type == 'pre_populate') {
                     var config = behaviour.config;
                     var dataLoaderContext = dataModelItem.context;
@@ -1245,6 +1243,8 @@
                             propTarget.loadData(value);
                         } else if (_.isFunction(propTarget.load)) {
                             propTarget.load(value);
+                        } else if (propTarget && propTarget.listParent && _.isFunction(propTarget.listParent["load" + propTarget.listName])) {
+                            propTarget.listParent["load" + propTarget.listName](value);
                         } else if (ko.isObservable(propTarget)) {
                             propTarget(value);
                         } else {
@@ -1295,8 +1295,7 @@
                         }); // This is a computed rather than a pureComputed as it has a side effect.
                     });
                 }
-            }
-
+            });
         }
     };
 
