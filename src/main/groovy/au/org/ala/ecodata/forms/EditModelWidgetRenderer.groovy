@@ -138,7 +138,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     }
 
     private static boolean isReadOnly(WidgetRenderContext context) {
-        context.model.readonly || context.dataModel.computed
+        context.model.readonly || context.dataModel?.computed
     }
     @Override
     void renderSelectMany(WidgetRenderContext context) {
