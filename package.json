@@ -32,6 +32,7 @@
     "karma-chrome-launcher": "^3.1.0",
     "karma-coverage": "^2.2.1",
     "karma-jasmine": "^4.0.1",
+    "karma-verbose-reporter": "^0.0.8",
     "knockout": "^3.5.0",
     "leaflet": "^1.4.0",
     "leaflet-draw": "^1.0.4",

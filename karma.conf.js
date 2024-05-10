@@ -4,7 +4,7 @@
 module.exports = function (config) {
 
     var sourcePreprocessors = ['coverage'];
-    var reporters = ['progress', 'coverage'];
+    var reporters = ['progress', 'coverage', 'verbose'];
 
     function isDebug(argument) {
         return argument === '--debug';
@@ -18,7 +18,10 @@ module.exports = function (config) {
         // base path that will be used to resolve all patterns (eg. files, exclude)
         basePath: '',
 
-        plugins: ['@metahub/karma-jasmine-jquery', 'karma-*'],
+        plugins: ['@metahub/karma-jasmine-jquery', 'karma-*', 'karma-verbose-reporter'],
+        htmlReporter: {
+            outputFile: 'tests/units.html'
+        },
         // list of files / patterns to load in the browser
         files: [
             'grails-app/assets/vendor/bootstrap/4.6.0/js/bootstrap.bundle.js',
@@ -35,6 +38,10 @@ module.exports = function (config) {
             'grails-app/assets/vendor/momentjs/2.29.4/locale/en-au.js',
             'grails-app/assets/vendor/momentjs/moment-timezone-with-data.min.js',
             'grails-app/assets/vendor/validatejs/0.11.1/validate.js',
+            'grails-app/assets/vendor/dexiejs/dexie.js',
+            'grails-app/assets/javascripts/utils.js',
+            'grails-app/assets/javascripts/entities.js',
+            'grails-app/assets/javascripts/metamodel.js',
             'grails-app/assets/javascripts/forms.js',
             'grails-app/assets/javascripts/*.js',
             'grails-app/assets/components/ecodata-components.js',

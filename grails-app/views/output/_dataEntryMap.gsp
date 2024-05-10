@@ -298,7 +298,7 @@
 </script>
 
 <script id="site-selector-dropdown-template" type="text/html">
-<div data-bind="visible: transients.hideSiteSelection">
+<div data-bind="if: transients.hideSiteSelection">
     <div>
         <g:set var="textOnSiteLocation" value="Create or select a location"/>
         <g:set var="textOnSiteLocation" value="Select a location"/>
