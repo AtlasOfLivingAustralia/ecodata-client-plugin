@@ -449,6 +449,24 @@ describe("Enmapify Spec", function () {
 
     });
 
+    it("should create site if siteId is not provided", function () {
+        options.activityLevelData.activity.siteId = "";
+        options.activityLevelData.siteId = "";
+        options.container.Test = "";
+
+        var result = enmapify(options);
+        spyOn(result.viewModel, "addMarker").and.returnValue(true);
+        result.viewModel.loadActivitySite({decimalLatitude: 1, decimalLongitude: 1});
+        expect(result.viewModel.addMarker).toHaveBeenCalledWith({decimalLatitude: 1, decimalLongitude: 1});
+
+        // should not call when in read mode
+        options.edit = false;
+        result = enmapify(options);
+        spyOn(result.viewModel, "addMarker").and.returnValue(true);
+        result.viewModel.loadActivitySite({decimalLatitude: 0, decimalLongitude: 0});
+        expect(result.viewModel.addMarker).not.toHaveBeenCalled();
+    });
+
     it("centroid for line should be the first coordinate", function () {
         var result = enmapify(options);
         var line = {

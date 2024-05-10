@@ -4,7 +4,6 @@ import geb.spock.GebReportingSpec
 import grails.testing.mixin.integration.Integration
 import org.springframework.boot.test.context.SpringBootTest
 import pages.PreviewPage
-
 @Integration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class ImageTypeSpec extends GebReportingSpec {

@@ -86,7 +86,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     @Override
     void renderSimpleDate(WidgetRenderContext context) {
         context.databindAttrs.add 'datepicker', context.source + '.date'
-        context.writer << "<input${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr} type='text' class='form-control form-control-sm input-small'/>"
+        context.writer << "<input${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'${context.validationAttr} type='text' autocomplete='off' class='form-control form-control-sm input-small'/>"
     }
 
     @Override
@@ -116,6 +116,9 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
 
         context.databindAttrs.add 'optionsCaption', '"Please select"'
         context.attributes.addSpan("form-control form-control-sm")
+        if (isReadOnly(context)) { // HTML Select elements don't support the readonly attribute so we add disabled.  This will break validation though.
+            context.databindAttrs.add('disableClick', 'true')
+        }
 
         context.writer <<  "<select${context.attributes.toString()} class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select>"
     }
@@ -134,10 +137,13 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.writer <<  "<div${context.attributes.toString()}><select class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
     }
 
+    private static boolean isReadOnly(WidgetRenderContext context) {
+        context.model.readonly || context.dataModel.computed
+    }
     @Override
     void renderSelectMany(WidgetRenderContext context) {
 
-        if (context.model.readonly) {
+        if (isReadOnly(context)) {
             renderSelectManyAsString(context)
         }
         else {
@@ -147,16 +153,23 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
 
     @Override
     void renderSelect2Many(WidgetRenderContext context) {
-        context.databindAttrs.add 'options', context.source + '.constraints'
-        context.databindAttrs.add 'optionsValue', context.source + '.constraints.value'
-        context.databindAttrs.add 'optionsText', context.source + '.constraints.text'
 
-        String options = "{value: ${context.source}, tags:true, allowClear:false}"
-        if (context.model.displayOptions) {
-            options = "_.extend({value:${context.source}}, ${context.source}.displayOptions)"
+        if (isReadOnly(context)) {
+            renderSelectManyAsString(context)
         }
-        context.databindAttrs.add 'multiSelect2', options
-        context.writer <<  "<div${context.attributes.toString()}><select multiple=\"multiple\" class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
+        else {
+            context.databindAttrs.add 'options', context.source + '.constraints'
+            context.databindAttrs.add 'optionsValue', context.source + '.constraints.value'
+            context.databindAttrs.add 'optionsText', context.source + '.constraints.text'
+
+            String options = "{value: ${context.source}, tags:true, allowClear:false}"
+            if (context.model.displayOptions) {
+                options = "_.extend({value:${context.source}}, ${context.source}.displayOptions)"
+            }
+            context.databindAttrs.add 'multiSelect2', options
+            context.writer <<  "<div${context.attributes.toString()}><select multiple=\"multiple\" class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
+        }
+
     }
 
     @Override

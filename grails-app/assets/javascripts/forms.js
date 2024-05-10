@@ -180,6 +180,49 @@ function orEmptyArray(v) {
     };
 
     /**
+     * Traverses the model or binding context starting from a nested context and
+     * working backwards towards the root until a property with the supplied name
+     * is matched.  That property is then passed to the supplied callback.
+     * Traversing backwards is simpler than forwards as we don't need to take into
+     * account repeating model values (e.g. for repeating sections and table rows)
+     * @param targetName the name of the model variable / property to find.
+     * @param context the starting context
+     * @param callback a function to invoke when the target variable is found.
+     */
+    ecodata.forms.navigateModel = function(targetName, context, callback) {
+        if (!context) {
+            return;
+        }
+        if (!_.isUndefined(context[targetName])) {
+            callback(context[targetName]);
+        }
+        // If the context is a knockout binding context, $data will be the current object
+        // being bound to the view.
+        else if (context['$data']) {
+            ecodata.forms.navigateModel(targetName, context['$data'], callback);
+        }
+        // The root data model is constructed with fields inside a nested "data" object.
+        else if (_.isObject(context['data'])) {
+            ecodata.forms.navigateModel(targetName, context['data'], callback);
+        }
+        // Try to evaluate against the parent - the bindingContext uses $parent and the
+        // ecodata.forms.DataModelItem uses parent
+        else if (context['$parent']) {
+            ecodata.forms.navigateModel(targetName, context['$parent'], callback);
+        }
+        else if (context['parent']) {
+            ecodata.forms.navigateModel(targetName, context['parent'], callback);
+        }
+        // Try to evaluate against the context - this is setup as a model / binding context
+        // variable and refers to data external to the form - e.g. the project or activity the
+        // form is related to.
+        else if (context['$context']) {
+            ecodata.forms.navigateModel(targetName, context['$context'], callback);
+        }
+
+    }
+
+    /**
      * Helper function for evaluating expressions defined in the metadata.  These may be used to compute values
      * or make decisions on which constraints to apply to individual data model items.
      * The expressions are parsed and evaluated using: https://github.com/silentmatt/expr-eval
@@ -246,6 +289,39 @@ function orEmptyArray(v) {
             return result;
         };
 
+        /** Finds an object in an array by matching the value of a single property */
+        parser.functions.find = function(list, property, value) {
+            var obj = {};
+            obj[property] = value;
+            return _.findWhere(list, obj);
+        };
+
+        parser.functions.deepEquals = function(value1, value2) {
+            return _.isEqual(value1, value2);
+        };
+
+        parser.functions.formatDateForValidation = function(value) {
+            if (!value) {
+                return '';
+            }
+
+            return moment(value).format('DD-MM-YYYY');
+        };
+
+        parser.functions.findAll = function(list, property, value) {
+            var obj = {};
+            obj[property] = value;
+            return _.where(list, obj);
+        };
+
+        parser.functions.pluck = function(list, property, defaultValue) {
+            var result = _.pluck(list, property);
+            if (!result || result.length == 0) {
+                result = [defaultValue];
+            }
+            return result;
+        };
+
         var specialBindings = function() {
 
             return {
@@ -289,22 +365,9 @@ function orEmptyArray(v) {
                 result = specialBindings[contextVariable];
             }
             else {
-                if (!_.isUndefined(context[contextVariable])) {
-                    result = ko.utils.unwrapObservable(context[contextVariable]);
-                }
-                else {
-                    // The root view model is constructed with fields inside a nested "data" object.
-                    if (_.isObject(context['data'])) {
-                        result = bindVariable(variable, context['data']);
-                    }
-                    // Try to evaluate against the parent
-                    else if (context['$parent']) {
-                        // If the parent is the output model, we want to evaluate against the "data" property
-                        var parentContext = _.isObject(context['$parent'].data) ? context['$parent'].data : context['$parent'];
-                        result = bindVariable(variable, parentContext);
-                    }
-                }
-
+                ecodata.forms.navigateModel(contextVariable, context, function(target) {
+                    result = ko.utils.unwrapObservable(target);
+                });
             }
             return _.isUndefined(result) ? null : result;
         }
@@ -373,10 +436,25 @@ function orEmptyArray(v) {
             return ''.concat(result);
         }
 
+        function evaluateUntyped(expression, context) {
+            var result = evaluateInternal(expression, context);
+            return result;
+        }
+
+        function evaluateArray(expression, context) {
+            var result = evaluateInternal(expression, context);
+            if (!_.isArray(result))  {
+                result = [result];
+            }
+            return result;
+        }
+
         return {
             evaluate: evaluateNumber,
             evaluateBoolean: evaluateBoolean,
-            evaluateString: evaluateString
+            evaluateString: evaluateString,
+            evaluateUntyped: evaluateUntyped,
+            evaluateArray: evaluateArray
         }
 
     }();
@@ -399,7 +477,7 @@ function orEmptyArray(v) {
                 return value.value;
             }
             else if (value.expression) {
-                return ecodata.forms.expressionEvaluator.evaluate(value.expression, context);
+                return ecodata.forms.expressionEvaluator.evaluate(value.expression, context, value.decimalPlaces);
             }
         }
         else {
@@ -592,8 +670,34 @@ function orEmptyArray(v) {
                 if (prepopData) {
                     var result = prepopData;
                     var mapping = conf.mapping;
+
+                    function postProcessPrepopData(processingFunction, processingConfig, data) {
+                        if (!_.isArray(data)) {
+                            throw "Filter/find is only supported for array typed prepop data."
+                        }
+                        if (!processingConfig.expression) {
+                            throw "Missing expression attribute in configuration"
+                        }
+                        return processingFunction(data, function(item) {
+                            var expression = processingConfig.expression;
+                            var namespace = processingConfig['namespace'] || 'item';
+                            var evalContext = {};
+                            evalContext[namespace] = item;
+
+                            var evalContext = _.extend(evalContext, {$context:context, $config:config});
+                            return ecodata.forms.expressionEvaluator.evaluateBoolean(expression, evalContext);
+                        });
+                    }
+
+                    if (conf.filter) {
+                        result = postProcessPrepopData(_.filter, conf.filter, result);
+                    }
+                    else if (conf.find) {
+                        result = postProcessPrepopData(_.find, conf.find, result);
+                    }
+
                     if (mapping) {
-                        result = self.map(mapping, prepopData);
+                        result = self.map(mapping, result);
                     }
                     return result;
                 }
@@ -642,20 +746,36 @@ function orEmptyArray(v) {
         self.getPrepopData = function (conf) {
             var source = conf.source;
             if (source.url) {
+                var failedValidation = false;
                 var url = (config.prepopUrlPrefix || window.location.href) + source.url;
-                var params = {};
+                var params = [];
                 _.each(source.params || [], function(param) {
                     var value;
                     if (param.type && param.type == 'computed') {
                         // evaluate the expression against the context.
-                        value = ecodata.forms.expressionEvaluator.evaluateString(param.expression, context);
+                        value = ecodata.forms.expressionEvaluator.evaluateUntyped(param.expression, context);
+                        if (param.required && !value) {
+                            failedValidation = true;
+                        }
                     }
                     else {
                         // Treat it as a literal
                         value = param.value;
                     }
-                    params[param.name] = value;
+
+                    // Unroll the array to prevent jQuery appending [] to the array typed parameter name.
+                    if (_.isArray(value)) {
+                        for (var i=0; i<value.length; i++) {
+                            params.push({name:param.name, value: value[i]});
+                        }
+                    }
+                    else {
+                        params.push({name:param.name, value: value});
+                    }
                 });
+                if (failedValidation) {
+                    return $.Deferred().resolve(source.defaultValue || null);
+                }
                 return $.ajax(url, {data:params, dataType:source.dataType || 'json'});
             }
             var deferred = $.Deferred();
@@ -669,6 +789,14 @@ function orEmptyArray(v) {
             else if (source && source.hasOwnProperty('literal')) {
                 data = source['literal'];
             }
+
+            // Support for converting array typed values to lookup tables.
+            // e.g. MERIT has a list of data sets that we want to be selectable from a list then
+            // the full data set to be available for lookup by id (using the lookupTable data type)
+            if (source['index-by']) {
+                data = _.indexBy(data, source['index-by'])
+            }
+
             deferred.resolve(data);
             return deferred;
         };
@@ -728,6 +856,61 @@ function orEmptyArray(v) {
         self.context = context;
         self.config = config;
 
+        // This context is created for use by the expression evaluator.  It contains the data model item itself
+        // as well as the parent data model item and the output model.
+        var dataContext = (context && context.parent) ? context.parent : context;
+        var constraintsInititaliser = null;
+        function buildPrepopConstraints(constraintsConfig, constraintsDeferred) {
+            var defaultConstraints = constraintsConfig.defaults || [];
+            var constraintsObservable = ko.observableArray(defaultConstraints);
+            var dataLoaderContext = _.extend({}, context);
+            var dataLoader = ecodata.forms.dataLoader(dataLoaderContext, config);
+
+            ko.computed(function() {
+                var prepopConf = constraintsConfig.config;
+                // If the prepop needs to post process the data, we need to execute the post processing
+                // in the context of the computed so as to register any dependencies on values used in
+                // the post-processing expressions.
+                // The dataloader won't execute post processing synchronously as retrieving the data can be done
+                // via a remote call.
+                if (prepopConf.filter) {
+                    ecodata.forms.expressionEvaluator.evaluate(prepopConf.filter.expression, dataLoaderContext);
+                }
+                if (prepopConf.find) {
+                    ecodata.forms.expressionEvaluator.evaluate(prepopConf.find.expression, dataLoaderContext);
+                }
+                dataLoader.prepop(prepopConf).done(function (data) {
+                    constraintsObservable(data);
+                    constraintsDeferred.resolve();
+                });
+            });
+
+            return constraintsObservable;
+        }
+
+        /**
+         * Finds the model attribute with the specified name searching from the context of this
+         * DataModelItem if no context is supplied.
+         * This is so that for nested items we can find the nearest neighbour with the specified name. (e.g.
+         * when the model represents a repeating section or table row)
+         */
+        self.findNearestByName = function(targetName, context) {
+            if (!context) {
+                context = self.context;
+            }
+            var result = null;
+            ecodata.forms.navigateModel(targetName, context, function(target) {
+                result = target;
+            })
+            return result;
+        }
+
+        function attachIncludeExclude(constraints) {
+            return ko.computed(function() {
+                return applyIncludeExclude(metadata, context.outputModel, self, ko.utils.unwrapObservable(constraints));
+            });
+        }
+
         /**
          * Returns the value of the specified metadata property (e.g. validate, constraints etc)
          * @param property the name of the proprety to get.
@@ -772,13 +955,12 @@ function orEmptyArray(v) {
 
         self.evaluateBehaviour = function (type, defaultValue) {
             var rule = _.find(metadata.behaviour, function (rule) {
-                return rule.type === type && ecodata.forms.expressionEvaluator.evaluateBoolean(rule.condition, context);
+                return rule.type === type && ecodata.forms.expressionEvaluator.evaluateBoolean(rule.condition, dataContext);
             });
 
             return rule && rule.value || defaultValue;
         };
 
-        var constraintsInititaliser = null;
         if (metadata.constraints) {
             var valueProperty = 'id'; // For compatibility with select2 defaults
             var textProperty = 'text'; // For compatibility with select2 defaults
@@ -814,43 +996,22 @@ function orEmptyArray(v) {
                                 return ecodata.forms.expressionEvaluator.evaluateBoolean(option.condition, context);
                             });
                             var evaluatedConstraints = rule ? rule.value : metadata.constraints.default;
-                            return !includeExcludeDefined ? evaluatedConstraints : applyIncludeExclude(metadata, context.outputModel, self, metadata.constraints.default || []);
+                            return evaluatedConstraints || metadata.constraints.default || [];
                         });
                     } else if (includeExcludeDefined) {
-                        self.constraints = ko.computed(function () {
-                           return  applyIncludeExclude(metadata, context.outputModel, self, metadata.constraints.default || []);
-                        });
+                        self.constraints = metadata.constraints.default || [];
                     }
                 }
                 else if (metadata.constraints.type == 'pre-populated') {
-                    var defaultConstraints = metadata.constraints.defaults || [];
-                    var constraintsObservable = ko.observableArray(defaultConstraints);
-                    if (!includeExcludeDefined) {
-                        self.constraints = constraintsObservable;
-                    }
-                    else {
-                        self.constraints = ko.computed(function () {
-                            return applyIncludeExclude(metadata, context.outputModel, self, constraintsObservable());
-                        });
-                    }
-
                     constraintsInititaliser = $.Deferred();
-                    var dataLoader = ecodata.forms.dataLoader(context, config);
-                    dataLoader.prepop(metadata.constraints.config).done(function (data) {
-                        constraintsObservable(data);
-                        constraintsInititaliser.resolve();
-                    });
+                    self.constraints = buildPrepopConstraints(metadata.constraints, constraintsInititaliser);
                 }
                 else if (metadata.constraints.type == 'literal' || metadata.constraints.literal) {
+                    self.constraints = [].concat(metadata.constraints.literal);
+                }
 
-                    if (includeExcludeDefined) {
-                        self.constraints = ko.computed(function() {
-                            return applyIncludeExclude(metadata, context.outputModel, self, metadata.constraints.literal || []);
-                        });
-                    }
-                    else {
-                        self.constraints = [].concat(metadata.constraints.literal);
-                    }
+                if (includeExcludeDefined) {
+                    self.constraints = attachIncludeExclude(self.constraints);
                 }
             }
 
@@ -885,6 +1046,7 @@ function orEmptyArray(v) {
             else {
                 self(data);
             }
+            return constraintsInititaliser;
         }
     };
 
@@ -926,6 +1088,7 @@ function orEmptyArray(v) {
         self.addRow = function (data) {
             var newItem = self.newItem(data, self.rowCount());
             self.push(newItem);
+            return newItem.loadData(data || {});
         };
         self.newItem = function (data, index) {
             var itemDataModel = _.indexBy(dataModel[listName].columns, 'name');
@@ -1015,17 +1178,19 @@ function orEmptyArray(v) {
         };
 
         parent['load' + listName] = function (data, append) {
+            var initialisers = [];
             if (!append) {
                 self([]);
             }
             if (data === undefined) {
-                self.loadDefaults();
+                initialisers = initialisers.concat(self.loadDefaults());
             }
             else {
                 _.each(data, function (row, i) {
-                    self.push(self.newItem(row, i));
+                    initialisers = initialisers.concat(self.addRow(row));
                 });
             }
+            return initialisers;
         };
     };
 
@@ -1332,10 +1497,11 @@ function orEmptyArray(v) {
 
         self.attachDocument = function (target) {
             var url = config.documentUpdateUrl || fcConfig.documentUpdateUrl;
+            var documentOwner = config.documentOwner || {activityId: activityId, projectId: config.projectId};
             showDocumentAttachInModal(url, new DocumentViewModel({
                 role: 'information',
                 stage: config.stage
-            }, {activityId: activityId, projectId: config.projectId}), '#attachDocument')
+            }, documentOwner), '#attachDocument')
                 .done(function (result) {
                     // checking documentid to void adding empty document into the attachment table
                     // documentid only return true if document is successfully save
@@ -1419,14 +1585,23 @@ function orEmptyArray(v) {
         };
 
         self.initialise = function (outputData) {
+            var deferred = $.Deferred();
+            self.loadOrPrepop(outputData).done(function (data) {
+                var initialisers = self.loadData(data);
 
-            return self.loadOrPrepop(outputData).done(function (data) {
-                self.loadData(data);
-                self.transients.dummy.notifySubscribers();
+                $.when.apply($, initialisers).then(function () {
+                    deferred.resolve();
+                    self.transients.dummy.notifySubscribers();
+                });
             });
-
+            return deferred;
         };
 
+        self.clearDataIfOutputMarkedAsNotCompleted = function() {
+            if (self.outputNotCompleted() && self.dirtyFlag && self.dirtyFlag.isDirty()) {
+                self.loadData({});
+            }
+        }
 
     };
 }());

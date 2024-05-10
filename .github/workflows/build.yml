@@ -27,15 +27,27 @@ jobs:
       - name: Install nodejs
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: '16.x'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: 'AtlasOfLivingAustralia'
 
       - run: npm install
       - run: npm run package-turf
+
+
+      - name: Update your package.json with an npm pre-release version
+        id: pre-release-version
+        uses: adobe/update-prerelease-npm-version@v1.0.0
+
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
 
       - name: Run tests and jacoco coverage report with Gradle
-        uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
+        uses: gradle/gradle-build-action@v2.4.2
         with:
           arguments: -PenableJacoco=true test
 
@@ -43,12 +55,12 @@ jobs:
         run: node_modules/karma/bin/karma start karma.conf.js --single-run --browsers ChromeHeadless
 
       - name: Clean to remove clover instrumentation
-        uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
+        uses: gradle/gradle-build-action@v2.4.2
         with:
           arguments: clean
 
       - name: Publish the JAR to the repository
-        uses: gradle/gradle-build-action@0d13054264b0bb894ded474f08ebb30921341cee
+        uses: gradle/gradle-build-action@v2.4.2
         with:
           arguments: publish
         env:

@@ -18,7 +18,7 @@ plugins {
 }
 
 
-version "6.1-PWA-SNAPSHOT"
+version "6.3-PWA-SNAPSHOT"
 group "org.grails.plugins"
 
 apply plugin:"eclipse"

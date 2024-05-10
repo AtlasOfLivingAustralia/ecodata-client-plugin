@@ -339,9 +339,15 @@ function enmapify(args) {
     viewModel.getSiteId = function () {
         return siteIdObservable();
     };
-    viewModel.loadActivitySite = function () {
+    viewModel.loadActivitySite = function (data) {
         var siteId = activityLevelData.activity && activityLevelData.activity.siteId;
         siteId && siteIdObservable(siteId);
+        // if siteId is not set, then we need to create a site from lat and lon coordinates
+        if (edit && !siteIdObservable() && data) {
+            if (data.decimalLatitude && data.decimalLongitude) {
+                viewModel.addMarker(data);
+            }
+        }
     };
 
     function isEmpty(value){

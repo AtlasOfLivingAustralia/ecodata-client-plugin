@@ -53,8 +53,6 @@ ecodata.forms.MultiFeatureViewModel = function (output, dataModel, context, conf
             self['feature'].loadData(ecodata.forms.orDefault(data['feature'], undefined));
         };
 
-        self.loadData(data);
-
     };
 
     var context = _.extend({}, context, {parent:self, listName:'features'});

@@ -91,6 +91,7 @@ grails:
 userProfile:
     userIdAttribute: "username"
 
+---
 environments:
     test:
         server:

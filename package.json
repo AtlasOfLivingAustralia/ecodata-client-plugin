@@ -1,9 +1,15 @@
 {
-  "name": "ecodata-client-plugin",
-  "version": "4.0",
+  "name": "@atlasoflivingaustralia/ecodata-client-plugin",
+  "version": "6.2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AtlasOfLivingAustralia/ecodata-client-plugin.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "description": "Karma / jasmine configuration for testing project javascript",
   "main": "test/unit/javascript",
-  "private": true,
   "directories": {
     "test": "test"
   },
@@ -15,13 +21,13 @@
     "@turf/convex": "^6.0.2",
     "@turf/length": "^6.0.2",
     "@turf/simplify": "^5.1.5",
-    "chromedriver": "^117.0.3",
+    "chromedriver": "121.0.0",
     "geojson2svg": "^1.2.3",
     "handlebars": "^4.7.7",
     "jasmine-ajax": "^4.0.0",
     "jasmine-core": "^5.1.1",
     "jasmine-jquery": "^2.1.1",
-    "jquery": "^3.6.0",
+    "jquery": "^3.6.2",
     "karma": "^6.4.2",
     "karma-chrome-launcher": "^3.1.0",
     "karma-coverage": "^2.2.1",
