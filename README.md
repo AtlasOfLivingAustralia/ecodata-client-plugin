@@ -7,7 +7,7 @@
 The ecodata client plugin is a grails plugin used to generate data entry forms from a metadata definition. It is used by the [MERIT](https://github.com/AtlasOfLivingAustralia/fieldcapture) and [BioCollect](https://github.com/AtlasOfLivingAustralia/fieldcapture) applications.
 
 ### Technologies
-* Grails framework 4.0.10
+* Grails framework 
 * Knockout JS
 * Bootstrap 4.6
 
