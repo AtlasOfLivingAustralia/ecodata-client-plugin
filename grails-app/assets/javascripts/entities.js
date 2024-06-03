@@ -377,7 +377,7 @@ var entities = (function () {
     function saveSpecies(data, dataFieldName, outputName, projectActivityId) {
         console.log("in addSpecies");
         if (data.length === 0) {
-            return;
+            return data;
         }
 
         data.forEach(function (item) {
@@ -534,8 +534,7 @@ var entities = (function () {
         var offset = 0, deferred = $.Deferred(), counter = 1, total = 100;
 
         function fetchNext(data) {
-            data = data || [];
-            if (data.length == SPECIES_MAX_FETCH) {
+            if (!data || (data.length == SPECIES_MAX_FETCH)) {
                 onlineGetSpeciesForProjectActivityAndFieldInOutput(offset, projectActivityId, dataFieldName, outputName, SPECIES_MAX_FETCH).then(function (result) {
                     callback(total, counter);
                     counter = (counter + 1) % total;
