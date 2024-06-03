@@ -390,7 +390,9 @@ var entities = (function () {
         });
 
         return dbOpen.then(function () {
-            return convertToJqueryPromise(db.taxon.bulkPut(data));
+            return convertToJqueryPromise(db.taxon.bulkPut(data)).then(function() {
+                return data;
+            });
         });
     };
 
@@ -533,7 +535,7 @@ var entities = (function () {
 
         function fetchNext(data) {
             data = data || [];
-            if (data.length != 0 || offset === 0) {
+            if (data.length == SPECIES_MAX_FETCH) {
                 onlineGetSpeciesForProjectActivityAndFieldInOutput(offset, projectActivityId, dataFieldName, outputName, SPECIES_MAX_FETCH).then(function (result) {
                     callback(total, counter);
                     counter = (counter + 1) % total;
