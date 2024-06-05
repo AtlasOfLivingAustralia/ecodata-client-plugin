@@ -632,8 +632,12 @@ var entities = (function () {
                 }
 
                 return standardiseResult(result);
-            }, function () {
-                return offlineGetProjectActivityMetadata(projectActivityId, activityId)
+            }, function (xhr, status, error) {
+                // project activity is resticted and user is not a member of project.
+                if (status === "401")
+                    return $.Deferred().reject({message: "Unauthorized"});
+                else
+                    return offlineGetProjectActivityMetadata(projectActivityId, activityId);
             });
     }
 
