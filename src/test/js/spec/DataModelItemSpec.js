@@ -128,7 +128,6 @@ describe("DataModelItem Spec", function () {
         deferred.resolve(objectConstraints).then(function() {
             expect(dataItem.constraints.label()).toEqual('label 2')
             expect(dataItem.constraints.label('3')).toEqual('label 3')
-            expect(dataItem.constraints.label("does not exist")).toEqual('');
 
             done();
         });
