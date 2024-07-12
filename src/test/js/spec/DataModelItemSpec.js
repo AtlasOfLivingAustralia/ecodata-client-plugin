@@ -90,7 +90,7 @@ describe("DataModelItem Spec", function () {
         dataItem('2');
         expect(dataItem.constraints.label()).toEqual('2')
         expect(dataItem.constraints.label('3')).toEqual('3')
-        expect(dataItem.constraints.label("does not exist")).toEqual('');
+        expect(dataItem.constraints.label("does not exist")).toEqual('does not exist'); // Support for tags and historical constraints that have been removed.
 
         var objectConstraints = [{text:'label 1', value:'1'}, {text:'label 2', value:'2'}, {text:'label 3', value:'3'}];
         metadata.constraints = {
@@ -104,7 +104,7 @@ describe("DataModelItem Spec", function () {
         dataItem('2');
         expect(dataItem.constraints.label()).toEqual('label 2')
         expect(dataItem.constraints.label('3')).toEqual('label 3')
-        expect(dataItem.constraints.label("does not exist")).toEqual('');
+        expect(dataItem.constraints.label("does not exist")).toEqual('does not exist'); // Support for tags and historical constraints that have been removed.
 
         metadata.constraints = {
             type:"pre-populated",
