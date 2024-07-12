@@ -1050,7 +1050,7 @@ function orEmptyArray(v) {
                 if (match) {
                     return self.constraints.text(match);
                 }
-                return '';
+                return value || '';
             }
         }
 
