@@ -1,8 +1,11 @@
 <div data-bind="foreach: observableValues">
-    <div class="input-append">
-        <span data-bind="template:{nodes:$componentTemplateNodes}"></span><span class="add-on"
-                                                                                data-bind="click:$parent.removeValue"><i
-            class="fa fa-remove"></i></span>
+    <div class="input-group mb-1">
+        <!-- ko template: { nodes: $componentTemplateNodes } -->
+        <!-- /ko -->
+        <div class="input-group-append">
+            <span class="input-group-text" data-bind="click:$parent.removeValue"><i class="fa fa-remove"></i></span>
+        </div>
+
     </div>
 </div>
-<i class="fa fa-plus" data-bind="click:addValue"></i>
+<span><i class="fa fa-plus" data-bind="click:addValue"></i> <span data-bind="text:addValueText || 'Click to add'"></span></span>

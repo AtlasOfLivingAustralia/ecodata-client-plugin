@@ -3,6 +3,7 @@ ko.components.register('multi-input', {
         var self = this;
 
         self.observableValues = ko.observableArray();
+        self.addValueText = params.addValueText;
 
         // This method updates the values parameter with the contents of the managed array.
         function syncValues() {
