@@ -1176,6 +1176,21 @@
     };
 
     /**
+     * The role of this extender is to provide a function the view model can use to render a list of
+     * values selected using a multi select component (select2Many / selectMany) that have also used a
+     * label/value configuration for the options.
+     * @param target the observable.
+     * @param options unused
+     */
+    ko.extenders.toReadOnlyString = function(target, options) {
+        target.toReadOnlyString = function() {
+            var values = ko.utils.unwrapObservable(target);
+            var labels = target.constraints && _.isFunction(target.constraints.label) ? _.map(values, target.constraints.label) : values;
+            return labels.join(', ');
+        }
+    }
+
+    /**
      * This is kind of a hack to make the closure config object available to the any components that use the model.
      */
     ko.extenders.configurationContainer = function(target, config) {

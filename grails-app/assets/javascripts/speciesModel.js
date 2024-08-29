@@ -254,6 +254,9 @@ var SpeciesViewModel = function(data, options, context) {
     self.transients.bieUrl = ko.observable();
     self.transients.speciesInformation = ko.observable();
     self.transients.speciesTitle = ko.observable();
+    self.transients.matched = ko.computed(function() {
+        return self.guid() && self.guid() != "A_GUID" && self.listId != "unmatched";
+    });
     self.transients.editing = ko.observable(false);
     self.transients.textFieldValue = ko.observable();
     self.transients.bioProfileUrl =  ko.computed(function (){

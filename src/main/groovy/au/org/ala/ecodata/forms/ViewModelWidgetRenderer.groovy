@@ -72,9 +72,23 @@ class ViewModelWidgetRenderer implements ModelWidgetRenderer {
         context.writer << "<span ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'></span>"
     }
 
+    /**
+     * The binding looks for the toReadOnlyString function because there exist some misconfigurations that
+     * use a "text" data model item with a selectMany/select2Many view.  This is a workaround to prevent exceptions.
+     */
+    private static String selectManyBindingString(WidgetRenderContext context) {
+        '_.isFunction(('+context.source+' || []).toReadOnlyString) ? '+ context.source+'.toReadOnlyString() : ('+context.source+'() || []).join(", ")'
+    }
+
     @Override
     void renderSelectMany(WidgetRenderContext context) {
-        context.databindAttrs.add 'text', '('+context.source+'() || []).join(", ")'
+        context.databindAttrs.add 'text',selectManyBindingString(context)
+        context.writer << "<span ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'></span>"
+    }
+
+    @Override
+    void renderSelect2Many(WidgetRenderContext context) {
+        context.databindAttrs.add 'text', selectManyBindingString(context)
         context.writer << "<span ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'></span>"
     }
 
@@ -193,12 +207,6 @@ class ViewModelWidgetRenderer implements ModelWidgetRenderer {
     void renderCurrency(WidgetRenderContext context) {
         context.databindAttrs.add 'text', context.source
         context.writer << """\$<span data-bind='${context.databindAttrs.toString()}'></span>.00"""
-    }
-
-    @Override
-    void renderSelect2Many(WidgetRenderContext context) {
-        context.databindAttrs.add 'text', '('+context.source+'() || []).join(", ")'
-        context.writer << "<span ${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'></span>"
     }
 
     @Override
