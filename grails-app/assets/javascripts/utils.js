@@ -203,29 +203,133 @@ function formatBytes(bytes) {
  * e.g workprojects
  * @param sites
  * @param addNotFoundSite
+ * @param selectedSiteId
  * @returns {Array}
  */
-function resolveSites(sites, addNotFoundSite) {
-    var resolved = [];
+function resolveSites(sites, addNotFoundSite, selectedSiteId) {
+    var resolved = [],
+        selectedSiteAdded = false;
     sites = sites || [];
 
-    sites.forEach(function (siteId) {
-        var site;
-        if(typeof siteId === 'string'){
-            site = lookupSite(siteId);
-
-            if(site){
-                resolved.push(site);
-            } else if(addNotFoundSite && siteId) {
-                resolved.push({
-                    name: 'User created site',
-                    siteId: siteId
-                });
-            }
-        } else if(typeof siteId === 'object'){
-            resolved.push(siteId);
-        }
+    sites.forEach(function (site) {
+        selectedSiteAdded = resolveSite(site, addNotFoundSite, selectedSiteId, resolved, selectedSiteAdded);
     });
 
+    if (!selectedSiteAdded && selectedSiteId) {
+        resolveSite(selectedSiteId, addNotFoundSite, selectedSiteId, resolved, selectedSiteAdded);
+    }
+
     return resolved;
+}
+
+async function resolveSite(site, addNotFoundSite, selectedSiteId, resolved, selectedSiteAdded) {
+    if(typeof site === 'string'){
+        // site = lookupSite(siteId);
+
+        // if(site){
+        //     resolved.push(site);
+        // } else
+        if (isUuid(site)) {
+            if (addNotFoundSite && site) {
+                site = {
+                    name: 'User created site',
+                    siteId: site
+                };
+
+                resolved.push(site);
+            }
+        }
+        // look in indexedDB
+        else if (window.entities) {
+            site = await new Promise((resolve, reject) => {
+                entities.offlineGetSite(site).then(function (result) {
+                    resolve(result.data);
+                }, reject);
+            });
+
+            site && resolved.push(site);
+        }
+
+        if (site) {
+            if (site.siteId === selectedSiteId)
+                selectedSiteAdded = true;
+        }
+    } else if(typeof site === 'object') {
+        resolved.push(site);
+        if (site.siteId === selectedSiteId) {
+            selectedSiteAdded = true;
+        }
+    }
+
+    return  selectedSiteAdded;
+}
+
+function getSiteIdForSites(sites) {
+    var siteIds = [];
+    sites.forEach(function (site) {
+        if (typeof site === 'string' || typeof site === 'number')
+            siteIds.push(site);
+        else if (site && typeof site === 'object')
+            siteIds.push(site.siteId);
+    });
+
+    return siteIds;
+}
+
+/**
+ * Checks if the provided identifier matches the regex pattern for a UUID.
+ * @see UUID_ONLY_REGEX
+ *
+ * @param id the id to check
+ * @returns {boolean}
+ */
+var UUID_ONLY_REGEX = new RegExp("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$", "i");
+function isUuid(id) {
+    var uuid = false;
+
+    if (id && id != null && typeof id === "string") {
+        var match = id.match(UUID_ONLY_REGEX);
+        uuid = match != null && match.length > 0;
+    }
+
+    return uuid;
+}
+
+function isOffline() {
+    var forceOffline = false, deferred = $.Deferred();
+
+    // check if website is offline
+    $.ajax({
+        url: "/noop",
+        timeout: 1000,
+        success: deferred.reject,
+        error: deferred.resolve
+    })
+
+    return deferred.promise();
+}
+
+function checkOfflineForIntervalAndTriggerEvents (interval) {
+    interval = interval || 10000;
+    var isCurrentlyOffline = false;
+
+    function intervalHandler() {
+        isOffline().then(function () {
+            if (!isCurrentlyOffline) {
+                var event = new Event('offline');
+                document.dispatchEvent(event);
+                isCurrentlyOffline = true;
+            }
+        }, function () {
+            if (isCurrentlyOffline) {
+                var event = new Event('online');
+                document.dispatchEvent(event);
+                isCurrentlyOffline = false;
+            }
+        });
+    }
+
+    // run a check initially
+    intervalHandler();
+    return setInterval(intervalHandler, interval);
 }
