@@ -732,7 +732,8 @@ class ModelJSTagLib {
     }
 
     def stringListViewModel(JSModelRenderContext ctx) {
-        observableArray(ctx)
+        String extender = '{toReadOnlyString:true}'
+        observableArray(ctx, [extender])
     }
 
     def setViewModel(JSModelRenderContext ctx) {
