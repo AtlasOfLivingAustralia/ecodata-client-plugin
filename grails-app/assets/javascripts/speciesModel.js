@@ -286,7 +286,8 @@ var SpeciesViewModel = function(data, options, context) {
             name:self.name(),
             scientificName:self.scientificName(),
             commonName:self.commonName(),
-            listId:self.listId
+            listId:self.listId,
+            outputSpeciesId:self.outputSpeciesId()
         }
     };
 
@@ -298,9 +299,10 @@ var SpeciesViewModel = function(data, options, context) {
         if (!data) data = {};
 
         self.guid(orBlank(data.guid || data.lsid));
-        self.name(orBlank(data.name));
+        self.outputSpeciesId(orBlank(data.outputSpeciesId));
         self.listId(orBlank(data.listId));
         self.scientificName(orBlank(data.scientificName));
+        self.name(orBlank(data.name));
 
         if (!data.commonName) {
             if (data.kvpValues) {
