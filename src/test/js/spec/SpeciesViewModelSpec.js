@@ -1,11 +1,5 @@
 describe("SpeciesViewModel Spec", function () {
     var request, result;
-    // jasmine.Ajax.install();
-
-    // beforeEach(function() {
-    //     request = jasmine.Ajax.requests.mostRecent();
-    //     expect(request.method).toBe('GET');
-    // });
     it("Can participate in the DataModelItem calls like checkWarnings", function () {
         var options = {
             searchBieUrl: '/species/searchBie'
@@ -31,7 +25,7 @@ describe("SpeciesViewModel Spec", function () {
 
     });
 
-    describe("Test outputSpeciesId", function () {
+    describe("Test ajax call to supply new outSpeciesId", function () {
         beforeEach(function() {
             jasmine.Ajax.install();
         });
@@ -54,32 +48,10 @@ describe("SpeciesViewModel Spec", function () {
                 guid: 'New guid'
             };
 
-
             let options = {searchBieUrl: '/test/searchBie', bieUrl: '/test/bie/', getOutputSpeciesIdUrl: 'test/getOutputSpeciesIdUrl'}
             let responseData = {outputSpeciesId: "666666"};
 
-            // spyOn($, 'ajax').and.callFake(function () {
-            //     var d = $.Deferred();
-            //     d.resolve(responseData);
-            //     return d.promise();
-            // });
-
-
-
-
-
             let speciesViewModel = new SpeciesViewModel(oldSpeciesSelectedData, options, {});
-            // spyOn($, 'ajax').and.callFake(function () {
-            //     var d = $.Deferred();
-            //     d.resolve(responseData);
-            //     return d.promise();
-            // });
-
-            // request = jasmine.Ajax.requests.mostRecent();
-            // request.respondWith({
-            //     status: 200,
-            //     responseJSON: responseData
-            // });
 
             speciesViewModel.loadData(newSpeciesSelectedData);
             request = jasmine.Ajax.requests.filter('test/getOutputSpeciesIdUrl')[0];
@@ -88,13 +60,9 @@ describe("SpeciesViewModel Spec", function () {
                 responseJSON: responseData
             });
 
-
-            // expect(request.url).toBe('test/getOutputSpeciesIdUrl');
+            expect(request.url).toBe('test/getOutputSpeciesIdUrl');
             expect(speciesViewModel.toJS().outputSpeciesId).toEqual(responseData.outputSpeciesId)
-
             expect(speciesViewModel.outputSpeciesId()).not.toEqual(oldSpeciesSelectedData.outputSpeciesId);
-// expect($.ajax).toHaveBeenCalled();
-            // expect(speciesViewModel.toJS().outputSpeciesId).toEqual(responseData.outputSpeciesId);
 
         });
     })
