@@ -1,4 +1,20 @@
 describe("SpeciesViewModel Spec", function () {
+    var request, result;
+    // jasmine.Ajax.install();
+
+    // beforeEach(function() {
+    //     request = jasmine.Ajax.requests.mostRecent();
+    //     expect(request.method).toBe('GET');
+    // });
+
+    afterEach(function() {
+        jasmine.Ajax.uninstall();
+    });
+
+    beforeEach(function() {
+        jasmine.Ajax.install();
+    });
+
     it("Can participate in the DataModelItem calls like checkWarnings", function () {
         var options = {
             searchBieUrl: '/species/searchBie'
@@ -20,38 +36,62 @@ describe("SpeciesViewModel Spec", function () {
         let speciesViewModel = new SpeciesViewModel({}, options, {});
         speciesViewModel.loadData(data);
 
-        console.log("speciesViewModel.toJS()" + speciesViewModel.toJS().outputSpeciesId);
         expect(data.outputSpeciesId).toEqual(speciesViewModel.toJS().outputSpeciesId);
 
     });
 
     it("New outputSpeciesId is passed when the species has changed", function (){
-        let data = {
-            outputSpeciesId: "",
-            scientificName: "Test Scientific Name",
-            name:"Test name",
-            guid:"Test guid"
+        let oldSpeciesSelectedData = {
+            outputSpeciesId: '5555555',
+            scientificName: 'Current scientific Name',
+            name: 'Current name',
+            guid: 'Current guid'
+        }
+
+        let newSpeciesSelectedData = {
+            scientificName: 'New scientific Name',
+            name: 'New name',
+            guid: 'New guid'
         };
 
-        let options = {searchBieUrl: '/test/searchBie', bieUrl: '/test/bie/', getOutputSpeciesIdUrl: 'test/getOutputSpeciesIdUrl'}
-        let responseData = {outputSpeciesId: "55555"};
 
-        spyOn($, 'ajax').and.callFake(function () {
-            var d = $.Deferred();
-            d.resolve(responseData);
-            return d.promise();
+        let options = {searchBieUrl: '/test/searchBie', bieUrl: '/test/bie/', getOutputSpeciesIdUrl: 'test/getOutputSpeciesIdUrl'}
+        let responseData = {outputSpeciesId: "666666"};
+
+        // spyOn($, 'ajax').and.callFake(function () {
+        //     var d = $.Deferred();
+        //     d.resolve(responseData);
+        //     return d.promise();
+        // });
+
+
+
+
+
+        let speciesViewModel = new SpeciesViewModel(oldSpeciesSelectedData, options, {});
+        // spyOn($, 'ajax').and.callFake(function () {
+        //     var d = $.Deferred();
+        //     d.resolve(responseData);
+        //     return d.promise();
+        // });
+
+        speciesViewModel.loadData(newSpeciesSelectedData);
+
+        request = jasmine.Ajax.requests.mostRecent();
+
+        request.respondWith({
+            status: 200,
+            responseJSON: responseData
         });
 
-        let speciesViewModel = new SpeciesViewModel({}, options, {});
-        speciesViewModel.loadData(data);
 
-        expect($.ajax).toHaveBeenCalled();
-        expect(data.outputSpeciesId).toEqual(speciesViewModel.outputSpeciesId());
+        // expect(request.url).toBe('test/getOutputSpeciesIdUrl');
+        expect(speciesViewModel.toJS().outputSpeciesId).toEqual(responseData.outputSpeciesId)
+
+        expect(speciesViewModel.outputSpeciesId()).not.toEqual(oldSpeciesSelectedData.outputSpeciesId);
+// expect($.ajax).toHaveBeenCalled();
+        // expect(speciesViewModel.toJS().outputSpeciesId).toEqual(responseData.outputSpeciesId);
 
     });
 
-    function ajax_response(response) {
-        var deferred = $.Deferred().resolve(response);
-        return deferred.promise();
-    }
 });
