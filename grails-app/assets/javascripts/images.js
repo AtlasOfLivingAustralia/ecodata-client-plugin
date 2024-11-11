@@ -189,7 +189,7 @@ function ImageViewModel(prop, skipFindingDocument, context){
 
 ImageViewModel.createObjectURL = function addObjectURL(document){
     if (document.blob) {
-        var blob = document.blobObject = new Blob([document.blob], {type: document.contentType});
+        var blob = document.blobObject = new Blob([document.blob], {name: document.filename, type: document.contentType, filename: document.filename});
         var url = URL.createObjectURL(blob);
         return url;
     }
