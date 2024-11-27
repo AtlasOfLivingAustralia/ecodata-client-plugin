@@ -157,7 +157,13 @@ class PreviewController {
         def sites = [[
             'siteId': 'abc',
             'projects': ['projectA'],
-            'name': 'Test site'
+            'name': 'Test site',
+                extent: [
+                        geometry: [
+                                type: 'Point',
+                                coordinates: [ 153.0, -27.0 ]
+                        ]
+                ]
         ]]
         render sites as JSON, contentType: 'application/json'
     }
