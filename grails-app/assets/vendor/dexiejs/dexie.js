@@ -4,7 +4,7 @@
  *
  * By David Fahlander, david.fahlander@gmail.com
  *
- * Version 4.0.1-alpha.25, Sun Jul 16 2023
+ * Version 4.0.10, Fri Nov 15 2024
  *
  * https://dexie.org
  *
@@ -140,16 +140,8 @@
             return result;
         }, {});
     }
-    function tryCatch(fn, onerror, args) {
-        try {
-            fn.apply(null, args);
-        }
-        catch (ex) {
-            onerror && onerror(ex);
-        }
-    }
     function getByKeyPath(obj, keyPath) {
-        if (hasOwn(obj, keyPath))
+        if (typeof keyPath === 'string' && hasOwn(obj, keyPath))
             return obj[keyPath];
         if (!keyPath)
             return obj;
@@ -164,7 +156,7 @@
         var period = keyPath.indexOf('.');
         if (period !== -1) {
             var innerObj = obj[keyPath.substr(0, period)];
-            return innerObj === undefined ? undefined : getByKeyPath(innerObj, keyPath.substr(period + 1));
+            return innerObj == null ? undefined : getByKeyPath(innerObj, keyPath.substr(period + 1));
         }
         return undefined;
     }
@@ -232,7 +224,7 @@
     function flatten(a) {
         return concat.apply([], a);
     }
-    var intrinsicTypeNames = "Array,Boolean,String,Date,RegExp,Blob,File,FileList,FileSystemFileHandle,FileSystemDirectoryHandle,ArrayBuffer,DataView,Uint8ClampedArray,ImageBitmap,ImageData,Map,Set,CryptoKey"
+    var intrinsicTypeNames = "BigUint64Array,BigInt64Array,Array,Boolean,String,Date,RegExp,Blob,File,FileList,FileSystemFileHandle,FileSystemDirectoryHandle,ArrayBuffer,DataView,Uint8ClampedArray,ImageBitmap,ImageData,Map,Set,CryptoKey"
         .split(',').concat(flatten([8, 16, 32, 64].map(function (num) { return ["Int", "Uint", "Float"].map(function (t) { return t + num + "Array"; }); }))).filter(function (t) { return _global[t]; });
     var intrinsicTypes = new Set(intrinsicTypeNames.map(function (t) { return _global[t]; }));
     function cloneSimpleObjectTree(o) {
@@ -337,39 +329,6 @@
         ? function (fn) { return fn[Symbol.toStringTag] === 'AsyncFunction'; }
         : function () { return false; };
 
-    var debug = typeof location !== 'undefined' &&
-        /^(http|https):\/\/(localhost|127\.0\.0\.1)/.test(location.href);
-    function setDebug(value, filter) {
-        debug = value;
-        libraryFilter = filter;
-    }
-    var libraryFilter = function () { return true; };
-    var NEEDS_THROW_FOR_STACK = !new Error("").stack;
-    function getErrorWithStack() {
-        if (NEEDS_THROW_FOR_STACK)
-            try {
-                getErrorWithStack.arguments;
-                throw new Error();
-            }
-            catch (e) {
-                return e;
-            }
-        return new Error();
-    }
-    function prettyStack(exception, numIgnoredFrames) {
-        var stack = exception.stack;
-        if (!stack)
-            return "";
-        numIgnoredFrames = (numIgnoredFrames || 0);
-        if (stack.indexOf(exception.name) === 0)
-            numIgnoredFrames += (exception.name + exception.message).split('\n').length;
-        return stack.split('\n')
-            .slice(numIgnoredFrames)
-            .filter(libraryFilter)
-            .map(function (frame) { return "\n" + frame; })
-            .join('');
-    }
-
     var dexieErrorNames = [
         'Modify',
         'Bulk',
@@ -413,17 +372,10 @@
         MissingAPI: "IndexedDB API missing. Please visit https://tinyurl.com/y2uuvskb"
     };
     function DexieError(name, msg) {
-        this._e = getErrorWithStack();
         this.name = name;
         this.message = msg;
     }
     derive(DexieError).from(Error).extend({
-        stack: {
-            get: function () {
-                return this._stack ||
-                    (this._stack = this.name + ": " + this.message + prettyStack(this._e, 2));
-            }
-        },
         toString: function () { return this.name + ": " + this.message; }
     });
     function getMultiErrorMessage(msg, failures) {
@@ -433,7 +385,6 @@
             .join('\n');
     }
     function ModifyError(msg, failures, successCount, failedKeys) {
-        this._e = getErrorWithStack();
         this.failures = failures;
         this.failedKeys = failedKeys;
         this.successCount = successCount;
@@ -441,7 +392,6 @@
     }
     derive(ModifyError).from(DexieError);
     function BulkError(msg, failures) {
-        this._e = getErrorWithStack();
         this.name = "BulkError";
         this.failures = Object.keys(failures).map(function (pos) { return failures[pos]; });
         this.failuresByPos = failures;
@@ -453,7 +403,6 @@
     var exceptions = errorList.reduce(function (obj, name) {
         var fullName = name + "Error";
         function DexieError(msgOrInner, inner) {
-            this._e = getErrorWithStack();
             this.name = fullName;
             if (!msgOrInner) {
                 this.message = defaultTexts[name] || fullName;
@@ -594,9 +543,14 @@
         };
     }
 
+    var debug = typeof location !== 'undefined' &&
+        /^(http|https):\/\/(localhost|127\.0\.0\.1)/.test(location.href);
+    function setDebug(value, filter) {
+        debug = value;
+    }
+
     var INTERNAL = {};
-    var LONG_STACKS_CLIP_LIMIT = 100,
-    MAX_LONG_STACKS = 20, ZONE_ECHO_LIMIT = 100, _a$1 = typeof Promise === 'undefined' ?
+    var ZONE_ECHO_LIMIT = 100, _a$1 = typeof Promise === 'undefined' ?
         [] :
         (function () {
             var globalP = Promise.resolve();
@@ -611,7 +565,6 @@
         })(), resolvedNativePromise = _a$1[0], nativePromiseProto = _a$1[1], resolvedGlobalPromise = _a$1[2], nativePromiseThen = nativePromiseProto && nativePromiseProto.then;
     var NativePromise = resolvedNativePromise && resolvedNativePromise.constructor;
     var patchGlobalPromise = !!resolvedGlobalPromise;
-    var stack_being_generated = false;
     function schedulePhysicalTick() {
         queueMicrotask(physicalTick);
     }
@@ -626,7 +579,7 @@
     needsNewPhysicalTick = true,
     unhandledErrors = [],
     rejectingErrors = [],
-    currentFulfiller = null, rejectionMapper = mirror;
+    rejectionMapper = mirror;
     var globalPSD = {
         id: 'global',
         global: true,
@@ -647,11 +600,6 @@
         this._listeners = [];
         this._lib = false;
         var psd = (this._PSD = PSD);
-        if (debug) {
-            this._stackHolder = getErrorWithStack();
-            this._prev = null;
-            this._numPrev = 0;
-        }
         if (typeof fn !== 'function') {
             if (fn !== INTERNAL)
                 throw new TypeError('Not a function');
@@ -676,7 +624,8 @@
                 var rv = new DexiePromise(function (resolve, reject) {
                     propagateToListener(_this, new Listener(nativeAwaitCompatibleWrap(onFulfilled, psd, possibleAwait, cleanup), nativeAwaitCompatibleWrap(onRejected, psd, possibleAwait, cleanup), resolve, reject, psd));
                 });
-                debug && linkToPreviousPromise(rv, this);
+                if (this._consoleTask)
+                    rv._consoleTask = this._consoleTask;
                 return rv;
             }
             then.prototype = INTERNAL;
@@ -711,29 +660,10 @@
         },
         finally: function (onFinally) {
             return this.then(function (value) {
-                onFinally();
-                return value;
+                return DexiePromise.resolve(onFinally()).then(function () { return value; });
             }, function (err) {
-                onFinally();
-                return PromiseReject(err);
+                return DexiePromise.resolve(onFinally()).then(function () { return PromiseReject(err); });
             });
-        },
-        stack: {
-            get: function () {
-                if (this._stack)
-                    return this._stack;
-                try {
-                    stack_being_generated = true;
-                    var stacks = getStack(this, [], MAX_LONG_STACKS);
-                    var stack = stacks.join("\nFrom previous: ");
-                    if (this._state !== null)
-                        this._stack = stack;
-                    return stack;
-                }
-                finally {
-                    stack_being_generated = false;
-                }
-            }
         },
         timeout: function (ms, msg) {
             var _this = this;
@@ -777,7 +707,6 @@
                     value.then(resolve, reject);
                 });
             var rv = new DexiePromise(INTERNAL, true, value);
-            linkToPreviousPromise(rv, currentFulfiller);
             return rv;
         },
         reject: PromiseReject,
@@ -847,6 +776,8 @@
                     }); });
                 });
             });
+        if (NativePromise.withResolvers)
+            DexiePromise.withResolvers = NativePromise.withResolvers;
     }
     function executePromiseTask(promise, fn) {
         try {
@@ -884,19 +815,6 @@
         reason = rejectionMapper(reason);
         promise._state = false;
         promise._value = reason;
-        debug && reason !== null && typeof reason === 'object' && !reason._promise && tryCatch(function () {
-            var origProp = getPropertyDescriptor(reason, "stack");
-            reason._promise = promise;
-            setProp(reason, "stack", {
-                get: function () {
-                    return stack_being_generated ?
-                        origProp && (origProp.get ?
-                            origProp.get.apply(reason) :
-                            origProp.value) :
-                        promise.stack;
-                }
-            });
-        });
         addPossiblyUnhandledError(promise);
         propagateAllListeners(promise);
         if (shouldExecuteTick)
@@ -933,17 +851,12 @@
     }
     function callListener(cb, promise, listener) {
         try {
-            currentFulfiller = promise;
             var ret, value = promise._value;
-            if (promise._state) {
-                ret = cb(value);
-            }
-            else {
-                if (rejectingErrors.length)
-                    rejectingErrors = [];
-                ret = cb(value);
-                if (rejectingErrors.indexOf(value) === -1)
-                    markErrorAsHandled(promise);
+            if (!promise._state && rejectingErrors.length)
+                rejectingErrors = [];
+            ret = debug && promise._consoleTask ? promise._consoleTask.run(function () { return cb(value); }) : cb(value);
+            if (!promise._state && rejectingErrors.indexOf(value) === -1) {
+                markErrorAsHandled(promise);
             }
             listener.resolve(ret);
         }
@@ -951,43 +864,9 @@
             listener.reject(e);
         }
         finally {
-            currentFulfiller = null;
             if (--numScheduledCalls === 0)
                 finalizePhysicalTick();
             --listener.psd.ref || listener.psd.finalize();
-        }
-    }
-    function getStack(promise, stacks, limit) {
-        if (stacks.length === limit)
-            return stacks;
-        var stack = "";
-        if (promise._state === false) {
-            var failure = promise._value, errorName, message;
-            if (failure != null) {
-                errorName = failure.name || "Error";
-                message = failure.message || failure;
-                stack = prettyStack(failure, 0);
-            }
-            else {
-                errorName = failure;
-                message = "";
-            }
-            stacks.push(errorName + (message ? ": " + message : "") + stack);
-        }
-        if (debug) {
-            stack = prettyStack(promise._stackHolder, 2);
-            if (stack && stacks.indexOf(stack) === -1)
-                stacks.push(stack);
-            if (promise._prev)
-                getStack(promise._prev, stacks, limit);
-        }
-        return stacks;
-    }
-    function linkToPreviousPromise(promise, prev) {
-        var numPrev = prev ? prev._numPrev + 1 : 0;
-        if (numPrev < LONG_STACKS_CLIP_LIMIT) {
-            promise._prev = prev;
-            promise._numPrev = numPrev;
         }
     }
     function physicalTick() {
@@ -1085,7 +964,7 @@
         psd.ref = 0;
         psd.global = false;
         psd.id = ++zone_id_counter;
-        var globalEnv = globalPSD.env;
+        globalPSD.env;
         psd.env = patchGlobalPromise ? {
             Promise: DexiePromise,
             PromiseProp: { value: DexiePromise, configurable: true, writable: true },
@@ -1095,8 +974,6 @@
             any: DexiePromise.any,
             resolve: DexiePromise.resolve,
             reject: DexiePromise.reject,
-            nthen: getPatchedPromiseThen(globalEnv.nthen, psd),
-            gthen: getPatchedPromiseThen(globalEnv.gthen, psd)
         } : {};
         if (props)
             extend(psd, props);
@@ -1143,7 +1020,7 @@
     function zoneEnterEcho(targetZone) {
         ++totalEchoes;
         if (!task.echoes || --task.echoes === 0) {
-            task.echoes = task.id = 0;
+            task.echoes = task.awaits = task.id = 0;
         }
         zoneStack.push(PSD);
         switchToZone(targetZone, true);
@@ -1164,20 +1041,18 @@
         if (currentZone === globalPSD)
             globalPSD.env = snapShot();
         if (patchGlobalPromise) {
-            var GlobalPromise_1 = globalPSD.env.Promise;
+            var GlobalPromise = globalPSD.env.Promise;
             var targetEnv = targetZone.env;
-            nativePromiseProto.then = targetEnv.nthen;
-            GlobalPromise_1.prototype.then = targetEnv.gthen;
             if (currentZone.global || targetZone.global) {
                 Object.defineProperty(_global, 'Promise', targetEnv.PromiseProp);
-                GlobalPromise_1.all = targetEnv.all;
-                GlobalPromise_1.race = targetEnv.race;
-                GlobalPromise_1.resolve = targetEnv.resolve;
-                GlobalPromise_1.reject = targetEnv.reject;
+                GlobalPromise.all = targetEnv.all;
+                GlobalPromise.race = targetEnv.race;
+                GlobalPromise.resolve = targetEnv.resolve;
+                GlobalPromise.reject = targetEnv.reject;
                 if (targetEnv.allSettled)
-                    GlobalPromise_1.allSettled = targetEnv.allSettled;
+                    GlobalPromise.allSettled = targetEnv.allSettled;
                 if (targetEnv.any)
-                    GlobalPromise_1.any = targetEnv.any;
+                    GlobalPromise.any = targetEnv.any;
             }
         }
     }
@@ -1192,8 +1067,6 @@
             any: GlobalPromise.any,
             resolve: GlobalPromise.resolve,
             reject: GlobalPromise.reject,
-            nthen: nativePromiseProto.then,
-            gthen: GlobalPromise.prototype.then
         } : {};
     }
     function usePSD(psd, fn, a1, a2, a3) {
@@ -1222,10 +1095,18 @@
             }
         };
     }
-    function getPatchedPromiseThen(origThen, zone) {
-        return function (onResolved, onRejected) {
-            return origThen.call(this, nativeAwaitCompatibleWrap(onResolved, zone), nativeAwaitCompatibleWrap(onRejected, zone));
-        };
+    function execInGlobalContext(cb) {
+        if (Promise === NativePromise && task.echoes === 0) {
+            if (zoneEchoes === 0) {
+                cb();
+            }
+            else {
+                enqueueNativeMicroTask(cb);
+            }
+        }
+        else {
+            setTimeout(cb, 0);
+        }
     }
     var rejection = DexiePromise.reject;
 
@@ -1235,7 +1116,7 @@
                 return rejection(new exceptions.DatabaseClosed(db._state.dbOpenError));
             }
             if (!db._state.isBeingOpened) {
-                if (!db._options.autoOpen)
+                if (!db._state.autoOpen)
                     return rejection(new exceptions.DatabaseClosed());
                 db.open().catch(nop);
             }
@@ -1250,7 +1131,7 @@
             catch (ex) {
                 if (ex.name === errnames.InvalidState && db.isOpen() && --db._state.PR1398_maxLoop > 0) {
                     console.warn('Dexie: Need to reopen db');
-                    db._close();
+                    db.close({ disableAutoOpen: false });
                     return db.open().then(function () { return tempTransaction(db, mode, storeNames, fn); });
                 }
                 return rejection(ex);
@@ -1271,16 +1152,12 @@
         }
     }
 
-    var DEXIE_VERSION = '4.0.1-alpha.25';
+    var DEXIE_VERSION = '4.0.10';
     var maxString = String.fromCharCode(65535);
     var minKey = -Infinity;
     var INVALID_KEY_ARGUMENT = "Invalid key provided. Keys must be of type string, number, Date or Array<string | number | Date>.";
     var STRING_EXPECTED = "String expected.";
     var connections = [];
-    var isIEOrEdge = typeof navigator !== 'undefined' && /(MSIE|Trident|Edge)/.test(navigator.userAgent);
-    var hasIEDeleteObjectStoreBug = isIEOrEdge;
-    var hangsOnDeleteLargeKeyRange = isIEOrEdge;
-    var dexieStackFrameFilter = function (frame) { return !/(dexie\.js|dexie\.min\.js)/.test(frame); };
     var DBNAMES_DB = '__dbnames';
     var READONLY = 'readonly';
     var READWRITE = 'readwrite';
@@ -1399,6 +1276,7 @@
         Table.prototype._trans = function (mode, fn, writeLocked) {
             var trans = this._tx || PSD.trans;
             var tableName = this.name;
+            var task = debug && typeof console !== 'undefined' && console.createTask && console.createTask("Dexie: ".concat(mode === 'readonly' ? 'read' : 'write', " ").concat(this.name));
             function checkTableInTransaction(resolve, reject, trans) {
                 if (!trans.schema[tableName])
                     throw new exceptions.NotFound("Table " + tableName + " not part of transaction");
@@ -1406,11 +1284,19 @@
             }
             var wasRootExec = beginMicroTickScope();
             try {
-                return trans && trans.db === this.db ?
+                var p = trans && trans.db._novip === this.db._novip ?
                     trans === PSD.trans ?
                         trans._promise(mode, checkTableInTransaction, writeLocked) :
                         newScope(function () { return trans._promise(mode, checkTableInTransaction, writeLocked); }, { trans: trans, transless: PSD.transless || PSD }) :
                     tempTransaction(this.db, mode, [this.name], checkTableInTransaction);
+                if (task) {
+                    p._consoleTask = task;
+                    p = p.catch(function (err) {
+                        console.trace(err);
+                        return rejection(err);
+                    });
+                }
+                return p;
             }
             finally {
                 if (wasRootExec)
@@ -1421,6 +1307,8 @@
             var _this = this;
             if (keyOrCrit && keyOrCrit.constructor === Object)
                 return this.where(keyOrCrit).first(cb);
+            if (keyOrCrit == null)
+                return rejection(new exceptions.Type("Invalid argument to Table.get()"));
             return this._trans('readonly', function (trans) {
                 return _this.core.get({ trans: trans, key: keyOrCrit })
                     .then(function (res) { return _this.hook.reading.fire(res); });
@@ -1454,12 +1342,11 @@
                     .equals(keyPathsInValidOrder.map(function (kp) { return indexOrCrit[kp]; }));
             }
             if (!compoundIndex && debug)
-                console.warn("The query ".concat(JSON.stringify(indexOrCrit), " on ").concat(this.name, " would benefit of a ") +
+                console.warn("The query ".concat(JSON.stringify(indexOrCrit), " on ").concat(this.name, " would benefit from a ") +
                     "compound index [".concat(keyPaths.join('+'), "]"));
             var idxByName = this.schema.idxByName;
-            var idb = this.db._deps.indexedDB;
             function equals(a, b) {
-                return idb.cmp(a, b) === 0;
+                return cmp(a, b) === 0;
             }
             var _a = keyPaths.reduce(function (_a, keyPath) {
                 var prevIndex = _a[0], prevFilterFn = _a[1];
@@ -1917,6 +1804,56 @@
         });
     }
 
+    var PropModSymbol = Symbol();
+    var PropModification =  (function () {
+        function PropModification(spec) {
+            Object.assign(this, spec);
+        }
+        PropModification.prototype.execute = function (value) {
+            var _a;
+            if (this.add !== undefined) {
+                var term = this.add;
+                if (isArray(term)) {
+                    return __spreadArray(__spreadArray([], (isArray(value) ? value : []), true), term, true).sort();
+                }
+                if (typeof term === 'number')
+                    return (Number(value) || 0) + term;
+                if (typeof term === 'bigint') {
+                    try {
+                        return BigInt(value) + term;
+                    }
+                    catch (_b) {
+                        return BigInt(0) + term;
+                    }
+                }
+                throw new TypeError("Invalid term ".concat(term));
+            }
+            if (this.remove !== undefined) {
+                var subtrahend_1 = this.remove;
+                if (isArray(subtrahend_1)) {
+                    return isArray(value) ? value.filter(function (item) { return !subtrahend_1.includes(item); }).sort() : [];
+                }
+                if (typeof subtrahend_1 === 'number')
+                    return Number(value) - subtrahend_1;
+                if (typeof subtrahend_1 === 'bigint') {
+                    try {
+                        return BigInt(value) - subtrahend_1;
+                    }
+                    catch (_c) {
+                        return BigInt(0) - subtrahend_1;
+                    }
+                }
+                throw new TypeError("Invalid subtrahend ".concat(subtrahend_1));
+            }
+            var prefixToReplace = (_a = this.replacePrefix) === null || _a === void 0 ? void 0 : _a[0];
+            if (prefixToReplace && typeof value === 'string' && value.startsWith(prefixToReplace)) {
+                return this.replacePrefix[1] + value.substring(prefixToReplace.length);
+            }
+            return value;
+        };
+        return PropModification;
+    }());
+
     var Collection =  (function () {
         function Collection() {
         }
@@ -1985,7 +1922,7 @@
             var order = this._ctx.dir === "next" ? 1 : -1;
             function sorter(a, b) {
                 var aVal = getval(a, lastIndex), bVal = getval(b, lastIndex);
-                return aVal < bVal ? -order : aVal > bVal ? order : 0;
+                return cmp(aVal, bVal) * order;
             }
             return this.toArray(function (a) {
                 return a.sort(sorter);
@@ -2188,8 +2125,14 @@
                     modifyer = function (item) {
                         var anythingModified = false;
                         for (var i = 0; i < numKeys; ++i) {
-                            var keyPath = keyPaths[i], val = changes[keyPath];
-                            if (getByKeyPath(item, keyPath) !== val) {
+                            var keyPath = keyPaths[i];
+                            var val = changes[keyPath];
+                            var origVal = getByKeyPath(item, keyPath);
+                            if (val instanceof PropModification) {
+                                setByKeyPath(item, keyPath, val.execute(origVal));
+                                anythingModified = true;
+                            }
+                            else if (origVal !== val) {
                                 setByKeyPath(item, keyPath, val);
                                 anythingModified = true;
                             }
@@ -2199,7 +2142,16 @@
                 }
                 var coreTable = ctx.table.core;
                 var _a = coreTable.schema.primaryKey, outbound = _a.outbound, extractKey = _a.extractKey;
-                var limit = _this.db._options.modifyChunkSize || 200;
+                var limit = 200;
+                var modifyChunkSize = _this.db._options.modifyChunkSize;
+                if (modifyChunkSize) {
+                    if (typeof modifyChunkSize == 'object') {
+                        limit = modifyChunkSize[coreTable.name] || modifyChunkSize['*'] || 200;
+                    }
+                    else {
+                        limit = modifyChunkSize;
+                    }
+                }
                 var totalFailures = [];
                 var successCount = 0;
                 var failedKeys = [];
@@ -2212,6 +2164,12 @@
                     }
                 };
                 return _this.clone().primaryKeys().then(function (keys) {
+                    var criteria = isPlainKeyRange(ctx) &&
+                        ctx.limit === Infinity &&
+                        (typeof changes !== 'function' || changes === deleteCallback) && {
+                        index: ctx.index,
+                        range: ctx.range
+                    };
                     var nextChunk = function (offset) {
                         var count = Math.min(limit, keys.length - offset);
                         return coreTable.getMany({
@@ -2244,12 +2202,6 @@
                                     }
                                 }
                             }
-                            var criteria = isPlainKeyRange(ctx) &&
-                                ctx.limit === Infinity &&
-                                (typeof changes !== 'function' || changes === deleteCallback) && {
-                                index: ctx.index,
-                                range: ctx.range
-                            };
                             return Promise.resolve(addValues.length > 0 &&
                                 coreTable.mutate({ trans: trans, type: 'add', values: addValues })
                                     .then(function (res) {
@@ -2265,13 +2217,15 @@
                                     values: putValues,
                                     criteria: criteria,
                                     changeSpec: typeof changes !== 'function'
-                                        && changes
+                                        && changes,
+                                    isAdditionalChunk: offset > 0
                                 }).then(function (res) { return applyMutateResult(putValues.length, res); }); }).then(function () { return (deleteKeys.length > 0 || (criteria && changes === deleteCallback)) &&
                                 coreTable.mutate({
                                     trans: trans,
                                     type: 'delete',
                                     keys: deleteKeys,
-                                    criteria: criteria
+                                    criteria: criteria,
+                                    isAdditionalChunk: offset > 0
                                 }).then(function (res) { return applyMutateResult(deleteKeys.length, res); }); }).then(function () {
                                 return keys.length > offset + count && nextChunk(offset + limit);
                             });
@@ -2288,7 +2242,7 @@
         Collection.prototype.delete = function () {
             var ctx = this._ctx, range = ctx.range;
             if (isPlainKeyRange(ctx) &&
-                ((ctx.isPrimKey && !hangsOnDeleteLargeKeyRange) || range.type === 3 ))
+                (ctx.isPrimKey || range.type === 3 ))
              {
                 return this._write(function (trans) {
                     var primaryKey = ctx.table.core.schema.primaryKey;
@@ -3410,6 +3364,10 @@
     }
     function runUpgraders(db, oldVersion, idbUpgradeTrans, reject) {
         var globalSchema = db._dbSchema;
+        if (idbUpgradeTrans.objectStoreNames.contains('$meta') && !globalSchema.$meta) {
+            globalSchema.$meta = createTableSchema("$meta", parseIndexSyntax("")[0], []);
+            db._storeNames.push('$meta');
+        }
         var trans = db._createTransaction('readwrite', db._storeNames, globalSchema);
         trans.create(idbUpgradeTrans);
         trans._completion.catch(reject);
@@ -3425,16 +3383,59 @@
                 generateMiddlewareStacks(db, idbUpgradeTrans);
                 DexiePromise.follow(function () { return db.on.populate.fire(trans); }).catch(rejectTransaction);
             }
-            else
-                updateTablesAndIndexes(db, oldVersion, trans, idbUpgradeTrans).catch(rejectTransaction);
+            else {
+                generateMiddlewareStacks(db, idbUpgradeTrans);
+                return getExistingVersion(db, trans, oldVersion)
+                    .then(function (oldVersion) { return updateTablesAndIndexes(db, oldVersion, trans, idbUpgradeTrans); })
+                    .catch(rejectTransaction);
+            }
         });
+    }
+    function patchCurrentVersion(db, idbUpgradeTrans) {
+        createMissingTables(db._dbSchema, idbUpgradeTrans);
+        if (idbUpgradeTrans.db.version % 10 === 0 && !idbUpgradeTrans.objectStoreNames.contains('$meta')) {
+            idbUpgradeTrans.db.createObjectStore('$meta').add(Math.ceil((idbUpgradeTrans.db.version / 10) - 1), 'version');
+        }
+        var globalSchema = buildGlobalSchema(db, db.idbdb, idbUpgradeTrans);
+        adjustToExistingIndexNames(db, db._dbSchema, idbUpgradeTrans);
+        var diff = getSchemaDiff(globalSchema, db._dbSchema);
+        var _loop_1 = function (tableChange) {
+            if (tableChange.change.length || tableChange.recreate) {
+                console.warn("Unable to patch indexes of table ".concat(tableChange.name, " because it has changes on the type of index or primary key."));
+                return { value: void 0 };
+            }
+            var store = idbUpgradeTrans.objectStore(tableChange.name);
+            tableChange.add.forEach(function (idx) {
+                if (debug)
+                    console.debug("Dexie upgrade patch: Creating missing index ".concat(tableChange.name, ".").concat(idx.src));
+                addIndex(store, idx);
+            });
+        };
+        for (var _i = 0, _a = diff.change; _i < _a.length; _i++) {
+            var tableChange = _a[_i];
+            var state_1 = _loop_1(tableChange);
+            if (typeof state_1 === "object")
+                return state_1.value;
+        }
+    }
+    function getExistingVersion(db, trans, oldVersion) {
+        if (trans.storeNames.includes('$meta')) {
+            return trans.table('$meta').get('version').then(function (metaVersion) {
+                return metaVersion != null ? metaVersion : oldVersion;
+            });
+        }
+        else {
+            return DexiePromise.resolve(oldVersion);
+        }
     }
     function updateTablesAndIndexes(db, oldVersion, trans, idbUpgradeTrans) {
         var queue = [];
         var versions = db._versions;
         var globalSchema = db._dbSchema = buildGlobalSchema(db, db.idbdb, idbUpgradeTrans);
-        var anyContentUpgraderHasRun = false;
         var versToRun = versions.filter(function (v) { return v._cfg.version >= oldVersion; });
+        if (versToRun.length === 0) {
+            return DexiePromise.resolve();
+        }
         versToRun.forEach(function (version) {
             queue.push(function () {
                 var oldSchema = globalSchema;
@@ -3464,7 +3465,6 @@
                 if (contentUpgrade && version._cfg.version > oldVersion) {
                     generateMiddlewareStacks(db, idbUpgradeTrans);
                     trans._memoizedTables = {};
-                    anyContentUpgraderHasRun = true;
                     var upgradeSchema_1 = shallowClone(newSchema);
                     diff.del.forEach(function (table) {
                         upgradeSchema_1[table] = oldSchema[table];
@@ -3491,13 +3491,23 @@
                 }
             });
             queue.push(function (idbtrans) {
-                if (!anyContentUpgraderHasRun || !hasIEDeleteObjectStoreBug) {
-                    var newSchema = version._cfg.dbschema;
-                    deleteRemovedTables(newSchema, idbtrans);
-                }
+                var newSchema = version._cfg.dbschema;
+                deleteRemovedTables(newSchema, idbtrans);
                 removeTablesApi(db, [db.Transaction.prototype]);
                 setApiOnPlace(db, [db.Transaction.prototype], db._storeNames, db._dbSchema);
                 trans.schema = db._dbSchema;
+            });
+            queue.push(function (idbtrans) {
+                if (db.idbdb.objectStoreNames.contains('$meta')) {
+                    if (Math.ceil(db.idbdb.version / 10) === version._cfg.version) {
+                        db.idbdb.deleteObjectStore('$meta');
+                        delete db._dbSchema.$meta;
+                        db._storeNames = db._storeNames.filter(function (name) { return name !== '$meta'; });
+                    }
+                    else {
+                        idbtrans.objectStore('$meta').put(version._cfg.version, 'version');
+                    }
+                }
             });
         });
         function runQueue() {
@@ -3535,8 +3545,7 @@
                 };
                 if ((
                 '' + (oldDef.primKey.keyPath || '')) !== ('' + (newDef.primKey.keyPath || '')) ||
-                    (oldDef.primKey.auto !== newDef.primKey.auto && !isIEOrEdge))
-                 {
+                    (oldDef.primKey.auto !== newDef.primKey.auto)) {
                     change.recreate = true;
                     diff.change.push(change);
                 }
@@ -3573,6 +3582,8 @@
     function createMissingTables(newSchema, idbtrans) {
         keys(newSchema).forEach(function (tableName) {
             if (!idbtrans.db.objectStoreNames.contains(tableName)) {
+                if (debug)
+                    console.debug('Dexie: Creating missing table', tableName);
                 createTable(idbtrans, tableName, newSchema[tableName].primKey, newSchema[tableName].indexes);
             }
         });
@@ -3591,7 +3602,7 @@
         dbStoreNames.forEach(function (storeName) {
             var store = tmpTrans.objectStore(storeName);
             var keyPath = store.keyPath;
-            var primKey = createIndexSpec(nameFromKeyPath(keyPath), keyPath || "", false, false, !!store.autoIncrement, keyPath && typeof keyPath !== "string", true);
+            var primKey = createIndexSpec(nameFromKeyPath(keyPath), keyPath || "", true, false, !!store.autoIncrement, keyPath && typeof keyPath !== "string", true);
             var indexes = [];
             for (var j = 0; j < store.indexNames.length; ++j) {
                 var idbindex = store.index(store.indexNames[j]);
@@ -3658,6 +3669,7 @@
                 if (stores[tableName] !== null) {
                     var indexes = parseIndexSyntax(stores[tableName]);
                     var primKey = indexes.shift();
+                    primKey.unique = true;
                     if (primKey.multi)
                         throw new exceptions.Schema("Primary key cannot be multi-valued");
                     indexes.forEach(function (idx) {
@@ -3797,6 +3809,10 @@
                 var _this = this;
                 keys.forEach(function (key) { return addRange(_this, key, key); });
                 return this;
+            },
+            hasKey: function (key) {
+                var node = getRangeSetIterator(this).next(key).value;
+                return node && cmp(node.from, key) <= 0 && cmp(node.to, key) >= 0;
             }
         },
         _a[iteratorSymbol] = function () {
@@ -3941,47 +3957,55 @@
     }
 
     function obsSetsOverlap(os1, os2) {
-        return Object.keys(os1).some(function (key) { return os2[key] && rangesOverlap(os2[key], os1[key]); });
+        return os1.all || os2.all || Object.keys(os1).some(function (key) { return os2[key] && rangesOverlap(os2[key], os1[key]); });
     }
 
     var cache = {};
 
     var unsignaledParts = {};
     var isTaskEnqueued = false;
-    function signalSubscribersLazily(part) {
+    function signalSubscribersLazily(part, optimistic) {
         extendObservabilitySet(unsignaledParts, part);
         if (!isTaskEnqueued) {
             isTaskEnqueued = true;
-            queueMicrotask(function () {
+            setTimeout(function () {
                 isTaskEnqueued = false;
                 var parts = unsignaledParts;
                 unsignaledParts = {};
-                signalSubscribersNow(parts);
-            });
+                signalSubscribersNow(parts, false);
+            }, 0);
         }
     }
     function signalSubscribersNow(updatedParts, deleteAffectedCacheEntries) {
         if (deleteAffectedCacheEntries === void 0) { deleteAffectedCacheEntries = false; }
         var queriesToSignal = new Set();
-        for (var key in updatedParts) {
-            var parts = /^idb\:\/\/(.*)\/(.*)\//.exec(key);
-            if (parts) {
-                var dbName = parts[1], tableName = parts[2];
-                var tblCache = cache["idb://".concat(dbName, "/").concat(tableName)];
-                if (tblCache)
-                    signalTableSubscribersNow(tblCache, updatedParts, queriesToSignal, deleteAffectedCacheEntries);
+        if (updatedParts.all) {
+            for (var _i = 0, _a = Object.values(cache); _i < _a.length; _i++) {
+                var tblCache = _a[_i];
+                collectTableSubscribers(tblCache, updatedParts, queriesToSignal, deleteAffectedCacheEntries);
+            }
+        }
+        else {
+            for (var key in updatedParts) {
+                var parts = /^idb\:\/\/(.*)\/(.*)\//.exec(key);
+                if (parts) {
+                    var dbName = parts[1], tableName = parts[2];
+                    var tblCache = cache["idb://".concat(dbName, "/").concat(tableName)];
+                    if (tblCache)
+                        collectTableSubscribers(tblCache, updatedParts, queriesToSignal, deleteAffectedCacheEntries);
+                }
             }
         }
         queriesToSignal.forEach(function (requery) { return requery(); });
     }
-    function signalTableSubscribersNow(tblCache, updatedParts, outQueriesToSignal, deleteAffectedCacheEntries) {
-        var updatedEntryLists = deleteAffectedCacheEntries && [];
+    function collectTableSubscribers(tblCache, updatedParts, outQueriesToSignal, deleteAffectedCacheEntries) {
+        var updatedEntryLists = [];
         for (var _i = 0, _a = Object.entries(tblCache.queries.query); _i < _a.length; _i++) {
             var _b = _a[_i], indexName = _b[0], entries = _b[1];
-            var filteredEntries = deleteAffectedCacheEntries && [];
+            var filteredEntries = [];
             for (var _c = 0, entries_1 = entries; _c < entries_1.length; _c++) {
                 var entry = entries_1[_c];
-                if (entry.obsSet && obsSetsOverlap(updatedParts, entry.obsSet)) {
+                if (obsSetsOverlap(updatedParts, entry.obsSet)) {
                     entry.subscribers.forEach(function (requery) { return outQueriesToSignal.add(requery); });
                 }
                 else if (deleteAffectedCacheEntries) {
@@ -4006,80 +4030,109 @@
             return state.dbReadyPromise.then(function () { return state.dbOpenError ?
                 rejection(state.dbOpenError) :
                 db; });
-        debug && (state.openCanceller._stackHolder = getErrorWithStack());
         state.isBeingOpened = true;
         state.dbOpenError = null;
         state.openComplete = false;
         var openCanceller = state.openCanceller;
+        var nativeVerToOpen = Math.round(db.verno * 10);
+        var schemaPatchMode = false;
         function throwIfCancelled() {
             if (state.openCanceller !== openCanceller)
                 throw new exceptions.DatabaseClosed('db.open() was cancelled');
         }
         var resolveDbReady = state.dbReadyResolve,
         upgradeTransaction = null, wasCreated = false;
-        return DexiePromise.race([openCanceller, (typeof navigator === 'undefined' ? DexiePromise.resolve() : idbReady()).then(function () { return new DexiePromise(function (resolve, reject) {
-                throwIfCancelled();
-                if (!indexedDB)
-                    throw new exceptions.MissingAPI();
-                var dbName = db.name;
-                var req = state.autoSchema ?
-                    indexedDB.open(dbName) :
-                    indexedDB.open(dbName, Math.round(db.verno * 10));
-                if (!req)
-                    throw new exceptions.MissingAPI();
-                req.onerror = eventRejectHandler(reject);
-                req.onblocked = wrap(db._fireOnBlocked);
-                req.onupgradeneeded = wrap(function (e) {
-                    upgradeTransaction = req.transaction;
-                    if (state.autoSchema && !db._options.allowEmptyDB) {
-                        req.onerror = preventDefault;
-                        upgradeTransaction.abort();
-                        req.result.close();
-                        var delreq = indexedDB.deleteDatabase(dbName);
-                        delreq.onsuccess = delreq.onerror = wrap(function () {
-                            reject(new exceptions.NoSuchDatabase("Database ".concat(dbName, " doesnt exist")));
-                        });
+        var tryOpenDB = function () { return new DexiePromise(function (resolve, reject) {
+            throwIfCancelled();
+            if (!indexedDB)
+                throw new exceptions.MissingAPI();
+            var dbName = db.name;
+            var req = state.autoSchema || !nativeVerToOpen ?
+                indexedDB.open(dbName) :
+                indexedDB.open(dbName, nativeVerToOpen);
+            if (!req)
+                throw new exceptions.MissingAPI();
+            req.onerror = eventRejectHandler(reject);
+            req.onblocked = wrap(db._fireOnBlocked);
+            req.onupgradeneeded = wrap(function (e) {
+                upgradeTransaction = req.transaction;
+                if (state.autoSchema && !db._options.allowEmptyDB) {
+                    req.onerror = preventDefault;
+                    upgradeTransaction.abort();
+                    req.result.close();
+                    var delreq = indexedDB.deleteDatabase(dbName);
+                    delreq.onsuccess = delreq.onerror = wrap(function () {
+                        reject(new exceptions.NoSuchDatabase("Database ".concat(dbName, " doesnt exist")));
+                    });
+                }
+                else {
+                    upgradeTransaction.onerror = eventRejectHandler(reject);
+                    var oldVer = e.oldVersion > Math.pow(2, 62) ? 0 : e.oldVersion;
+                    wasCreated = oldVer < 1;
+                    db.idbdb = req.result;
+                    if (schemaPatchMode) {
+                        patchCurrentVersion(db, upgradeTransaction);
                     }
-                    else {
-                        upgradeTransaction.onerror = eventRejectHandler(reject);
-                        var oldVer = e.oldVersion > Math.pow(2, 62) ? 0 : e.oldVersion;
-                        wasCreated = oldVer < 1;
-                        db.idbdb = req.result;
-                        runUpgraders(db, oldVer / 10, upgradeTransaction, reject);
-                    }
-                }, reject);
-                req.onsuccess = wrap(function () {
-                    upgradeTransaction = null;
-                    var idbdb = db.idbdb = req.result;
-                    var objectStoreNames = slice(idbdb.objectStoreNames);
-                    if (objectStoreNames.length > 0)
-                        try {
-                            var tmpTrans = idbdb.transaction(safariMultiStoreFix(objectStoreNames), 'readonly');
-                            if (state.autoSchema)
-                                readGlobalSchema(db, idbdb, tmpTrans);
-                            else {
-                                adjustToExistingIndexNames(db, db._dbSchema, tmpTrans);
-                                if (!verifyInstalledSchema(db, tmpTrans)) {
-                                    console.warn("Dexie SchemaDiff: Schema was extended without increasing the number passed to db.version(). Some queries may fail.");
-                                }
+                    runUpgraders(db, oldVer / 10, upgradeTransaction, reject);
+                }
+            }, reject);
+            req.onsuccess = wrap(function () {
+                upgradeTransaction = null;
+                var idbdb = db.idbdb = req.result;
+                var objectStoreNames = slice(idbdb.objectStoreNames);
+                if (objectStoreNames.length > 0)
+                    try {
+                        var tmpTrans = idbdb.transaction(safariMultiStoreFix(objectStoreNames), 'readonly');
+                        if (state.autoSchema)
+                            readGlobalSchema(db, idbdb, tmpTrans);
+                        else {
+                            adjustToExistingIndexNames(db, db._dbSchema, tmpTrans);
+                            if (!verifyInstalledSchema(db, tmpTrans) && !schemaPatchMode) {
+                                console.warn("Dexie SchemaDiff: Schema was extended without increasing the number passed to db.version(). Dexie will add missing parts and increment native version number to workaround this.");
+                                idbdb.close();
+                                nativeVerToOpen = idbdb.version + 1;
+                                schemaPatchMode = true;
+                                return resolve(tryOpenDB());
                             }
-                            generateMiddlewareStacks(db, tmpTrans);
                         }
-                        catch (e) {
-                        }
-                    connections.push(db);
-                    idbdb.onversionchange = wrap(function (ev) {
-                        state.vcFired = true;
-                        db.on("versionchange").fire(ev);
-                    });
-                    idbdb.onclose = wrap(function (ev) {
-                        db.on("close").fire(ev);
-                    });
-                    if (wasCreated)
-                        _onDatabaseCreated(db._deps, dbName);
-                    resolve();
-                }, reject);
-            }); })]).then(function () {
+                        generateMiddlewareStacks(db, tmpTrans);
+                    }
+                    catch (e) {
+                    }
+                connections.push(db);
+                idbdb.onversionchange = wrap(function (ev) {
+                    state.vcFired = true;
+                    db.on("versionchange").fire(ev);
+                });
+                idbdb.onclose = wrap(function (ev) {
+                    db.on("close").fire(ev);
+                });
+                if (wasCreated)
+                    _onDatabaseCreated(db._deps, dbName);
+                resolve();
+            }, reject);
+        }).catch(function (err) {
+            switch (err === null || err === void 0 ? void 0 : err.name) {
+                case "UnknownError":
+                    if (state.PR1398_maxLoop > 0) {
+                        state.PR1398_maxLoop--;
+                        console.warn('Dexie: Workaround for Chrome UnknownError on open()');
+                        return tryOpenDB();
+                    }
+                    break;
+                case "VersionError":
+                    if (nativeVerToOpen > 0) {
+                        nativeVerToOpen = 0;
+                        return tryOpenDB();
+                    }
+                    break;
+            }
+            return DexiePromise.reject(err);
+        }); };
+        return DexiePromise.race([
+            openCanceller,
+            (typeof navigator === 'undefined' ? DexiePromise.resolve() : idbReady()).then(tryOpenDB)
+        ]).then(function () {
             throwIfCancelled();
             state.onReadyBeingFired = [];
             return DexiePromise.resolve(vip(function () { return db.on.ready.fire(db.vip); })).then(function fireRemainders() {
@@ -4164,12 +4217,13 @@
             else {
                 try {
                     trans.create();
+                    trans.idbtrans._explicit = true;
                     db._state.PR1398_maxLoop = 3;
                 }
                 catch (ex) {
                     if (ex.name === errnames.InvalidState && db.isOpen() && --db._state.PR1398_maxLoop > 0) {
                         console.warn('Dexie: Need to reopen db');
-                        db._close();
+                        db.close({ disableAutoOpen: false });
                         return db.open().then(function () { return enterTransactionScope(db, mode, storeNames, null, scopeFunc); });
                     }
                     return rejection(ex);
@@ -4581,9 +4635,11 @@
                 }, table: function (tableName) {
                     var table = core.table(tableName);
                     var schema = table.schema;
-                    var primaryKey = schema.primaryKey;
+                    var primaryKey = schema.primaryKey, indexes = schema.indexes;
                     var extractKey = primaryKey.extractKey, outbound = primaryKey.outbound;
+                    var indexesWithAutoIncPK = primaryKey.autoIncrement && indexes.filter(function (index) { return index.compound && index.keyPath.includes(primaryKey.keyPath); });
                     var tableClone = __assign(__assign({}, table), { mutate: function (req) {
+                            var _a, _b;
                             var trans = req.trans;
                             var mutatedParts = req.mutatedParts || (req.mutatedParts = {});
                             var getRangeSet = function (indexName) {
@@ -4594,18 +4650,18 @@
                             var pkRangeSet = getRangeSet("");
                             var delsRangeSet = getRangeSet(":dels");
                             var type = req.type;
-                            var _a = req.type === "deleteRange"
+                            var _c = req.type === "deleteRange"
                                 ? [req.range]
                                 : req.type === "delete"
                                     ? [req.keys]
                                     : req.values.length < 50
                                         ? [getEffectiveKeys(primaryKey, req).filter(function (id) { return id; }), req.values]
-                                        : [], keys = _a[0], newObjs = _a[1];
+                                        : [], keys = _c[0], newObjs = _c[1];
                             var oldCache = req.trans["_cache"];
                             if (isArray(keys)) {
                                 pkRangeSet.addKeys(keys);
                                 var oldObjs = type === 'delete' || keys.length === newObjs.length ? getFromTransactionCache(keys, oldCache) : null;
-                                if (!oldObjs && type !== "add") {
+                                if (!oldObjs) {
                                     delsRangeSet.addKeys(keys);
                                 }
                                 if (oldObjs || newObjs) {
@@ -4613,7 +4669,10 @@
                                 }
                             }
                             else if (keys) {
-                                var range = { from: keys.lower, to: keys.upper };
+                                var range = {
+                                    from: (_a = keys.lower) !== null && _a !== void 0 ? _a : core.MIN_KEY,
+                                    to: (_b = keys.upper) !== null && _b !== void 0 ? _b : core.MAX_KEY
+                                };
                                 delsRangeSet.add(range);
                                 pkRangeSet.add(range);
                             }
@@ -4625,6 +4684,16 @@
                             return table.mutate(req).then(function (res) {
                                 if (keys && (req.type === 'add' || req.type === 'put')) {
                                     pkRangeSet.addKeys(res.results);
+                                    if (indexesWithAutoIncPK) {
+                                        indexesWithAutoIncPK.forEach(function (idx) {
+                                            var idxVals = req.values.map(function (v) { return idx.extractKey(v); });
+                                            var pkPos = idx.keyPath.findIndex(function (prop) { return prop === primaryKey.keyPath; });
+                                            for (var i = 0, len = res.results.length; i < len; ++i) {
+                                                idxVals[i][pkPos] = res.results[i];
+                                            }
+                                            getRangeSet(idx.name).addKeys(idxVals);
+                                        });
+                                    }
                                 }
                                 trans.mutatedParts = extendObservabilitySet(trans.mutatedParts || {}, mutatedParts);
                                 return res;
@@ -4662,7 +4731,12 @@
                                 var pkRangeSet_1 = getRangeSet("");
                                 var delsRangeSet_1 = getRangeSet(":dels");
                                 var _a = readSubscribers[method](req), queriedIndex = _a[0], queriedRanges = _a[1];
-                                getRangeSet(queriedIndex.name || "").add(queriedRanges);
+                                if (method === 'query' && queriedIndex.isPrimaryKey && !req.values) {
+                                    delsRangeSet_1.add(queriedRanges);
+                                }
+                                else {
+                                    getRangeSet(queriedIndex.name || "").add(queriedRanges);
+                                }
                                 if (!queriedIndex.isPrimaryKey) {
                                     if (method === "count") {
                                         delsRangeSet_1.add(FULL_RANGE);
@@ -4752,6 +4826,30 @@
         schema.indexes.forEach(addAffectedIndex);
     }
 
+    function adjustOptimisticFromFailures(tblCache, req, res) {
+        if (res.numFailures === 0)
+            return req;
+        if (req.type === 'deleteRange') {
+            return null;
+        }
+        var numBulkOps = req.keys
+            ? req.keys.length
+            : 'values' in req && req.values
+                ? req.values.length
+                : 1;
+        if (res.numFailures === numBulkOps) {
+            return null;
+        }
+        var clone = __assign({}, req);
+        if (isArray(clone.keys)) {
+            clone.keys = clone.keys.filter(function (_, i) { return !(i in res.failures); });
+        }
+        if ('values' in clone && isArray(clone.values)) {
+            clone.values = clone.values.filter(function (_, i) { return !(i in res.failures); });
+        }
+        return clone;
+    }
+
     function isAboveLower(key, range) {
         return range.lower === undefined
             ? true
@@ -4774,44 +4872,67 @@
         if (!ops || ops.length === 0)
             return result;
         var index = req.query.index;
+        var multiEntry = index.multiEntry;
+        var queryRange = req.query.range;
         var primaryKey = table.schema.primaryKey;
         var extractPrimKey = primaryKey.extractKey;
         var extractIndex = index.extractKey;
         var extractLowLevelIndex = (index.lowLevelIndex || index).extractKey;
         var finalResult = ops.reduce(function (result, op) {
             var modifedResult = result;
-            var includedValues = op.type === 'add' || op.type === 'put'
-                ? op.values.filter(function (v) {
-                    return isWithinRange(extractIndex(v), req.query.range);
-                }).map(function (v) {
-                    v = deepClone(v);
-                    if (immutable)
-                        Object.freeze(v);
-                    return v;
-                })
-                : [];
+            var includedValues = [];
+            if (op.type === 'add' || op.type === 'put') {
+                var includedPKs = new RangeSet();
+                for (var i = op.values.length - 1; i >= 0; --i) {
+                    var value = op.values[i];
+                    var pk = extractPrimKey(value);
+                    if (includedPKs.hasKey(pk))
+                        continue;
+                    var key = extractIndex(value);
+                    if (multiEntry && isArray(key)
+                        ? key.some(function (k) { return isWithinRange(k, queryRange); })
+                        : isWithinRange(key, queryRange)) {
+                        includedPKs.addKey(pk);
+                        includedValues.push(value);
+                    }
+                }
+            }
             switch (op.type) {
-                case 'add':
+                case 'add': {
+                    var existingKeys_1 = new RangeSet().addKeys(req.values ? result.map(function (v) { return extractPrimKey(v); }) : result);
                     modifedResult = result.concat(req.values
-                        ? includedValues
-                        : includedValues.map(function (v) { return extractPrimKey(v); }));
+                        ? includedValues.filter(function (v) {
+                            var key = extractPrimKey(v);
+                            if (existingKeys_1.hasKey(key))
+                                return false;
+                            existingKeys_1.addKey(key);
+                            return true;
+                        })
+                        : includedValues
+                            .map(function (v) { return extractPrimKey(v); })
+                            .filter(function (k) {
+                            if (existingKeys_1.hasKey(k))
+                                return false;
+                            existingKeys_1.addKey(k);
+                            return true;
+                        }));
                     break;
-                case 'put':
+                }
+                case 'put': {
                     var keySet_1 = new RangeSet().addKeys(op.values.map(function (v) { return extractPrimKey(v); }));
                     modifedResult = result
-                        .filter(function (item) {
-                        var key = req.values ? extractPrimKey(item) : item;
-                        return !rangesOverlap(new RangeSet(key), keySet_1);
-                    })
-                        .concat(req.values
+                        .filter(
+                    function (item) { return !keySet_1.hasKey(req.values ? extractPrimKey(item) : item); })
+                        .concat(
+                    req.values
                         ? includedValues
                         : includedValues.map(function (v) { return extractPrimKey(v); }));
                     break;
+                }
                 case 'delete':
                     var keysToDelete_1 = new RangeSet().addKeys(op.keys);
                     modifedResult = result.filter(function (item) {
-                        var key = req.values ? extractPrimKey(item) : item;
-                        return !rangesOverlap(new RangeSet(key), keysToDelete_1);
+                        return !keysToDelete_1.hasKey(req.values ? extractPrimKey(item) : item);
                     });
                     break;
                 case 'deleteRange':
@@ -4957,15 +5078,27 @@
                                 for (var _i = 0, stores_1 = stores; _i < stores_1.length; _i++) {
                                     var storeName = stores_1[_i];
                                     var tblCache = cache["idb://".concat(dbName, "/").concat(storeName)];
-                                    var table = core.table(storeName);
                                     if (tblCache) {
+                                        var table = core.table(storeName);
                                         var ops = tblCache.optimisticOps.filter(function (op) { return op.trans === idbtrans; });
-                                        if (ops.length > 0) {
-                                            tblCache.optimisticOps = tblCache.optimisticOps.filter(function (op) { return op.trans !== idbtrans; });
+                                        if (idbtrans._explicit && wasCommitted && idbtrans.mutatedParts) {
                                             for (var _a = 0, _b = Object.values(tblCache.queries.query); _a < _b.length; _a++) {
                                                 var entries = _b[_a];
                                                 for (var _c = 0, _d = entries.slice(); _c < _d.length; _c++) {
                                                     var entry = _d[_c];
+                                                    if (obsSetsOverlap(entry.obsSet, idbtrans.mutatedParts)) {
+                                                        delArrayItem(entries, entry);
+                                                        entry.subscribers.forEach(function (requery) { return affectedSubscribers_1.add(requery); });
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else if (ops.length > 0) {
+                                            tblCache.optimisticOps = tblCache.optimisticOps.filter(function (op) { return op.trans !== idbtrans; });
+                                            for (var _e = 0, _f = Object.values(tblCache.queries.query); _e < _f.length; _e++) {
+                                                var entries = _f[_e];
+                                                for (var _g = 0, _h = entries.slice(); _g < _h.length; _g++) {
+                                                    var entry = _h[_g];
                                                     if (entry.res != null &&
                                                         idbtrans.mutatedParts
     ) {
@@ -5011,8 +5144,11 @@
                     var downTable = core.table(tableName);
                     var primKey = downTable.schema.primaryKey;
                     var tableMW = __assign(__assign({}, downTable), { mutate: function (req) {
+                            var trans = PSD.trans;
                             if (primKey.outbound ||
-                                PSD.trans.db._options.cache === 'disabled'
+                                trans.db._options.cache === 'disabled' ||
+                                trans.explicit ||
+                                trans.idbtrans.mode !== 'readwrite'
                             ) {
                                 return downTable.mutate(req);
                             }
@@ -5023,38 +5159,54 @@
                             if ((req.type === 'add' || req.type === 'put') && (req.values.length >= 50 || getEffectiveKeys(primKey, req).some(function (key) { return key == null; }))) {
                                 promise.then(function (res) {
                                     var reqWithResolvedKeys = __assign(__assign({}, req), { values: req.values.map(function (value, i) {
-                                            var valueWithKey = primKey.keyPath.includes('.')
+                                            var _a;
+                                            if (res.failures[i])
+                                                return value;
+                                            var valueWithKey = ((_a = primKey.keyPath) === null || _a === void 0 ? void 0 : _a.includes('.'))
                                                 ? deepClone(value)
                                                 : __assign({}, value);
                                             setByKeyPath(valueWithKey, primKey.keyPath, res.results[i]);
                                             return valueWithKey;
                                         }) });
-                                    tblCache.optimisticOps.push(reqWithResolvedKeys);
-                                    queueMicrotask(function () { return signalSubscribersLazily(req.mutatedParts); });
+                                    var adjustedReq = adjustOptimisticFromFailures(tblCache, reqWithResolvedKeys, res);
+                                    tblCache.optimisticOps.push(adjustedReq);
+                                    queueMicrotask(function () { return req.mutatedParts && signalSubscribersLazily(req.mutatedParts); });
                                 });
                             }
                             else {
                                 tblCache.optimisticOps.push(req);
-                                signalSubscribersLazily(req.mutatedParts);
+                                req.mutatedParts && signalSubscribersLazily(req.mutatedParts);
+                                promise.then(function (res) {
+                                    if (res.numFailures > 0) {
+                                        delArrayItem(tblCache.optimisticOps, req);
+                                        var adjustedReq = adjustOptimisticFromFailures(tblCache, req, res);
+                                        if (adjustedReq) {
+                                            tblCache.optimisticOps.push(adjustedReq);
+                                        }
+                                        req.mutatedParts && signalSubscribersLazily(req.mutatedParts);
+                                    }
+                                });
                                 promise.catch(function () {
                                     delArrayItem(tblCache.optimisticOps, req);
-                                    signalSubscribersLazily(req.mutatedParts);
+                                    req.mutatedParts && signalSubscribersLazily(req.mutatedParts);
                                 });
                             }
                             return promise;
                         }, query: function (req) {
+                            var _a;
                             if (!isCachableContext(PSD, downTable) || !isCachableRequest("query", req))
                                 return downTable.query(req);
-                            var freezeResults = PSD.trans.db._options.cache === 'immutable';
-                            var _a = PSD, requery = _a.requery, signal = _a.signal;
-                            var _b = findCompatibleQuery(dbName, tableName, 'query', req), cacheEntry = _b[0], exactMatch = _b[1], tblCache = _b[2], container = _b[3];
+                            var freezeResults = ((_a = PSD.trans) === null || _a === void 0 ? void 0 : _a.db._options.cache) === 'immutable';
+                            var _b = PSD, requery = _b.requery, signal = _b.signal;
+                            var _c = findCompatibleQuery(dbName, tableName, 'query', req), cacheEntry = _c[0], exactMatch = _c[1], tblCache = _c[2], container = _c[3];
                             if (cacheEntry && exactMatch) {
                                 cacheEntry.obsSet = req.obsSet;
                             }
                             else {
                                 var promise = downTable.query(req).then(function (res) {
                                     var result = res.result;
-                                    cacheEntry.res = result;
+                                    if (cacheEntry)
+                                        cacheEntry.res = result;
                                     if (freezeResults) {
                                         for (var i = 0, l = result.length; i < l; ++i) {
                                             Object.freeze(result[i]);
@@ -5150,7 +5302,8 @@
                 cancelOpen: nop,
                 openCanceller: null,
                 autoSchema: true,
-                PR1398_maxLoop: 3
+                PR1398_maxLoop: 3,
+                autoOpen: options.autoOpen,
             };
             state.dbReadyPromise = new DexiePromise(function (resolve) {
                 state.dbReadyResolve = resolve;
@@ -5199,7 +5352,6 @@
                 else
                     console.warn("Another connection wants to delete database '".concat(_this.name, "'. Closing db now to resume the delete request."));
                 _this.close({ disableAutoOpen: false });
-                _this._state.openComplete = false;
             });
             this.on("blocked", function (ev) {
                 if (!ev.newVersion || ev.newVersion < ev.oldVersion)
@@ -5267,7 +5419,7 @@
                     return reject(new exceptions.DatabaseClosed(_this._state.dbOpenError));
                 }
                 if (!_this._state.isBeingOpened) {
-                    if (!_this._options.autoOpen) {
+                    if (!_this._state.autoOpen) {
                         reject(new exceptions.DatabaseClosed());
                         return;
                     }
@@ -5313,30 +5465,42 @@
                 catch (e) { }
                 this.idbdb = null;
             }
-            state.dbReadyPromise = new DexiePromise(function (resolve) {
-                state.dbReadyResolve = resolve;
-            });
-            state.openCanceller = new DexiePromise(function (_, reject) {
-                state.cancelOpen = reject;
-            });
+            if (!state.isBeingOpened) {
+                state.dbReadyPromise = new DexiePromise(function (resolve) {
+                    state.dbReadyResolve = resolve;
+                });
+                state.openCanceller = new DexiePromise(function (_, reject) {
+                    state.cancelOpen = reject;
+                });
+            }
         };
         Dexie.prototype.close = function (_a) {
             var _b = _a === void 0 ? { disableAutoOpen: true } : _a, disableAutoOpen = _b.disableAutoOpen;
-            this._close();
             var state = this._state;
-            if (disableAutoOpen)
-                this._options.autoOpen = false;
-            state.dbOpenError = new exceptions.DatabaseClosed();
-            if (state.isBeingOpened)
-                state.cancelOpen(state.dbOpenError);
+            if (disableAutoOpen) {
+                if (state.isBeingOpened) {
+                    state.cancelOpen(new exceptions.DatabaseClosed());
+                }
+                this._close();
+                state.autoOpen = false;
+                state.dbOpenError = new exceptions.DatabaseClosed();
+            }
+            else {
+                this._close();
+                state.autoOpen = this._options.autoOpen ||
+                    state.isBeingOpened;
+                state.openComplete = false;
+                state.dbOpenError = null;
+            }
         };
-        Dexie.prototype.delete = function () {
+        Dexie.prototype.delete = function (closeOptions) {
             var _this = this;
-            var hasArguments = arguments.length > 0;
+            if (closeOptions === void 0) { closeOptions = { disableAutoOpen: true }; }
+            var hasInvalidArguments = arguments.length > 0 && typeof arguments[0] !== 'object';
             var state = this._state;
             return new DexiePromise(function (resolve, reject) {
                 var doDelete = function () {
-                    _this.close({ disableAutoOpen: false });
+                    _this.close(closeOptions);
                     var req = _this._deps.indexedDB.deleteDatabase(_this.name);
                     req.onsuccess = wrap(function () {
                         _onDatabaseDeleted(_this._deps, _this.name);
@@ -5345,8 +5509,8 @@
                     req.onerror = eventRejectHandler(reject);
                     req.onblocked = _this._fireOnBlocked;
                 };
-                if (hasArguments)
-                    throw new exceptions.InvalidArgument("Arguments not allowed in db.delete()");
+                if (hasInvalidArguments)
+                    throw new exceptions.InvalidArgument("Invalid closeOptions argument to db.delete()");
                 if (state.isBeingOpened) {
                     state.dbReadyPromise.then(doDelete);
                 }
@@ -5490,7 +5654,7 @@
                     }
                     var rv = newScope(querier, ctx);
                     if (scopeFuncIsAsync) {
-                        rv.finally(decrementExpectedAwaits);
+                        rv = rv.finally(decrementExpectedAwaits);
                     }
                     return rv;
                 }
@@ -5518,6 +5682,7 @@
             };
             observer.start && observer.start(subscription);
             var startedListening = false;
+            var doQuery = function () { return execInGlobalContext(_doQuery); };
             function shouldNotify() {
                 return obsSetsOverlap(currentObs, accumMuts);
             }
@@ -5527,7 +5692,7 @@
                     doQuery();
                 }
             };
-            var doQuery = function () {
+            var _doQuery = function () {
                 if (closed ||
                     !domDeps.indexedDB)
                  {
@@ -5558,17 +5723,20 @@
                         globalEvents(DEXIE_STORAGE_MUTATED_EVENT_NAME, mutationListener);
                         startedListening = true;
                     }
-                    observer.next && observer.next(result);
+                    execInGlobalContext(function () { return !closed && observer.next && observer.next(result); });
                 }, function (err) {
                     hasValue = false;
                     if (!['DatabaseClosedError', 'AbortError'].includes(err === null || err === void 0 ? void 0 : err.name)) {
-                        if (closed)
-                            return;
-                        observer.error && observer.error(err);
+                        if (!closed)
+                            execInGlobalContext(function () {
+                                if (closed)
+                                    return;
+                                observer.error && observer.error(err);
+                            });
                     }
                 });
             };
-            doQuery();
+            setTimeout(doQuery, 0);
             return subscription;
         });
         observable.hasValue = function () { return hasValue; };
@@ -5643,7 +5811,7 @@
         debug: {
             get: function () { return debug; },
             set: function (value) {
-                setDebug(value, value === 'dexie' ? function () { return true; } : dexieStackFrameFilter);
+                setDebug(value);
             }
         },
         derive: derive, extend: extend, props: props, override: override,
@@ -5663,15 +5831,9 @@
         globalEvents(DEXIE_STORAGE_MUTATED_EVENT_NAME, function (updatedParts) {
             if (!propagatingLocally) {
                 var event_1;
-                if (isIEOrEdge) {
-                    event_1 = document.createEvent('CustomEvent');
-                    event_1.initCustomEvent(STORAGE_MUTATED_DOM_EVENT_NAME, true, true, updatedParts);
-                }
-                else {
-                    event_1 = new CustomEvent(STORAGE_MUTATED_DOM_EVENT_NAME, {
-                        detail: updatedParts
-                    });
-                }
+                event_1 = new CustomEvent(STORAGE_MUTATED_DOM_EVENT_NAME, {
+                    detail: updatedParts
+                });
                 propagatingLocally = true;
                 dispatchEvent(event_1);
                 propagatingLocally = false;
@@ -5697,66 +5859,60 @@
     }
     var propagatingLocally = false;
 
+    var bc;
+    var createBC = function () { };
     if (typeof BroadcastChannel !== 'undefined') {
-        var bc_1 = new BroadcastChannel(STORAGE_MUTATED_DOM_EVENT_NAME);
-        if (typeof bc_1.unref === 'function') {
-            bc_1.unref();
+        createBC = function () {
+            bc = new BroadcastChannel(STORAGE_MUTATED_DOM_EVENT_NAME);
+            bc.onmessage = function (ev) { return ev.data && propagateLocally(ev.data); };
+        };
+        createBC();
+        if (typeof bc.unref === 'function') {
+            bc.unref();
         }
         globalEvents(DEXIE_STORAGE_MUTATED_EVENT_NAME, function (changedParts) {
             if (!propagatingLocally) {
-                bc_1.postMessage(changedParts);
+                bc.postMessage(changedParts);
             }
         });
-        bc_1.onmessage = function (ev) {
-            if (ev.data)
-                propagateLocally(ev.data);
-        };
     }
-    else if (typeof self !== 'undefined' && typeof navigator !== 'undefined') {
-        globalEvents(DEXIE_STORAGE_MUTATED_EVENT_NAME, function (changedParts) {
-            try {
-                if (!propagatingLocally) {
-                    if (typeof localStorage !== 'undefined') {
-                        localStorage.setItem(STORAGE_MUTATED_DOM_EVENT_NAME, JSON.stringify({
-                            trig: Math.random(),
-                            changedParts: changedParts,
-                        }));
-                    }
-                    if (typeof self['clients'] === 'object') {
-                        __spreadArray([], self['clients'].matchAll({ includeUncontrolled: true }), true).forEach(function (client) {
-                            return client.postMessage({
-                                type: STORAGE_MUTATED_DOM_EVENT_NAME,
-                                changedParts: changedParts,
-                            });
-                        });
-                    }
+
+    if (typeof addEventListener !== 'undefined') {
+        addEventListener('pagehide', function (event) {
+            if (!Dexie$1.disableBfCache && event.persisted) {
+                if (debug)
+                    console.debug('Dexie: handling persisted pagehide');
+                bc === null || bc === void 0 ? void 0 : bc.close();
+                for (var _i = 0, connections_1 = connections; _i < connections_1.length; _i++) {
+                    var db = connections_1[_i];
+                    db.close({ disableAutoOpen: false });
                 }
             }
-            catch (_a) { }
         });
-        if (typeof addEventListener !== 'undefined') {
-            addEventListener('storage', function (ev) {
-                if (ev.key === STORAGE_MUTATED_DOM_EVENT_NAME) {
-                    var data = JSON.parse(ev.newValue);
-                    if (data)
-                        propagateLocally(data.changedParts);
-                }
-            });
-        }
-        var swContainer = self.document && navigator.serviceWorker;
-        if (swContainer) {
-            swContainer.addEventListener('message', propagateMessageLocally);
-        }
+        addEventListener('pageshow', function (event) {
+            if (!Dexie$1.disableBfCache && event.persisted) {
+                if (debug)
+                    console.debug('Dexie: handling persisted pageshow');
+                createBC();
+                propagateLocally({ all: new RangeSet(-Infinity, [[]]) });
+            }
+        });
     }
-    function propagateMessageLocally(_a) {
-        var data = _a.data;
-        if (data && data.type === STORAGE_MUTATED_DOM_EVENT_NAME) {
-            propagateLocally(data.changedParts);
-        }
+
+    function add(value) {
+        return new PropModification({ add: value });
+    }
+
+    function remove(value) {
+        return new PropModification({ remove: value });
+    }
+
+    function replacePrefix(a, b) {
+        return new PropModification({ replacePrefix: [a, b] });
     }
 
     DexiePromise.rejectionMapper = mapError;
-    setDebug(debug, dexieStackFrameFilter);
+    setDebug(debug);
 
     var namedExports = /*#__PURE__*/Object.freeze({
         __proto__: null,
@@ -5764,6 +5920,11 @@
         liveQuery: liveQuery,
         Entity: Entity,
         cmp: cmp,
+        PropModSymbol: PropModSymbol,
+        PropModification: PropModification,
+        replacePrefix: replacePrefix,
+        add: add,
+        remove: remove,
         'default': Dexie$1,
         RangeSet: RangeSet,
         mergeRanges: mergeRanges,
