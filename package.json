@@ -21,7 +21,7 @@
     "@turf/convex": "^6.0.2",
     "@turf/length": "^6.0.2",
     "@turf/simplify": "^5.1.5",
-    "chromedriver": "128.0.0",
+    "chromedriver": "129.0.0",
     "geojson2svg": "^1.2.3",
     "handlebars": "^4.7.7",
     "jasmine-ajax": "^4.0.0",
