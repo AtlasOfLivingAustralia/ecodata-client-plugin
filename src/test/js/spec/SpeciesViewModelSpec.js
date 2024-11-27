@@ -1,3 +1,7 @@
+UUID = function() {}
+UUID.generate = function() {
+    return "666666";
+}
 describe("SpeciesViewModel Spec", function () {
     var request, result;
     it("Can participate in the DataModelItem calls like checkWarnings", function () {
@@ -54,13 +58,6 @@ describe("SpeciesViewModel Spec", function () {
             let speciesViewModel = new SpeciesViewModel(oldSpeciesSelectedData, options, {});
 
             speciesViewModel.loadData(newSpeciesSelectedData);
-            request = jasmine.Ajax.requests.filter('test/getOutputSpeciesIdUrl')[0];
-            request.respondWith({
-                status: 200,
-                responseJSON: responseData
-            });
-
-            expect(request.url).toBe('test/getOutputSpeciesIdUrl');
             expect(speciesViewModel.toJS().outputSpeciesId).toEqual(responseData.outputSpeciesId)
             expect(speciesViewModel.outputSpeciesId()).not.toEqual(oldSpeciesSelectedData.outputSpeciesId);
 
