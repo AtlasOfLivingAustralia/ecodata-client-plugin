@@ -220,7 +220,7 @@
                 }
 
             }).on(eventPrefix+'fail', function(e, data) {
-                error(data.errorThrown);
+                    error(data.errorThrown);
             });
 
             ko.applyBindingsToDescendants(innerContext, element);
@@ -400,6 +400,42 @@
                 return result;
             };
 
+            function onlineQuery(url, data) {
+                return $.ajax({
+                    url: url,
+                    dataType:'json',
+                    data: data
+                });
+            }
+
+            function offlineQuery(url, data) {
+                var deferred = $.Deferred()
+
+                if ( typeof URLSearchParams == 'function') {
+                    var paramIndex = url.indexOf('?'),
+                        paramsString = paramIndex > -1 ? url.substring(paramIndex + 1) : url,
+                        params = new URLSearchParams(paramsString),
+                        limit = parseInt(params.get('limit') || "10"),
+                        projectActivityId = params.get('projectActivityId'),
+                        dataFieldName = params.get('dataFieldName'),
+                        outputName = params.get('output');
+
+                    if (window.entities)
+                        return window.entities.searchSpecies(projectActivityId, dataFieldName, outputName, data, limit);
+                }
+
+                deferred.resolve({autoCompleteList: []});
+                return deferred.promise();
+            }
+
+            function searchSpecies(url, data) {
+                return isOffline().then(function () {
+                    return offlineQuery(url, data);
+                }, function () {
+                    return onlineQuery(url, data);
+                })
+            }
+
             options.source = function(request, response) {
                 $(element).addClass("ac_loading");
 
@@ -410,29 +446,22 @@
                 if (list) {
                     $.extend(data, {listId: list});
                 }
-                $.ajax({
-                    url: url,
-                    dataType:'json',
-                    data: data,
-                    success: function(data) {
-                        var items = $.map(data.autoCompleteList, function(item) {
-                            return {
-                                label:item.name,
-                                value: item.name,
-                                source: item
-                            }
-                        });
-                        items = [{label:"Missing or unidentified species", value:request.term, source: {listId:'unmatched', name: request.term}}].concat(items);
-                        response(items);
 
-                    },
-                    error: function() {
-                        items = [{label:"Error during species lookup", value:request.term, source: {listId:'error-unmatched', name: request.term}}];
-                        response(items);
-                    },
-                    complete: function() {
-                        $(element).removeClass("ac_loading");
-                    }
+                searchSpecies(url,data).then(function(data) {
+                    var items = $.map(data.autoCompleteList, function(item) {
+                        return {
+                            label:item.name,
+                            value: item.name,
+                            source: item
+                        }
+                    });
+                    items = [{label:"Missing or unidentified species", value:request.term, source: {listId:'unmatched', name: request.term}}].concat(items);
+                    response(items);
+                }).fail(function(e) {
+                    items = [{label:"Error during species lookup", value:request.term, source: {listId:'error-unmatched', name: request.term}}];
+                    response(items);
+                }).always(function() {
+                    $(element).removeClass("ac_loading");
                 });
             };
             options.select = function(event, ui) {

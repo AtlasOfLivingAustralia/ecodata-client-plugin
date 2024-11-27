@@ -8,6 +8,7 @@ class UrlMappings {
                 // apply constraints here
             }
         }
+        "/noop" (controller: "preview", action: "noop")
         "/preview" {
             controller = 'preview'
             action = [GET: 'index', POST: 'model']

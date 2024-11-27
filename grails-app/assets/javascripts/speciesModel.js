@@ -1,4 +1,4 @@
-
+//= require uuid.js
 
 var speciesFormatters = function() {
 
@@ -570,18 +570,21 @@ var SpeciesViewModel = function(data, options, context) {
     self.guidFromOutputSpeciesId = function(species) {
         if (species.outputSpeciesId) {
             self.outputSpeciesId(species.outputSpeciesId);
-            $.ajax({
-                url: options.getGuidForOutputSpeciesUrl+ "/" + species.outputSpeciesId,
-                type: 'GET',
-                contentType: 'application/json',
-                success: function (data) {
-                    self.transients.bieUrl(data.guid ? options.bieUrl + '/species/' + data.guid : options.bieUrl);
-                },
-                error: function (data) {
-                    bootbox.alert("Error retrieving species data, please try again later.");
-                }
+            isOffline().then(function() {
+                self.transients.bieUrl(species.guid ? options.bieUrl + '/species/' + species.guid : options.bieUrl);
+            }, function () {
+                $.ajax({
+                    url: options.getGuidForOutputSpeciesUrl+ "/" + species.outputSpeciesId,
+                    type: 'GET',
+                    contentType: 'application/json',
+                    success: function (data) {
+                        self.transients.bieUrl(data.guid ? options.bieUrl + '/species/' + data.guid : options.bieUrl);
+                    },
+                    error: function (data) {
+                        bootbox.alert("Error retrieving species data, please try again later.");
+                    }
+                });
             });
-
         }
     };
 
@@ -593,19 +596,7 @@ var SpeciesViewModel = function(data, options, context) {
         var idRequired = options.getOutputSpeciesIdUrl;
         if (idRequired && !self.outputSpeciesId() && self.guid()) {
             self.transients.bieUrl(options.bieUrl + '/species/' + self.guid());
-            $.ajax({
-                url: options.getOutputSpeciesIdUrl,
-                type: 'GET',
-                contentType: 'application/json',
-                success: function (data) {
-                    if (data.outputSpeciesId) {
-                        self.outputSpeciesId(data.outputSpeciesId);
-                    }
-                },
-                error: function (data) {
-                    bootbox.alert("Error retrieving species data, please try again later.");
-                }
-            });
+            self.outputSpeciesId(UUID.generate());
         }
     };
 
