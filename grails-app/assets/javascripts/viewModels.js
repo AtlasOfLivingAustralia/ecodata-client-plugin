@@ -515,7 +515,20 @@ function enmapify(args) {
             })[0];
             //search from site collection in case it is a private site
             if (!matchingSite) {
-                offlineGetSiteAndAddToSiteList(siteId)
+                fetchSite(siteId).done(function (result) {
+                    if (result.data) {
+                        var site = result.data;
+                        site.name='Location of the sighting';
+                        sitesObservable.push(site);
+                        matchingSite = site;
+                        map.clearBoundLimits();
+                        map.setGeoJSON(Biocollect.MapUtilities.featureToValidGeoJson(matchingSite.extent.geometry));
+                        // Reassign since siteIdObservable value is cleared when the site is not listed in sitesObservable.
+                        siteIdObservable(siteId);
+                    }
+                }).fail(function(result) {
+                    console.log(result.message);
+                });
             }
 
             // TODO: OPTIMISE THE PROCEDUE
