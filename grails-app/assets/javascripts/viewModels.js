@@ -22,7 +22,8 @@
 function enmapify(args) {
     "use strict";
 
-    var SITE_CREATE = 'sitecreate', SITE_PICK = 'sitepick', SITE_PICK_CREATE = 'sitepickcreate';
+    var SITE_CREATE = 'sitecreate', SITE_PICK = 'sitepick', SITE_PICK_CREATE = 'sitepickcreate',
+        SITE_NAME='Location of the sighting';
     var viewModel = args.viewModel,
         container = args.container,
         validationContainer = args.validationContainer || '#validation-container',
@@ -38,8 +39,10 @@ function enmapify(args) {
         getSiteUrl = activityLevelData.getSiteUrl || args.getSiteUrl,
         checkPointUrl = activityLevelData.checkPointUrl || args.checkPointUrl,
         context = args.context,
+        enableOffline = args.enableOffline || context.enableOffline || false,
         uniqueNameUrl = (activityLevelData.uniqueNameUrl || args.uniqueNameUrl) + "/" + ( activityLevelData.pActivity.projectActivityId || activityLevelData.pActivity.projectId),
         projectId = activityLevelData.pActivity.projectId,
+        projectActivityId = activityLevelData.pActivity.projectActivityId,
         // hideSiteSelection is now dependent on survey's mapConfiguration
         // check viewModel.transients.hideSiteSelection
         project = args.activityLevelData.project || {},
@@ -63,7 +66,7 @@ function enmapify(args) {
         centroidLatObservable = container[name + "CentroidLatitude"] = ko.observable(),
         centroidLonObservable = container[name + "CentroidLongitude"] = ko.observable(),
         //siteObservable filters out all private sites
-        sitesObservable = ko.observableArray(resolveSites(mapConfiguration.sites)),
+        sitesObservable = ko.observableArray(resolveSites(mapConfiguration.sites, true, siteIdObservable())),
         //container[SitesArray] does not care about 'private' or not, only check if the site matches the survey configs
         surveySupportedSitesObservable = container[name + "SitesArray"] =  ko.computed(function(){
             return sitesObservable();
@@ -93,7 +96,21 @@ function enmapify(args) {
         };
 
     viewModel.mapElementId = name + "Map";
-
+    activityLevelData.UTILS = {
+        getProjectActivitySites: function () {
+            if (enableOffline) {
+                return isOffline().then(function () {
+                    return offlineGetProjectActivitySites();
+                },
+                function () {
+                    return onlineGetProjectActivitySites();
+                });
+            }
+            else {
+                return onlineGetProjectActivitySites();
+            }
+        }
+    };
     // add event handling functions
     if(!viewModel.on){
         new Emitter(viewModel);
@@ -168,6 +185,19 @@ function enmapify(args) {
     }
 
     function canAddPointToMap (lat, lng, callback) {
+        if (enableOffline) {
+            isOffline().then( function () {
+                offlineCanAddPointToMap(lat, lng, callback);
+            }, function () {
+                onlineCanAddPointToMap(lat, lng, callback);
+            });
+        }
+        else {
+            onlineCanAddPointToMap(lat, lng, callback);
+        }
+    }
+
+    function onlineCanAddPointToMap(lat, lng, callback) {
         var url = checkPointUrl + '?lat=' + lat + '&lng=' + lng + '&projectId=' + projectId;
         showLoadingOnCoordinateCheck(true);
         $.ajax({
@@ -186,6 +216,10 @@ function enmapify(args) {
                 showLoadingOnCoordinateCheck(false);
             }
         });
+    }
+
+    function offlineCanAddPointToMap(lat, lng, callback) {
+        callback({isPointInsideProjectArea: true});
     }
 
     viewModel.transients.hideSiteSelection = ko.computed(function () {
@@ -466,6 +500,7 @@ function enmapify(args) {
      * @param siteId
      */
     function updateMapForSite(siteId) {
+        console.trace(`Updating map for site ${siteId}`);
         if (typeof siteId !== "undefined" && siteId) {
             if (lonObservable()) {
                 previousLonObservable(lonObservable());
@@ -479,34 +514,30 @@ function enmapify(args) {
                 return siteId == site.siteId
             })[0];
             //search from site collection in case it is a private site
-            if (!matchingSite){
-                var siteUrl = getSiteUrl + '/' + siteId + ".json"
-                //It is a sync call
-                $.ajax({
-                    type: "GET",
-                    url: siteUrl,
-                    async: false,
-                    success: function (data) {
-                        if (data.site){
-                            var geoType =  data.site.extent.source;
-                            data.site.name='Location of the sighting';
-                            sitesObservable.push(data.site);
-                            matchingSite = data.site;
-                            map.clearBoundLimits();
-                            map.setGeoJSON(Biocollect.MapUtilities.featureToValidGeoJson(matchingSite.extent.geometry));
-                        }
-                    },
-                    error: function(xhr) {
-                        console.log(xhr);
+            if (!matchingSite) {
+                fetchSite(siteId).done(function (result) {
+                    if (result.data) {
+                        var site = result.data;
+                        site.name='Location of the sighting';
+                        sitesObservable.push(site);
+                        matchingSite = site;
+                        map.clearBoundLimits();
+                        map.setGeoJSON(Biocollect.MapUtilities.featureToValidGeoJson(matchingSite.extent.geometry));
+                        // Reassign since siteIdObservable value is cleared when the site is not listed in sitesObservable.
+                        siteIdObservable(siteId);
                     }
+                }).fail(function(result) {
+                    console.log(result.message);
                 });
             }
+
             // TODO: OPTIMISE THE PROCEDUE
-            if (matchingSite) {
+            else if (matchingSite) {
                 console.log("Clearing map before displaying a new shape")
                 map.clearBoundLimits();
                 map.setGeoJSON(Biocollect.MapUtilities.featureToValidGeoJson(matchingSite.extent.geometry));
             }
+
         } else {
             // Keep the previous code to make compatible with old records
             // Can be removed after all data be migrated.
@@ -521,10 +552,129 @@ function enmapify(args) {
         }
     }
 
-    function getProjectArea() {
-        return $.grep(activityLevelData.pActivity.sites, function (item) {
-            return item.name.indexOf('Project area for') == 0
+    function offlineGetSiteAndAddToSiteList(siteId) {
+        addFakeSiteObject(siteId);
+        offlineFetchSite(siteId).then(function (result) {
+            var site = result.data;
+            if (site) {
+                site.name = site.name || SITE_NAME;
+                sitesObservable.push(site);
+                nameObservable(site.name);
+                map.clearBoundLimits();
+                map.setGeoJSON(Biocollect.MapUtilities.featureToValidGeoJson(site.extent.geometry));
+
+                subscribeOrDisposeSiteIdObservable(false);
+                siteIdObservable(siteId);
+                removeFakeSiteObject(siteId);
+                subscribeOrDisposeSiteIdObservable(true);
+            }
         });
+    }
+
+    /**
+     * Adding fake object so that knockout select binding does not rewrite siteIdObservable due to it not finding
+     * site object in sitesObservable.
+     * @param siteId
+     */
+    function addFakeSiteObject (siteId) {
+        sitesObservable.push({
+            siteId: siteId,
+            name: SITE_NAME,
+            fakeObject: true,
+            extent:{
+                geometry: {
+                    type: ALA.MapConstants.DRAW_TYPE.POINT_TYPE
+                }
+            }
+        });
+    }
+
+    function removeFakeSiteObject (siteId) {
+        var sites = $.grep(sitesObservable(), function (site) {
+            return (siteId == site.siteId) && (site.fakeObject === true);
+        });
+
+        sites.forEach(function (site) {
+            sitesObservable.remove(site);
+        });
+    }
+
+    function fetchSite(siteId) {
+        if (enableOffline) {
+            if (isUuid(siteId)) {
+                return isOffline().then(function () {
+                    return offlineFetchSite(siteId);
+                }, function () {
+                    return onlineFetchSite(siteId);
+                });
+            }
+            else {
+                return offlineFetchSite(siteId);
+            }
+        }
+        else {
+            return onlineFetchSite(siteId);
+        }
+    }
+
+    function onlineFetchSite(siteId) {
+        var siteUrl = getSiteUrl + '/' + siteId + ".json?view=brief",
+            deferred = $.Deferred();
+        $.ajax({
+            url: siteUrl,
+            success: function (data) {
+                if (data.site) {
+                    deferred.resolve({message: "Found site", success: true, data: data.site});
+                }
+                else {
+                    deferred.reject({message: "Could not find site", success: false});
+                }
+            },
+            error: function () {
+                offlineFetchSite(siteId).then(function (result) {
+                    deferred.resolve(result);
+                }, function () {
+                    deferred.reject({message: "Failed to fetch site", success: false, arguments: arguments});
+                });
+            }
+        });
+
+        return deferred.promise()
+    }
+
+    function offlineFetchSite(siteId) {
+        var deferred = $.Deferred();
+
+        if (window.entities) {
+            entities.offlineGetSite(siteId).then(deferred.resolve, deferred.reject);
+        } else {
+            deferred.reject({message: "No offline database available", success: false});
+        }
+
+        return deferred.promise();
+    }
+
+    function offlineGetProjectActivitySites () {
+        var deferred = $.Deferred();
+        if (window.entities) {
+            entities.offlineFetchProjectActivity(projectActivityId).then(function (result) {
+                if (result.data)
+                    deferred.resolve({data: result.data.sites});
+                else
+                    deferred.reject({message: "Failed to get project activity", success: false});
+            }, deferred.reject);
+        } else {
+            deferred.reject({message: "Failed to get project activity", success: false});
+        }
+
+        return deferred.promise()
+    }
+
+    function onlineGetProjectActivitySites () {
+        var deferred = $.Deferred();
+        var sites = activityLevelData.pActivity.sites || [];
+        deferred.resolve({message: "Found sites", success: true, data: sites});
+        return deferred.promise();
     }
 
     function createGeoJSON(geoJSON, layerOptions) {
@@ -672,8 +822,8 @@ function enmapify(args) {
     function createPublicSite() {
         subscribeOrDisposeSiteIdObservable(false);
         siteIdObservable(null);
-        Biocollect.Modals.showModal({
-            viewModel: new AddSiteViewModel(uniqueNameUrl)
+        return Biocollect.Modals.showModal({
+            viewModel: new AddSiteViewModel(uniqueNameUrl, activityLevelData, enableOffline)
         }).then(function (newSite) {
             loadingObservable(true);
             var extent = convertGeoJSONToExtent(map.getGeoJSON());
@@ -687,20 +837,21 @@ function enmapify(args) {
                     ],
                     extent: extent
                 }
-            }).then(function (data, jqXHR, textStatus) {
+            })
+            .then(function (data, jqXHR, textStatus) {
                 return reloadSiteData().then(function () {
                     return data.id
                 })
             })
-                .done(function (id) {
-                    siteIdObservable(id);
-                })
-                .fail(saveSiteFailed)
-                .always(function () {
-                    $.unblockUI();
-                    loadingObservable(false);
-                    subscribeOrDisposeSiteIdObservable(true);
-                });
+            .then(function (id) {
+                siteIdObservable(id);
+            })
+            .catch(saveSiteFailed)
+            .always(function () {
+                $.unblockUI();
+                loadingObservable(false);
+                subscribeOrDisposeSiteIdObservable(true);
+            });
         }).fail(function(){
             enableEditMode()
             subscribeOrDisposeSiteIdObservable(true);
@@ -738,32 +889,32 @@ function enmapify(args) {
 
         blockUIWithMessage("Updating, please stand by...");
         addSite({
-                pActivityId: activityLevelData.pActivity.projectActivityId,
-                site: site}
-            ).then(function (data, jqXHR, textStatus) {
-                    var anonymousSiteId= data.id;
-                        //IMPORTANT
-                        //sites is a data-bind source for the selection dropdown list and bound to activity-output-data-location
-                        //if the new created site id is not in this list, then the location would be empty
-                        var geometryType =  extent.geometry.type;
-                        var anonymousSite = {
-                         name: 'The '+ geometryType + ' you created.',
-                         siteId: anonymousSiteId,
-                         extent: extent,
-                         visibility: "private"
-                        }
-                    sitesObservable.remove(function(site){
-                        return site.visibility == 'private';
-                    })
-                    sitesObservable.push(anonymousSite);
-                    siteIdObservable(anonymousSiteId);
-                 })
-            .always(function () {
-                $.unblockUI();
-                loadingObservable(false);
-                subscribeOrDisposeSiteIdObservable(true);
+            pActivityId: activityLevelData.pActivity.projectActivityId,
+            site: site
+        }).then(function (data, jqXHR, textStatus) {
+            var anonymousSiteId= data.id;
+                //IMPORTANT
+                //sites is a data-bind source for the selection dropdown list and bound to activity-output-data-location
+                //if the new created site id is not in this list, then the location would be empty
+                var geometryType =  extent.geometry.type;
+                var anonymousSite = {
+                 name: 'The '+ geometryType + ' you created.',
+                 siteId: anonymousSiteId,
+                 extent: extent,
+                 visibility: "private"
+                }
+            sitesObservable.remove(function(site){
+                return site.visibility == 'private';
             })
-            .fail(saveSiteFailed)
+            sitesObservable.push(anonymousSite);
+            siteIdObservable(anonymousSiteId);
+        })
+        .always(function () {
+            $.unblockUI();
+            loadingObservable(false);
+            subscribeOrDisposeSiteIdObservable(true);
+        })
+        .fail(saveSiteFailed)
     }
 
     /**
@@ -787,6 +938,19 @@ function enmapify(args) {
     }
 
     function addSite(site) {
+        if (enableOffline) {
+            return isOffline().then(function () {
+                return offlineAddSite(site);
+            }, function () {
+                return onlineAddSite(site);
+            });
+        }
+        else {
+            return onlineAddSite(site);
+        }
+    }
+
+    function onlineAddSite(site) {
         var siteId = site['site'].siteId
         site['site']['asyncUpdate'] = true;  // aysnc update Metadata service for performance improvement
 
@@ -797,6 +961,81 @@ function enmapify(args) {
             contentType: 'application/json',
             dataType: 'json'
         });
+    }
+
+    function offlineAddSite (data) {
+        var site = data.site,
+            projectId = data.projectId,
+            projectActivityId = data.pActivityId;
+
+        if (projectActivityId) {
+            return offlineAddSiteToProjectActivity(site, projectActivityId);
+        }
+        // todo : add site to project
+        // else if(projectId) {
+        //     return offlineAddSiteToProject(site, projectId);
+        // }
+    }
+
+    function offlineAddSiteToProjectActivity (site, projectActivityId) {
+        var deferred = $.Deferred();
+
+        site.entityUpdated = true;
+        offlineSaveSite(site).then(function (result) {
+            var siteId = result.data;
+            offlineAddSiteIdToProjectActivity(siteId, projectActivityId).then(function () {
+                // adding id to resolve parameter to be consistent with result returned from ajax call
+                deferred.resolve({message: "Site and project activity saved offline.", success: true, data: siteId, id: siteId});
+            }, function () {
+                deferred.reject({message: "Site failed to save offline.", success: false});
+            });
+        });
+
+        return deferred.promise();
+    }
+
+    function offlineSaveSite(site) {
+        var deferred = $.Deferred();
+        if (window.entities) {
+            entities.saveSite(site).then(deferred.resolve, deferred.reject);
+        }
+        else {
+            deferred.reject({message: "Site failed to save offline.", success: false});
+        }
+
+        return deferred.promise();
+    };
+
+    function offlineSaveProjectActivity (pa) {
+        var deferred = $.Deferred();
+
+        if(window.entities){
+            entities.saveProjectActivity(pa).then(deferred.resolve, deferred.reject);
+        }
+        else {
+            deferred.reject({message: "Project activity failed to save offline.", success: false});
+        }
+
+        return deferred.promise();
+    }
+
+    function offlineAddSiteIdToProjectActivity (siteId, pActivityId) {
+        var deferred = $.Deferred();
+        if (window.entities) {
+            entities.offlineFetchProjectActivity(pActivityId).then(function (result) {
+                var pActivity = result.data;
+                pActivity.sites = pActivity.sites || [];
+                pActivity.sites.push(siteId);
+                entities.saveProjectActivity(pActivity).then(function () {
+                    deferred.resolve({message: "Project activity updated offline.", success: true, data: pActivityId});
+                }, function (){
+                    console.log("failed to save PA");
+                    deferred.reject();
+                });
+            })
+        }
+
+        return deferred.promise();
     }
 
     function saveSiteFailed(jqXHR, textStatus, errorThrown) {
@@ -903,11 +1142,86 @@ function enmapify(args) {
         return type;
     }
 
+    function mergeSitesObservable(sites) {
+        var originalSites = sitesObservable(),
+            updatedSites = [];
+
+        for (var i = 0; i < sites.length; i++) {
+            var site = sites[i], originalIndex;
+            var originalSite = $.grep(originalSites, function (s, index) {
+                if (s.siteId === site.siteId){
+                    originalIndex = index;
+                    return true;
+                }
+            })[0];
+
+            if (originalSite) {
+                updatedSites.push(site);
+                originalSites.splice(originalIndex, 1);
+            } else {
+                updatedSites.push(site);
+            }
+        }
+
+        if (originalSites.length > 0) {
+            updatedSites.push.apply(updatedSites, originalSites);
+        }
+
+        sitesObservable(updatedSites);
+    }
+
     function reloadSiteData() {
+        if (enableOffline) {
+            return isOffline().then(function () {
+                return offlineReloadSiteData();
+            }, function () {
+                return onlineReloadSiteData();
+            });
+        }
+        else {
+            return onlineReloadSiteData();
+        }
+    }
+
+    function onlineReloadSiteData() {
         var entityType = activityLevelData.pActivity.projectActivityId ? "projectActivity" : "project"
         return $.getJSON(listSitesUrl + '/' + (activityLevelData.pActivity.projectActivityId || activityLevelData.pActivity.projectId) + "?entityType=" + entityType).then(function (data, textStatus, jqXHR) {
-            sitesObservable(data);
+            mergeSitesObservable(data);
         });
+    }
+
+    function offlineReloadSiteData() {
+        var deferred = $.Deferred();
+        var entityType = activityLevelData.pActivity.projectActivityId ? "projectActivity" : "project"
+        switch (entityType) {
+            case "projectActivity":
+                activityLevelData.UTILS.getProjectActivitySites().then(function (result) {
+                    var siteIds = result.data;
+                    siteIds = getSiteIdForSites(siteIds);
+                    if (window.entities) {
+                        entities.offlineGetSites(siteIds).then(function (result) {
+                            var sites = result.data;
+                            mergeSitesObservable(sites);
+                            deferred.resolve({message: "Sites retrieved from db.", success: true, data: sites});
+                        }, deferred.reject);
+                    }
+                    else
+                        deferred.reject({message: "An error occurred while retrieving sites from db.", success: false});
+                });
+                break;
+            case "project":
+                if (window.entities) {
+                   entities.offlineGetSitesForProject(projectId).then(function (sites) {
+                       mergeSitesObservable(sites);
+                       deferred.resolve({message: "Sites retrieved from db.", success: true, data: sites});
+                   }, deferred.reject);
+                }
+                else {
+                    deferred.reject({message: "An error occurred while retrieving sites from db.", success: false});
+                }
+                break;
+        }
+        return deferred.promise();
     }
 
     loadingObservable.subscribe(function (value) {
@@ -917,30 +1231,33 @@ function enmapify(args) {
     function zoomToDefaultSite(){
         var defaultZoomArea = project.projectSiteId;
         if (!siteIdObservable()){
-            var defaultsite  = $.grep(activityLevelData.pActivity.sites,function(site){
-                if(site.siteId == defaultZoomArea)
-                    return site;
-            });
-            // Is zoom area a project area?
-            if( (defaultsite.length == 0) && (defaultZoomArea == project.projectSiteId) && project.sites) {
-                defaultsite = $.grep(project.sites,function(site){
+            return activityLevelData.UTILS.getProjectActivitySites().then(function (result) {
+                var sites = result.data;
+                var defaultsite  = $.grep(sites, function(site){
                     if(site.siteId == defaultZoomArea)
                         return site;
                 });
-            }
+                // Is zoom area a project area?
+                if ((defaultsite.length == 0) && (defaultZoomArea == project.projectSiteId) && project.sites) {
+                    defaultsite = $.grep(project.sites,function(site){
+                        if(site.siteId == defaultZoomArea)
+                            return site;
+                    });
+                }
 
-            var geojson;
-            if (defaultsite.length>0) {
-                geojson = Biocollect.MapUtilities.featureToValidGeoJson(defaultsite[0].extent.geometry);
-                map.clearBoundLimits();
-                map.fitToBoundsOf(geojson);
-                return defaultsite[0].siteId;
-            }
-
+                var geojson;
+                if (defaultsite.length>0) {
+                    geojson = Biocollect.MapUtilities.featureToValidGeoJson(defaultsite[0].extent.geometry);
+                    map.clearBoundLimits();
+                    map.fitToBoundsOf(geojson);
+                    return defaultsite[0].siteId;
+                }
+            })
         }
     }
 
-    zoomToDefaultSite();
+    // fetch sites associated and load to sitesObservable
+    reloadSiteData().then(zoomToDefaultSite);
 
     // Redraw map since it was created on a hidden element.
     $(validationContainer).on('knockout-visible', function () {
@@ -960,18 +1277,21 @@ function enmapify(args) {
         createPrivateSite: createPrivateSite,
         viewModel: viewModel,
         zoomToDefaultSite: zoomToDefaultSite,
-        shouldMarkerMove: shouldMarkerMove
+        shouldMarkerMove: shouldMarkerMove,
+        map: map
     };
 }
 
-var AddSiteViewModel = function (uniqueNameUrl) {
+var AddSiteViewModel = function (uniqueNameUrl, activityLevelData, enableOffline) {
     var self = this;
     self.uniqueNameUrl = uniqueNameUrl;
 
+    self.enableOffline = enableOffline || false;
     self.inflight = null;
     self.name = ko.observable();
     self.throttledName = ko.computed(this.name).extend({throttle: 400});
     self.nameStatus = ko.observable(AddSiteViewModel.NAME_STATUS.BLANK);
+    self.activityLevelData = activityLevelData;
 
     self.name.subscribe(function (name) {
         self.precheckUniqueName(name);
@@ -1005,7 +1325,7 @@ AddSiteViewModel.prototype.cancel = function () {
 };
 
 AddSiteViewModel.prototype.precheckUniqueName = function (name) {
-    if (this.inflight) this.inflight.abort();
+    if (this.inflight) this.inflight.abort && this.inflight.abort();
 
     this.nameStatus(name === '' ? AddSiteViewModel.NAME_STATUS.BLANK : AddSiteViewModel.NAME_STATUS.CHECKING);
 };
@@ -1015,10 +1335,12 @@ AddSiteViewModel.prototype.checkUniqueName = function (name) {
 
     if (name === '') return;
 
-    self.inflight = $.getJSON(self.uniqueNameUrl + "?name=" + encodeURIComponent(name) + "&entityType=" + (activityLevelData.pActivity.projectActivityId ? "projectActivity" : "project"))
-        .done(function (data, textStatus, jqXHR) {
+    self.inflight = siteNameCheck();
+    self.inflight
+        .then(function (data, textStatus, jqXHR) {
             self.nameStatus(AddSiteViewModel.NAME_STATUS.OK);
-        }).fail(function (jqXHR, textStatus, errorThrown) {
+        })
+        .catch(function (jqXHR, textStatus, errorThrown) {
             if (errorThrown === 'abort') {
                 console.log('abort');
                 return;
@@ -1030,11 +1352,62 @@ AddSiteViewModel.prototype.checkUniqueName = function (name) {
                     break;
                 default:
                     self.nameStatus(AddSiteViewModel.NAME_STATUS.ERROR);
-                    bootbox.alert("An error occured checking your name.");
+                    bootbox.alert("An error occurred checking site name.");
                     console.error("Error checking unique status", jqXHR, textStatus, errorThrown);
             }
         });
+    function siteNameCheck() {
+        var forceOffline = true;
+        if (self.enableOffline) {
+            return isOffline().then(function () {
+                return offlineSiteNameCheck()
+            }, function () {
+                return onlineSiteNameCheck()
+            });
+        }
+        else {
+            return onlineSiteNameCheck();
+        }
+    }
+
+    function onlineSiteNameCheck() {
+        return  $.getJSON(self.uniqueNameUrl + "?name=" + encodeURIComponent(name) + "&entityType=" + (activityLevelData.pActivity.projectActivityId ? "projectActivity" : "project"))
+    }
+
+    function offlineSiteNameCheck () {
+
+        var deferred = $.Deferred(),
+            entityType = self.activityLevelData.pActivity.projectActivityId ? "projectActivity" : "project";
+
+        switch (entityType) {
+            default:
+            case "projectActivity":
+            case "project":
+                if (window.entities) {
+                    entities.offlineCheckSiteWithName(activityLevelData.pActivity.projectId, name, countHandler)
+                }
+                else {
+                    deferred.reject({status: 409});
+                }
+                break;
+        }
+
+        function countHandler(count) {
+            count > 0 ? deferred.reject({status: 409}) : deferred.resolve();
+        }
+        return deferred.promise();
+    }
 };
+
+AddSiteViewModel.UTILS = {
+    getSiteIds : function (sites) {
+    var siteIds = [];
+    sites.forEach(function(site){
+        siteIds.push(site.siteId);
+    });
+
+    return siteIds;
+}};
 
 function validator_site_check(field, rules, i, options){
     field = field && field[0];
