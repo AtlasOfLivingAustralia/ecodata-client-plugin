@@ -1186,7 +1186,7 @@ function orEmptyArray(v) {
             dataType: 'json',
             uploadTemplateId: listName + "template-upload",
             downloadTemplateId: listName + "template-download",
-            formData: {type: context.outputModel.name, listName: listName}
+            formData: {type: context.outputModel.name, listName: listName,  activityForm: activityForm, formVersion: formVersion}
 
         };
         self.uploadFailed = function (message) {
