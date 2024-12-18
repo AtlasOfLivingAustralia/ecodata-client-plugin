@@ -1103,6 +1103,8 @@ function orEmptyArray(v) {
         var parent = context.parent;
         var listName = context.listName;
         var modelName = context.outputModel.name;
+        var activityForm = context.activity && context.activity.type;
+        var formVersion = context.activity && context.activity.formVersion;
 
         self.listParent = context.parent;
         self.listName = listName;
@@ -1131,7 +1133,10 @@ function orEmptyArray(v) {
         self.downloadTemplate = function () {
             // Download a blank template if we are appending, otherwise download a template containing the existing data.
             if (self.appendTableRows()) {
-                var url = config.excelOutputTemplateUrl + '?listName=' + listName + '&type=' + modelName;
+                var url = config.excelOutputTemplateUrl + '?listName=' + listName + '&activityForm='+activityForm+'&type=' + modelName;
+                if (formVersion) {
+                    url+= '&formVersion=' + formVersion;
+                }
                 $.fileDownload(url)
                     .fail(function (error){
                             bootbox.alert('File download failed! ' + error);
@@ -1155,10 +1160,12 @@ function orEmptyArray(v) {
                 type: modelName,
                 editMode: editMode || false,
                 allowExtraRows: userAddedRows || false,
+                activityForm: activityForm,
+                formVersion: formVersion,
                 data: JSON.stringify(data)
             };
             var url = config.excelOutputTemplateUrl;
-            $.fileDownload(url, {
+            return $.fileDownload(url, {
                 httpMethod: 'POST',
                 data: params
             });
