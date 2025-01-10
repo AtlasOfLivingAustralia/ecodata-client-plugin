@@ -352,7 +352,7 @@ var SpeciesViewModel = function(data, options, context) {
         }
 
         if (self.guid() && !options.printable) {
-            if (SPECIAL_GUIDS.indexOf(self.guid()) === -1) {
+            if (SPECIAL_GUIDS.indexOf(self.guid()) >= 0) {
                 var profileInfo = "No profile available";
                 self.transients.speciesInformation(profileInfo);
             }
