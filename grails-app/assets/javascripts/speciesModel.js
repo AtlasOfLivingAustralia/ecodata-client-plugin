@@ -222,7 +222,7 @@ var speciesSearchEngines = function() {
  * Allows species information to be searched for and displayed.
  */
 var SpeciesViewModel = function(data, options, context) {
-
+    var SPECIAL_GUIDS = ['A_GUID'];
     var self = this;
     ecodata.forms.DataModelItem.apply(self, [options.metadata || {}, context, options]);
 
@@ -352,29 +352,33 @@ var SpeciesViewModel = function(data, options, context) {
         }
 
         if (self.guid() && !options.printable) {
+            if (SPECIAL_GUIDS.indexOf(self.guid()) === -1) {
+                var profileInfo = "No profile available";
+                self.transients.speciesInformation(profileInfo);
+            }
+            else {
+                var profileUrl = options.bieUrl + '/species/' + encodeURIComponent(self.guid());
+                $.ajax({
+                    url: options.speciesProfileUrl + '?id=' + encodeURIComponent(self.guid()),
+                    dataType: 'json',
+                    success: function (data) {
+                        var profileInfo = '<a href="' + profileUrl + '" target="_blank">';
+                        var imageUrl = data.thumbnail || (data.taxonConcept && data.taxonConcept.smallImageUrl);
 
-            var profileUrl = options.bieUrl + '/species/' + encodeURIComponent(self.guid());
-            $.ajax({
-                url: options.speciesProfileUrl+'?id=' + encodeURIComponent(self.guid()),
-                dataType: 'json',
-                success: function (data) {
-                    var profileInfo = '<a href="'+profileUrl+'" target="_blank">';
-                    var imageUrl = data.thumbnail || (data.taxonConcept && data.taxonConcept.smallImageUrl);
-
-                    if (imageUrl) {
-                        profileInfo += "<img title='Click to show profile' class='taxon-image ui-corner-all' src='"+imageUrl+"'>";
+                        if (imageUrl) {
+                            profileInfo += "<img title='Click to show profile' class='taxon-image ui-corner-all' src='" + imageUrl + "'>";
+                        } else {
+                            profileInfo += "No profile image available";
+                        }
+                        profileInfo += "</a>";
+                        profileInfo += kvpInfo;
+                        self.transients.speciesInformation(profileInfo);
+                    },
+                    error: function (request, status, error) {
+                        console.log(error);
                     }
-                    else {
-                        profileInfo += "No profile image available";
-                    }
-                    profileInfo += "</a>";
-                    profileInfo += kvpInfo;
-                    self.transients.speciesInformation(profileInfo);
-                },
-                error: function(request, status, error) {
-                    console.log(error);
-                }
-            });
+                });
+            }
 
         }
         else {
