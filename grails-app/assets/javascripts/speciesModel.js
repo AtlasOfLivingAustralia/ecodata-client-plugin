@@ -232,6 +232,7 @@ var SpeciesViewModel = function(data, options, context) {
     var output = options.output || "";
     var dataFieldName = options.dataFieldName || "";
     var surveyName = options.surveyName || "";
+    var kvpInfo = "";
 
     self.guid = ko.observable();
     self.name = ko.observable();
@@ -252,7 +253,7 @@ var SpeciesViewModel = function(data, options, context) {
     self.transients.source = ko.observable(options.speciesSearchUrl +
         '&output=' + output+ '&dataFieldName=' + dataFieldName + '&surveyName=' + surveyName);
     self.transients.bieUrl = ko.observable();
-    self.transients.speciesInformation = ko.observable();
+    self.transients.speciesInformation = ko.observable('<i class="fa fa-spin fa-spinner"></i>');
     self.transients.speciesTitle = ko.observable();
     self.transients.matched = ko.computed(function() {
         return self.guid() && self.guid() != "A_GUID" && self.listId != "unmatched";
@@ -328,7 +329,6 @@ var SpeciesViewModel = function(data, options, context) {
         self.transients.textFieldValue(self.name());
 
         // Species Translation
-        var kvpInfo = "";
         var languages = ["Waramungu", "Warlpiri name"];
         var listsId = 'dr8016';
         if(self.listId() == listsId || output == 'CLC 2Ha Track Plot') {
@@ -350,7 +350,9 @@ var SpeciesViewModel = function(data, options, context) {
                 }
             });
         }
+    };
 
+    self.fetchSpeciesImage = function() {
         if (self.guid() && !options.printable) {
             if (SPECIAL_GUIDS.indexOf(self.guid()) >= 0) {
                 var profileInfo = "No profile available";
@@ -360,6 +362,7 @@ var SpeciesViewModel = function(data, options, context) {
                 var profileUrl = options.bieUrl + '/species/' + encodeURIComponent(self.guid());
                 $.ajax({
                     url: options.speciesProfileUrl + '?id=' + encodeURIComponent(self.guid()),
+                    cache: true,
                     dataType: 'json',
                     success: function (data) {
                         var profileInfo = '<a href="' + profileUrl + '" target="_blank">';
@@ -375,17 +378,16 @@ var SpeciesViewModel = function(data, options, context) {
                         self.transients.speciesInformation(profileInfo);
                     },
                     error: function (request, status, error) {
+                        self.transients.speciesInformation("");
                         console.log(error);
                     }
                 });
             }
-
         }
         else {
             self.transients.speciesInformation("No profile information is available.");
         }
-
-    };
+    }
 
     self.focusLost = function(event) {
         self.transients.editing(false);
