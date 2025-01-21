@@ -33,7 +33,7 @@
 
             // if view model has changed, update the popover
             instance.config.title = combinedOptions.title || "";
-            instance.config.content = combinedOptions.content;
+            instance.config.content = combinedOptions.content || "";
 
             if (options.autoShow) {
                 if ($element.data('firstPopover') === false) {
