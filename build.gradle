@@ -17,7 +17,6 @@ plugins {
     id 'jacoco'
 }
 
-
 version "7.2-SNAPSHOT"
 group "org.grails.plugins"
 

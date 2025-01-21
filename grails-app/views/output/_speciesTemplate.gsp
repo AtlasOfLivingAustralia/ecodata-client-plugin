@@ -11,7 +11,7 @@
     <input type="text" class="form-control form-control-sm speciesInputTemplates" data-bind="${databindAttrs}" ${validationAttrs}/>
     <div class="input-group-append">
         <span class="input-group-text" data-bind="visible: !transients.editing() && name()">
-            <a data-bind="popover: {title: name, content: transients.speciesInformation}"><i class="fa fa-info-circle"></i></a>
+            <a data-bind="popover: {title: name, content: transients.speciesInformation}, event: { 'shown.bs.popover': fetchSpeciesImage}"><i class="fa fa-info-circle"></i></a>
         </span>
     </div>
 
