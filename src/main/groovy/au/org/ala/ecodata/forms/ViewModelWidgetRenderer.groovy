@@ -165,7 +165,7 @@ class ViewModelWidgetRenderer implements ModelWidgetRenderer {
     void renderFusedAutocomplete(WidgetRenderContext context) {
         context.databindAttrs.add 'text', 'name'
         context.writer << """<span data-bind="with: ${context.source}"><span${context.attributes.toString()} data-bind='${context.databindAttrs.toString()}'></span>
-            <a  target="_blank" data-bind="visible: guid, attr: {href: transients.bioProfileUrl}"><i class="icon-info-sign"></i></a>
+            <a  target="_blank" data-bind="visible: guid, attr: {href: transients.bioProfileUrl}"><i class="fas fa-info-circle"></i></i></a>
             </span>"""
     }
 
@@ -199,7 +199,7 @@ class ViewModelWidgetRenderer implements ModelWidgetRenderer {
     private void renderReadOnlySpecies(WidgetRenderContext context) {
         context.databindAttrs.add 'with', context.source
         context.writer << """<span data-bind='${context.databindAttrs.toString()}'><span${context.attributes.toString()} data-bind='text:name'></span>
-            <a href="#" data-bind="popover: {title: name, content: transients.speciesInformation}, event: { 'shown.bs.popover': fetchSpeciesImage}"><i class="icon-info-sign"></i></a>
+            <a href="#" data-bind="popover: {title: name, content: transients.speciesInformation}, event: { 'shown.bs.popover': fetchSpeciesImage}"><i class="fas fa-info-circle"></i></i></a>
             </span>"""
     }
 
