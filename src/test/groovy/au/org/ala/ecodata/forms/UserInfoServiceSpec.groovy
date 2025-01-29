@@ -1,14 +1,16 @@
 package au.org.ala.ecodata.forms
 
 import au.org.ala.web.UserDetails
-import au.org.ala.ws.security.client.AlaOidcClient
-import au.org.ala.ws.security.profile.AlaOidcUserProfile
 import grails.testing.services.ServiceUnitTest
 import grails.testing.web.GrailsWebUnitTest
+import org.pac4j.core.client.DirectClient
 import org.pac4j.core.config.Config
-import org.pac4j.core.credentials.AnonymousCredentials
+import org.pac4j.core.context.WebContextFactory
+import org.pac4j.core.context.session.SessionStoreFactory
 import org.pac4j.core.credentials.Credentials
-import org.pac4j.core.profile.UserProfile
+import org.pac4j.core.credentials.TokenCredentials
+import org.pac4j.http.client.direct.DirectBearerAuthClient
+import org.pac4j.jwt.profile.JwtProfile
 import spock.lang.Specification
 
 /*
@@ -31,7 +33,7 @@ import spock.lang.Specification
 class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserInfoService>, GrailsWebUnitTest {
     WebService webService = Mock(WebService)
     def authService = Mock(AuthService)
-    AlaOidcClient alaOidcClient
+    DirectClient alaOidcClient
     Config pack4jConfig
 
     def user
@@ -79,22 +81,26 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
     void "getUserFromJWT returns user when Authorization header is passed"() {
         setup:
         def result
-        alaOidcClient = GroovyMock([global: true], AlaOidcClient)
+        alaOidcClient = GroovyMock([global: true], DirectBearerAuthClient)
         pack4jConfig =  GroovyMock([global: true], Config)
         service.alaOidcClient = alaOidcClient
         service.config = pack4jConfig
-        AlaOidcUserProfile person = new AlaOidcUserProfile(user.userId)
-        Optional<Credentials> credentials = new Optional<Credentials>(AnonymousCredentials.INSTANCE)
-        Optional<UserProfile> userProfile = new Optional<UserProfile>(person)
+        pack4jConfig.getWebContextFactory() >> Mock(WebContextFactory)
+        pack4jConfig.getSessionStoreFactory() >> Mock(SessionStoreFactory)
+        Credentials tokenCredentials = Mock(TokenCredentials)
+        JwtProfile profile = Mock(JwtProfile)
+        Optional<Credentials> credentials = Optional.of(tokenCredentials)
 
         when:
         request.addHeader('Authorization', 'Bearer abcdef')
         result = service.getUserFromJWT()
 
         then:
-        alaOidcClient.getCredentials(*_) >> credentials
-        alaOidcClient.getUserProfile(*_) >> userProfile
-        authService.getUserForUserId(user.userId)  >> userDetails
+        1 * alaOidcClient.getCredentials(*_) >> credentials
+        1 * alaOidcClient.validateCredentials(_, _) >> credentials
+        1 * tokenCredentials.userProfile >> profile
+        1 * profile.getAttribute("username") >> user.userId
+        1 * authService.getUserForUserId(user.userId)  >> userDetails
         result.userName == user.userName
         result.displayName == "${user.firstName} ${user.lastName}"
         result.userId == user.userId
@@ -103,13 +109,15 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
     void "getCurrentUser should get current user from CAS"() {
         setup:
         def result
-        alaOidcClient = GroovyMock([global: true], AlaOidcClient)
+        alaOidcClient = GroovyMock([global: true], DirectBearerAuthClient)
         pack4jConfig =  GroovyMock([global: true], Config)
         service.alaOidcClient = alaOidcClient
         service.config = pack4jConfig
-        AlaOidcUserProfile person = new AlaOidcUserProfile(user.userId)
-        Optional<Credentials> credentials = new Optional<Credentials>(AnonymousCredentials.INSTANCE)
-        Optional<UserProfile> userProfile = new Optional<UserProfile>(person)
+        pack4jConfig.getWebContextFactory() >> Mock(WebContextFactory)
+        pack4jConfig.getSessionStoreFactory() >> Mock(SessionStoreFactory)
+        Credentials tokenCredentials = Mock(TokenCredentials)
+        JwtProfile profile = Mock(JwtProfile)
+        Optional<Credentials> credentials = Optional.of(tokenCredentials)
 
         when:
         result = service.getCurrentUserFromSupportedMethods()
@@ -124,9 +132,11 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
         result = service.getCurrentUserFromSupportedMethods()
 
         then:
-        alaOidcClient.getCredentials(*_) >> credentials
-        alaOidcClient.getUserProfile(*_) >> userProfile
-        1 * authService.getUserForUserId(user.userId) >> userDetails
+        1 * alaOidcClient.getCredentials(*_) >> credentials
+        1 * alaOidcClient.validateCredentials(_, _) >> credentials
+        1 * tokenCredentials.userProfile >> profile
+        1 * profile.getAttribute("username") >> user.userId
+        1 * authService.getUserForUserId(user.userId)  >> userDetails
         1 * authService.userDetails() >> null
         result.userName == user.userName
         result.displayName == "first last"

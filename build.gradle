@@ -17,7 +17,7 @@ plugins {
     id 'jacoco'
 }
 
-version "7.2-SNAPSHOT"
+version "7.2-java17-SNAPSHOT"
 group "org.grails.plugins"
 
 apply plugin:"eclipse"
@@ -49,6 +49,8 @@ configurations {
         extendsFrom developmentOnly
     }
 }
+sourceCompatibility = '11'
+targetCompatibility = '17'
 
 dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
