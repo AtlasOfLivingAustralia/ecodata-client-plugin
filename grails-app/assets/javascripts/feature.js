@@ -267,8 +267,10 @@ ecodata.forms.maps.featureMap = function (options) {
         self.editableSitesHeading = options.editableSitesHeading || 'Site/s for this service';
         self.categories = ko.observableArray();
         if (options.selectableFeatures) {
-            self.selectableFeatures = options.selectableFeatures;
-            self.configureSelectionLayer(self.selectableFeatures);
+            Promise.resolve(options.selectableFeatures).then(function(features) {
+                self.selectableFeatures = features;
+                self.configureSelectionLayer(self.selectableFeatures);
+            });
         }
 
         self.drawnItems.on({
