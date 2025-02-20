@@ -22,7 +22,7 @@ class ImageTypeSpec extends GebReportingSpec {
 
         then: "A popover is displayed containing the photo metadata"
         waitFor 10, {
-            (!$('.popover').displayed)
+            $('.popover').displayed
         }
         and: "the photo metadata is displayed correctly"
         $(".popover span[data-bind*=name]").text() == null
@@ -31,7 +31,7 @@ class ImageTypeSpec extends GebReportingSpec {
 
     }
 
-    def "If the metadataAlwaysDisplayed displayOption is set, the metadata will be displayed next to the image in view mode"() {
+    def "If the metadataAlwaysVisible displayOption is set, the metadata will be displayed next to the image in view mode"() {
         when:
         to ([name:'images', mode:'view'], PreviewPage)
 

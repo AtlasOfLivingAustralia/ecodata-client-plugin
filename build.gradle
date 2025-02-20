@@ -17,8 +17,7 @@ plugins {
     id 'jacoco'
 }
 
-
-version "7.1"
+version "7.2-SNAPSHOT"
 group "org.grails.plugins"
 
 apply plugin:"eclipse"

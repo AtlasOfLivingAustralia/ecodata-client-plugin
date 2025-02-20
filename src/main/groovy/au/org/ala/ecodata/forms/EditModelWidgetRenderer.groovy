@@ -372,7 +372,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
                                 <div data-bind="with:${context.source}" class="input-group"">
                                 <select class="form-control form-control-sm" data-bind="speciesSelect2:\$data" ${context.validationAttr}></select>
                                 <div class="input-group-append"">
-                                    <span class="input-group-text" data-bind="visible:name(), popover: {title: transients.speciesTitle, content: transients.speciesInformation}, css:{'bg-warning':!transients.matched()}"><i class="fa" data-bind="css:{'fa-info-circle':transients.matched(), 'fa-question-circle':!transients.matched()}"></i></span>
+                                    <span class="input-group-text" data-bind="visible:name(), popover: {title: transients.speciesTitle, content: transients.speciesInformation}, event: { 'shown.bs.popover': fetchSpeciesImage}, css:{'bg-warning':!transients.matched()}"><i class="fa" data-bind="css:{'fa-info-circle':transients.matched(), 'fa-question-circle':!transients.matched()}"></i></span>
                                 </div>
                              </div></div>"""
     }
