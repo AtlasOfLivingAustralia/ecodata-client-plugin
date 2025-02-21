@@ -87,7 +87,7 @@ class PreviewPage extends Page {
 
     boolean isWarningDisplayed(String warning) {
         waitFor {
-            $('.popover.warning .popover-body').text() == warning
+            $('.popover.warning .popover-body').getAttribute('innerText') == warning
         }
     }
 

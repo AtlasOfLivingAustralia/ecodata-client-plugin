@@ -56,7 +56,7 @@ class ComputedValuesSpec extends GebReportingSpec {
 
         and: "the validation should have triggered"
         waitFor{ page.findValidationElementForModelName("item2").displayed }
-        page.findValidationElementForModelName("item2").children('.formErrorContent').text() == "test message"
+        page.findValidationElementForModelName("item2").children('.formErrorContent').getAttribute('innerText') == "test message"
 
         when:
         page.findFieldByModelName("item1").getAt(0).value("0")
