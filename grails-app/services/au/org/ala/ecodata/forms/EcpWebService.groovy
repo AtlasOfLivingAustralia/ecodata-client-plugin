@@ -15,6 +15,7 @@
 
 package au.org.ala.ecodata.forms
 
+
 import au.org.ala.ws.tokens.TokenService
 import grails.converters.JSON
 import grails.core.GrailsApplication
@@ -22,6 +23,7 @@ import grails.web.http.HttpHeaders
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
 import groovyx.net.http.HTTPBuilder
+import groovyx.net.http.Method
 import org.apache.http.HttpStatus
 import org.apache.http.entity.mime.HttpMultipartMode
 import org.apache.http.entity.mime.MultipartEntity
