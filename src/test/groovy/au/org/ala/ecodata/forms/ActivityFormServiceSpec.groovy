@@ -11,12 +11,12 @@ import spock.lang.Specification
 //@TestFor(ActivityFormService)
 class ActivityFormServiceSpec extends Specification implements ServiceUnitTest<ActivityFormService> {
 
-    WebService webService = Mock(WebService)
+    EcpWebService webService = Mock(EcpWebService)
    // def grailsApplication = [config:[ecodata:[service:[url:'']]]]
     //def grailsApplicaton =
     def setup() {
         grailsApplication.config.ecodata = [service:[url:'']]
-        service.webService = webService
+        service.ecpWebService = webService
         service.grailsApplication = grailsApplication
     }
 
