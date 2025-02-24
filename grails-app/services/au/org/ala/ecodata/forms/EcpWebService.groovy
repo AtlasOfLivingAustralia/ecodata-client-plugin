@@ -347,7 +347,7 @@ class EcpWebService {
     Map getJson(String url, Map params, Integer timeout = null) {
         url = url + buildUrlParamsFromMap(params)
 
-        getJson2(url, params, timeout)
+        getJson2(url, timeout)
     }
 
     private static String buildUrlParamsFromMap(Map map, String encoding = 'UTF-8') {

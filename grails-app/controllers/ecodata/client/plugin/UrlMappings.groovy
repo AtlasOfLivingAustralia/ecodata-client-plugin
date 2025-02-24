@@ -21,10 +21,6 @@ class UrlMappings {
             controller = 'preview'
             action = [GET: 'index', POST: 'model']
         }
-        "/speciesList/$listId"() {
-            controller = 'speciesList'
-            action = 'speciesListItems'
-        }
         "500"(view:'/error')
     }
 }
