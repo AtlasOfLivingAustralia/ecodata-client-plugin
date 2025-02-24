@@ -1,7 +1,6 @@
 package au.org.ala.ecodata.forms
 
 import org.grails.web.json.JSONArray
-import org.grails.web.json.JSONElement
 import org.grails.web.json.JSONObject
 
 /**
@@ -11,7 +10,7 @@ class ActivityFormService {
 
     static final String ACTIVITY_FORM_PATH = '/activityForm'
     static final String ACTIVITY_FORM_SEARCH_PATH = '/activityForm/search'
-    def webService
+    def ecpWebService
     def grailsApplication
 
     /**
@@ -33,7 +32,7 @@ class ActivityFormService {
         if (includeScoreInformation) {
             url += '&includeScoreInformation='+Boolean.toString(includeScoreInformation)
         }
-        Map result = webService.getJson(url)
+        Map result = ecpWebService.getJson(url)
         if (!result || result.error) {
             result = null
         }
@@ -74,7 +73,7 @@ class ActivityFormService {
     Map searchActivityForms(Map criteria) {
         String url = grailsApplication.config.getProperty('ecodata.service.url') +
                 ACTIVITY_FORM_SEARCH_PATH
-        Map result = webService.doPost(url, criteria)
+        Map result = ecpWebService.doPost(url, criteria)
         if (!result || result.error) {
             result = null
         }

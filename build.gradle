@@ -69,10 +69,15 @@ dependencies {
     implementation "org.grails.plugins:async"
     implementation "org.grails.plugins:scaffolding"
     implementation "org.grails.plugins:gsp"
-    implementation 'commons-io:commons-io:2.6'
+    implementation 'commons-io:commons-io:2.14.0'
     implementation "org.grails.plugins:ala-auth:$alaSecurityLibsVersion"
     implementation "org.grails.plugins:ala-ws-security-plugin:$alaSecurityLibsVersion"
+    implementation "org.grails.plugins:ala-ws-plugin:$alaSecurityLibsVersion"
     implementation "au.org.ala:userdetails-service-client:$alaSecurityLibsVersion"
+    implementation "org.codehaus.groovy.modules.http-builder:http-builder:0.7.1"
+    implementation "org.apache.httpcomponents:httpcore:4.4.13"
+    implementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    implementation "org.apache.httpcomponents:httpmime:4.2.1"
 
     console "org.grails:grails-console"
     profile "org.grails.profiles:web-plugin"
