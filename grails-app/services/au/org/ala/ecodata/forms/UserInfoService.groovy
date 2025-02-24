@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletResponse
 
 class UserInfoService {
     def authService
-    def webService, grailsApplication
+    def ecpWebService, grailsApplication
     @Autowired(required = false)
     Config config
     @Autowired(required = false)
@@ -91,7 +91,7 @@ class UserInfoService {
     UserDetails getUserFromAuthKey(String username, String key) {
         String url = grailsApplication.config.getProperty('mobile.auth.check.url')
         Map params = [userName: username, authKey: key]
-        def result = webService.doPostWithParams(url, params)
+        def result = ecpWebService.doPostWithParams(url, params)
 
         if (result.statusCode == HttpStatus.OK.value() && result.resp?.status == 'success') {
             return authService.getUserForEmailAddress(username, true)

@@ -31,7 +31,7 @@ import spock.lang.Specification
  */
 
 class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserInfoService>, GrailsWebUnitTest {
-    WebService webService = Mock(WebService)
+    EcpWebService webService = Mock(EcpWebService)
     def authService = Mock(AuthService)
     DirectClient alaOidcClient
     Config pack4jConfig
@@ -47,7 +47,7 @@ class UserInfoServiceSpec extends Specification implements ServiceUnitTest<UserI
         userDetails = new UserDetails(1, user.firstName, user.lastName, user.userName, user.userName, user.userId, false, true, null)
         grailsApplication.config.mobile = [auth:[check:[url: 'checkURL']], authKeyEnabled: false]
         grailsApplication.config.userDetails = [url: 'userDetails/']
-        service.webService = webService
+        service.ecpWebService = webService
         service.authService = authService
         service.grailsApplication = grailsApplication
     }
