@@ -183,7 +183,7 @@ class EcpWebService {
      * Proxies a request URL but doesn't assume the response is text based. (Used for proxying requests to
      * ecodata for excel-based reports)
      */
-    def proxyGetRequest(HttpServletResponse response, String url, String authHeaderType, Integer timeout = null, String externalToken = null) {
+    def proxyGetRequest(HttpServletResponse response, String url, String authHeaderType, Integer timeout = null, String externalToken = null, Map extraHeaders) {
 
         def readTimeout = timeout?:defaultTimeout()
         HttpURLConnection conn = configureConnection(url, authHeaderType, readTimeout, externalToken)
@@ -202,6 +202,9 @@ class EcpWebService {
                     response.setHeader(header, headerValue)
                 }
 
+            }
+            extraHeaders.each { header ->
+                response.setHeader(header.key, header.value)
             }
             response.status = conn.responseCode
 
