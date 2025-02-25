@@ -112,3 +112,9 @@ environments:
         spring:
             autoconfigure:
                 exclude: "au.org.ala.ws.security.AlaWsSecurityConfiguration"
+
+---
+listsFieldMappingV2:
+        matchedName: "classification.scientificName"
+        commonName: "classification.vernacularName"
+        rawScientificName: "scientificName"
