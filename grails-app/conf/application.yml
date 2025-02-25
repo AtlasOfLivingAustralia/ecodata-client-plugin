@@ -112,8 +112,3 @@ environments:
         spring:
             autoconfigure:
                 exclude: "au.org.ala.ws.security.AlaWsSecurityConfiguration"
-        security:
-            oidc:
-                enabled: false
-            jwt:
-                enabled: false
