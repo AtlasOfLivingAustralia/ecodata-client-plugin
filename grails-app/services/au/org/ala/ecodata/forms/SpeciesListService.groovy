@@ -35,7 +35,7 @@ class SpeciesListService {
             return null
         }
         String url = grailsApplication.config.getProperty('lists.baseURL') + SPECIES_LIST_ITEMS_PATH + '/'+listId
-        Map params = [includeKvp:true, pageSize:pageSize, page:page]
+        Map params = [includeKVP:true, pageSize:pageSize, page:page]
         Map resp = ecpWebService.getJson(url, params)
 
         List speciesList = null
