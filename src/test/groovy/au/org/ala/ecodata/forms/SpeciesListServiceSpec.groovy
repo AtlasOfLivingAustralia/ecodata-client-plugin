@@ -360,7 +360,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         ]
 
         and: "mock exception during upload"
-        webService.postMultipartWithOkhttp3(*_) >> { throw new IOException("Network error") }
+        webService.postMultipart(*_) >> { throw new IOException("Network error") }
 
         when:
         def result = service.uploadSpeciesListUsingV2(rows, "Test List", "Test Description", "CC-BY", "TEST_LIST")
@@ -381,7 +381,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         def dataResourceId = "dr-12345"
 
         and: "mock successful upload and ingest but failed completion"
-        webService.postMultipartWithOkhttp3(*_) >> [
+        webService.postMultipart(*_) >> [
                 statusCode: 200,
                 content: [localFile: tempFileName]
         ]
@@ -415,7 +415,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         def dataResourceId = "dr-12345"
 
         and: "mock upload responses"
-        webService.postMultipartWithOkhttp3(
+        webService.postMultipart(
                 {it.endsWith(service.UPLOAD_V2)},
                 [:],
                 _,

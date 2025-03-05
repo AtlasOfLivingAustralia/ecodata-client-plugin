@@ -651,6 +651,12 @@ class EcpWebService {
         postMultipart(url, params, fileBody, contentType, originalFilename, fileParamName, useToken, userToken)
     }
 
+    Map postMultipart(String url, Map params, File file, String contentType, String originalFilename, String fileParamName = 'files', boolean useToken = false, boolean userToken = false) {
+        RequestBody fileBody = RequestBody.create(okhttp3.MediaType.parse(contentType), file)
+        postMultipart(url, params, fileBody, contentType, originalFilename, fileParamName, useToken, userToken)
+    }
+
+
     private void addTokenHeader(conn, boolean requireUser = false) {
         if (useJWT()) {
             conn.setRequestProperty("Authorization", getToken(requireUser))

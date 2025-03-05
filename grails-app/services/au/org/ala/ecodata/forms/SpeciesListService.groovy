@@ -404,7 +404,7 @@ class SpeciesListService {
 
             try {
                 String url = grailsApplication.config.getProperty('lists.baseURL') + UPLOAD_V2
-                Map resp = ecpWebService.postMultipartWithOkhttp3(url, [:], file, "text/csv", "specieslist.csv", "file", true, true)
+                Map resp = ecpWebService.postMultipart(url, [:], file, "text/csv", "specieslist.csv", "file", true, true)
                 if (HttpStatus.resolve(resp.statusCode as int).is2xxSuccessful()) {
                     Map apiResp = resp.content
                     String tempFileName = apiResp.localFile
