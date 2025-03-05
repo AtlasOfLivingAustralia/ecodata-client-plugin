@@ -25,7 +25,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         given:
         String listId = "testListId"
         String url = "/speciesListItems/" + listId
-        Map params = [includeKvp: true, pageSize: 500, page: 1]
+        Map params = [includeKVP: true, pageSize: 500, page: 1]
         Map response = [statusCode: HttpStatus.OK.value(), resp: [[scientificName: "Testus species", vernacularName: "Test Species", kvpValues: [], classification: [taxonConceptID: "testLsid", success: true, scientificName: "Testus species", vernacularName: "Test Species"], properties: []]]]
 
         when:
@@ -57,7 +57,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         given:
         String listId = "testListId"
         String url = "/speciesListItems/" + listId
-        Map params = [includeKvp: true, pageSize: 500, page: 1]
+        Map params = [pageSize: 500, page: 1]
         Map response = [
                 statusCode: HttpStatus.OK.value(),
                 resp: [[
