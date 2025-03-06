@@ -2,12 +2,14 @@ package au.org.ala.ecodata.forms
 
 import au.org.ala.web.UserDetails
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.pac4j.core.adapter.FrameworkAdapter
 import org.pac4j.core.config.Config
+import org.pac4j.core.context.CallContext
 import org.pac4j.core.context.WebContext
-import org.pac4j.core.credentials.Credentials
-import org.pac4j.core.util.FindBest
-import org.pac4j.jee.context.JEEContextFactory
-import au.org.ala.ws.security.client.AlaOidcClient
+import org.pac4j.core.context.session.SessionStore
+import org.pac4j.core.credentials.TokenCredentials
+import org.pac4j.http.client.direct.DirectBearerAuthClient
+import org.pac4j.jee.context.JEEFrameworkParameters
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 
@@ -37,7 +39,8 @@ class UserInfoService {
     @Autowired(required = false)
     Config config
     @Autowired(required = false)
-    AlaOidcClient alaOidcClient
+    DirectBearerAuthClient alaOidcClient
+
 
     static String USER_NAME_HEADER_FIELD = "userName"
     static String AUTH_KEY_HEADER_FIELD = "authKey"
@@ -113,19 +116,25 @@ class UserInfoService {
             if (!authorizationHeader)
                 authorizationHeader = request?.getHeader(AUTHORIZATION_HEADER_FIELD)
             if (authorizationHeader?.startsWith("Bearer")) {
-                final WebContext context = FindBest.webContextFactory(null, config, JEEContextFactory.INSTANCE).newContext(request, response)
-                def optCredentials = alaOidcClient.getCredentials(context, config.sessionStore)
-                if (optCredentials.isPresent()) {
-                    Credentials credentials = optCredentials.get()
-                    def optUserProfile = alaOidcClient.getUserProfile(credentials, context, config.sessionStore)
-                    if (optUserProfile.isPresent()) {
-                        def userProfile = optUserProfile.get()
-                        String userId = userProfile?.userId ?: userProfile?.getAttribute(grailsApplication.config.getProperty('userProfile.userIdAttribute'))
-                        if (userId) {
-                            return authService.getUserForUserId(userId)
-                        }
+                def params = new JEEFrameworkParameters(request, response)
+
+                FrameworkAdapter.INSTANCE.applyDefaultSettingsIfUndefined(config)
+                final WebContext context = config.getWebContextFactory().newContext(params)
+                final SessionStore sessionStore = config.getSessionStoreFactory().newSessionStore(params)
+                final callContext = new CallContext(context, sessionStore, config.profileManagerFactory)
+
+                def credentials = alaOidcClient.getCredentials(callContext).orElse(null)
+                credentials = alaOidcClient.validateCredentials(callContext, credentials).orElse(null)
+                if (credentials && credentials instanceof TokenCredentials) {
+                    def userProfile = credentials.userProfile
+
+                    //String userId = userProfile?.getAttribute(grailsApplication.config.getProperty('userProfile.userIdAttribute'))
+                    String userId = userProfile?.getAttribute("username")
+                    if (userId) {
+                        return authService.getUserForUserId(userId)
                     }
                 }
+
             }
         } catch (Throwable e) {
             log.error("Failed to get user details from JWT", e)
