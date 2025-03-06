@@ -15,20 +15,16 @@
 
 package au.org.ala.ecodata.forms
 
-
 import au.org.ala.ws.tokens.TokenService
+import com.fasterxml.jackson.databind.ObjectMapper
 import grails.converters.JSON
 import grails.core.GrailsApplication
 import grails.web.http.HttpHeaders
 import groovy.json.JsonSlurper
 import groovy.util.logging.Slf4j
-import groovyx.net.http.HTTPBuilder
-import groovyx.net.http.Method
+import okhttp3.*
+import okio.BufferedSink
 import org.apache.http.HttpStatus
-import org.apache.http.entity.mime.HttpMultipartMode
-import org.apache.http.entity.mime.MultipartEntity
-import org.apache.http.entity.mime.content.InputStreamBody
-import org.apache.http.entity.mime.content.StringBody
 import org.grails.web.converters.exceptions.ConverterException
 import org.springframework.http.MediaType
 import org.springframework.web.multipart.MultipartFile
@@ -36,7 +32,7 @@ import org.springframework.web.multipart.MultipartFile
 import javax.annotation.PostConstruct
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletResponse
-
+import java.util.concurrent.TimeUnit
 /**
  * Helper class for invoking ecodata (and other Atlas) web services.
  */
@@ -56,6 +52,7 @@ class EcpWebService {
     static String AUTHORIZATION_HEADER_TYPE_EXTERNAL_TOKEN = 'externalToken'
 
     static String AUTHORIZATION_HEADER_TYPE_NONE = 'none'
+    OkHttpClient client
     List WHITE_LISTED_DOMAINS = []
 
     TokenService tokenService
@@ -63,6 +60,11 @@ class EcpWebService {
     void init() {
         String whiteListed = grailsApplication.config.getProperty('app.domain.whiteList', "")
         WHITE_LISTED_DOMAINS = Arrays.asList(whiteListed.split(','))
+        client = new OkHttpClient.Builder()
+                .connectTimeout(connectTimeout(), TimeUnit.MILLISECONDS)
+                .readTimeout(defaultTimeout(), TimeUnit.MILLISECONDS)
+                .writeTimeout(defaultTimeout(), TimeUnit.MILLISECONDS)
+                .build()
     }
 
     // Used to avoid a circular dependency during initialisation
@@ -390,7 +392,7 @@ class EcpWebService {
         return urlConnection.content.getText(getCharset(urlConnection))
     }
 
-    def doPostWithParams(String url, Map params) {
+    def doPostWithParams(String url, Map params, boolean userToken = false) {
         def conn = null
         def charEncoding = 'utf-8'
         try {
@@ -407,7 +409,7 @@ class EcpWebService {
             conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
             if(canAddSecret(url)) {
                 if (useJWT())
-                    addTokenHeader(conn)
+                    addTokenHeader(conn, userToken)
                 else
                     conn.setRequestProperty("Authorization", grailsApplication.config.getProperty('api_key'))
             }
@@ -422,13 +424,13 @@ class EcpWebService {
             wr.flush()
             def resp = conn.inputStream.text
             wr.close()
-            return [resp: JSON.parse(resp?:"{}")] // fail over to empty json object if empty response string otherwise JSON.parse fails
+            return [resp: JSON.parse(resp?:"{}"), statusCode: conn.responseCode] // fail over to empty json object if empty response string otherwise JSON.parse fails
         } catch (SocketTimeoutException e) {
-            def error = [error: "Timed out calling web service. URL= ${url}."]
+            def error = [error: "Timed out calling web service. URL= ${url}.", statusCode: conn.responseCode]
             log.error(error as String, e)
             return error
         } catch (SocketException se) {
-            def error = [error: "Socket connection closed. ${se.getMessage()} URL= ${url}."]
+            def error = [error: "Socket connection closed. ${se.getMessage()} URL= ${url}.", statusCode: conn.responseCode]
             log.error(error as String, se)
             return error
         } catch (Exception e) {
@@ -441,7 +443,7 @@ class EcpWebService {
         }
     }
 
-    def doPost(String url, Map postBody, boolean useToken = false) {
+    def doPost(String url, Map postBody, boolean useToken = false, boolean userToken = false) {
         useToken = useToken || useJWT()
         def conn = null
         def charEncoding = 'utf-8'
@@ -451,7 +453,7 @@ class EcpWebService {
             conn.setRequestProperty("Content-Type", "application/json;charset=${charEncoding}");
             if (canAddSecret(url)) {
                 if (useToken) {
-                    addTokenHeader(conn)
+                    addTokenHeader(conn, userToken)
                 } else {
                     conn.setRequestProperty("Authorization", grailsApplication.config.getProperty('api_key'));
                 }
@@ -520,95 +522,148 @@ class EcpWebService {
     }
 
     /**
-     * Forwards a HTTP multipart/form-data request to ecodata.
-     * @param url the URL to forward to.
-     * @param params the (string typed) HTTP parameters to be attached.
-     * @param file the Multipart file object to forward.
-     * @return [status:<request status>, content:<The response content from the server, assumed to be JSON>
+     * Uses OkHttp3 to perform a POST request with multipart form data if file provided.
+     * @param contentType
+     * @param inputStream
+     * @return
      */
-    def postMultipart(url, Map params, MultipartFile file, fileParam = 'files', boolean useToken = false) {
+    static RequestBody createRequestBody(final okhttp3.MediaType contentType, final InputStream inputStream) {
+        return new RequestBody() {
+            @Override
+            okhttp3.MediaType contentType() {
+                return contentType
+            }
 
-        postMultipart(url, params, file.inputStream, file.contentType, file.originalFilename, fileParam, null, useToken)
+            @Override
+            void writeTo(BufferedSink sink) throws IOException {
+                try {
+                    byte[] buffer = new byte[8192]; // 8KB buffer
+                    int bytesRead;
+                    while ((bytesRead = inputStream.read(buffer)) != -1) {
+                        sink.write(buffer, 0, bytesRead);
+                    }
+                }
+                catch (Exception e) {
+                    log.error("Error writing to sink: ${e.message}")
+                }
+                finally {
+                    inputStream.close()
+                }
+            }
+        }
+    }
+
+    /**
+     * Uses OkHttp3 to perform a POST request with multipart form data if file provided.
+     * @param url
+     * @param params
+     * @param fileBody
+     * @param contentType
+     * @param originalFilename
+     * @param fileParamName
+     * @param useToken
+     * @param userToken
+     * @return
+     */
+    Map postMultipart(String url, Map params, RequestBody fileBody,
+                             String contentType, String originalFilename,
+                             String fileParamName = 'files',
+                             boolean useToken = false,
+                             boolean userToken = false) {
+        useToken = useToken || useJWT()
+        Map result = [:]
+        MultipartBody.Builder multipartBodyBuilder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+
+        // Add file part
+        if (fileBody) {
+            multipartBodyBuilder.addFormDataPart(fileParamName, originalFilename ?: fileParamName, fileBody)
+        }
+
+        // Add form fields
+        params.each { key, value ->
+            if (value) multipartBodyBuilder.addFormDataPart(key, value.toString())
+        }
+
+        // Build request
+        Request.Builder requestBuilder = new Request.Builder()
+                .url(url)
+                .post(multipartBodyBuilder.build())
+
+
+        // Add Authorization headers
+        if (canAddSecret(url)) {
+            if (useToken) {
+                if (useJWT()) {
+                    requestBuilder.addHeader("Authorization", getToken(userToken))
+                } else {
+                    requestBuilder.addHeader("apiKey", grailsApplication.config.getProperty('api_key'))
+                }
+            } else {
+                requestBuilder.addHeader("Authorization", grailsApplication.config.getProperty('api_key'))
+            }
+
+            def user = userService.getUser()
+            String userId = user.userId
+            String userIdHeader = grailsApplication.config.getProperty('app.http.header.userId')
+            if (user) {
+                requestBuilder.addHeader(userIdHeader, userId)
+            } else {
+                log.warn("No user associated with request: ${url}")
+            }
+        }
+
+        // Execute request
+        try (Response response = client.newCall(requestBuilder.build()).execute()) {
+            okhttp3.MediaType respContentType = response.body().contentType()
+            String subType = respContentType.subtype()?.toLowerCase()
+            def responseData
+            String responseBody = response.body().string()
+            switch (subType) {
+                case "json":
+                    ObjectMapper objectMapper = new ObjectMapper()
+                    responseData = objectMapper.readValue(responseBody, Object)
+                    break
+                case "text":
+                default:
+                    responseData = responseBody
+                    break
+            }
+
+            result.statusCode = result.status = response.code()
+            result.details = result.resp = result.content = responseData
+        } catch (Exception e) {
+            result.statusCode = result.status = 500
+            result.error = "Error POSTing to ${url}"
+            result.details = e.message
+        }
+
+        return result
     }
 
     /**
      * Forwards a HTTP multipart/form-data request to ecodata.
      * @param url the URL to forward to.
      * @param params the (string typed) HTTP parameters to be attached.
-     * @param contentIn the content to post.
-     * @param contentType the mime type of the content being posted (e.g. image/png)
-     * @param originalFilename the original file name of the data to be posted
-     * @param fileParamName the name of the HTTP parameter that will be used for the post.
-     * @param successHandler optional callback for a successful service invocation.  If not supplied, a Map will be returned.
+     * @param file the Multipart file object to forward.
      * @return [status:<request status>, content:<The response content from the server, assumed to be JSON>
      */
-    def postMultipart(url, Map params, InputStream contentIn, contentType, originalFilename, fileParamName = 'files', Closure successHandler = null, boolean useToken = false) {
-        useToken = useToken || useJWT()
-        def result = [:]
-        def user = userService.getUser()
-
-        HTTPBuilder builder = new HTTPBuilder(url)
-        builder.request(Method.POST) { request ->
-            requestContentType : 'multipart/form-data'
-            MultipartEntity content = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE)
-            content.addPart(fileParamName, new InputStreamBody(contentIn, contentType, originalFilename?:fileParamName))
-            params.each { key, value ->
-                if (value) {
-                    content.addPart(key, new StringBody(value.toString()))
-                }
-            }
-            if (canAddSecret(url)) {
-                if (useToken) {
-                    if (useJWT()) {
-                        headers.'Authorization' = getToken()
-                    }
-                    else {
-                        headers.'apiKey' = grailsApplication.config.getProperty('api_key')
-                    }
-                }
-                else {
-                    headers.'Authorization' = grailsApplication.config.getProperty('api_key')
-                }
-            }
-            if (user) {
-                headers[grailsApplication.config.getProperty('app.http.header.userId')] = user.userId
-            }
-            else {
-                log.warn("No user associated with request: ${url}")
-            }
-
-            request.setEntity(content)
-
-            if (successHandler) {
-                response.success = successHandler
-            }
-            else {
-                response.success = {resp, message ->
-                    result.status = resp.status
-                    result.statusCode = resp.status
-                    result.content = message
-                    result.resp = message
-                }
-            }
-
-            response.failure = {resp, message ->
-
-                result.status = resp.status
-                result.statusCode = resp.status
-                if (message && message instanceof Map) {
-                    result.putAll message
-                }
-                else if (message) {
-                    result.error = message as String
-                }
-                else {
-                    result.error =  "Error POSTing to ${url}"
-                }
-
-            }
+    Map postMultipart(String url, Map params, MultipartFile file, String fileParam = 'files', boolean useToken = false, boolean userToken = false) {
+        try (InputStream inputStream = file.inputStream) {
+            postMultipart(url, params, inputStream, file.contentType, file.originalFilename, fileParam, useToken, userToken)
         }
-        result
     }
+
+    Map postMultipart(String url, Map params, InputStream inputStream, String contentType, String originalFilename, String fileParamName = 'files', boolean useToken = false, boolean userToken = false) {
+        RequestBody fileBody = createRequestBody(okhttp3.MediaType.parse(contentType), inputStream)
+        postMultipart(url, params, fileBody, contentType, originalFilename, fileParamName, useToken, userToken)
+    }
+
+    Map postMultipart(String url, Map params, File file, String contentType, String originalFilename, String fileParamName = 'files', boolean useToken = false, boolean userToken = false) {
+        RequestBody fileBody = RequestBody.create(okhttp3.MediaType.parse(contentType), file)
+        postMultipart(url, params, fileBody, contentType, originalFilename, fileParamName, useToken, userToken)
+    }
+
 
     private void addTokenHeader(conn, boolean requireUser = false) {
         if (useJWT()) {
