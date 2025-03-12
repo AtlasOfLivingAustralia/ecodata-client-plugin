@@ -618,20 +618,16 @@ class EcpWebService {
 
             ResponseBody responseBody = response.body()
             okhttp3.MediaType respContentType = responseBody.contentType()
-            String subType = respContentType.subtype()?.toLowerCase()
+            String mediaType = respContentType.type()?.toLowerCase()
             def responseData
-
-            switch (subType) {
-                case "json":
+            if (isTextBased(mediaType)) {
+                responseData = responseBody.string()
+                if (mediaType.contains('json')) {
                     ObjectMapper objectMapper = new ObjectMapper()
                     responseData = objectMapper.readValue(responseBody.string(), Object)
-                    break
-                case "text":
-                    responseData = responseBody.string()
-                    break
-                default:
-                    responseData = responseBody.byteStream()
-                    break
+                }
+            } else {
+                responseData = responseBody.byteStream()
             }
 
             result.statusCode = result.status = response.code()
@@ -643,6 +639,18 @@ class EcpWebService {
         }
 
         return result
+    }
+
+    private static boolean isTextBased(String contentType) {
+        if (!contentType) {
+            log.error("Missing content type")
+            return false
+        }
+        String contentTypeLower = contentType.toLowerCase()
+        return contentTypeLower.contains('json') ||
+                contentTypeLower.contains('text') ||
+                contentTypeLower.contains('xml') ||
+                contentTypeLower.contains('graphql')
     }
 
     /**
