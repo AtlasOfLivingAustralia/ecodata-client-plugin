@@ -618,7 +618,7 @@ class EcpWebService {
 
             ResponseBody responseBody = response.body()
             okhttp3.MediaType respContentType = responseBody.contentType()
-            String mediaType = respContentType.type()?.toLowerCase()
+            String mediaType = respContentType.toString()?.toLowerCase()
             def responseData
             if (isTextBased(mediaType)) {
                 responseData = responseBody.string()
