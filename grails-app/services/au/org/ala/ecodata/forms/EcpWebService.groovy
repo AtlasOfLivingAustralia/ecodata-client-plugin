@@ -627,7 +627,10 @@ class EcpWebService {
                     responseData = objectMapper.readValue(responseData, Object)
                 }
             } else {
-                responseData = responseBody.byteStream()
+                // This is only used for the /document/createThumbnail endpoint.  Because the thumbnail is small we
+                // can get away with reading the entire response into memory.  If dealing with large files
+                // we might have to remove the try with resources and handle the stream manually.
+                responseData = responseBody.bytes()
             }
 
             result.statusCode = result.status = response.code()
