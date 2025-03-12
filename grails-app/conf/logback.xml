@@ -15,6 +15,10 @@
         <appender-ref ref="STDOUT" />
     </logger>
 
+    <logger name="org.pac4j" level="INFO">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
     <root level="error">
         <appender-ref ref="STDOUT" />
     </root>
