@@ -615,18 +615,22 @@ class EcpWebService {
 
         // Execute request
         try (Response response = client.newCall(requestBuilder.build()).execute()) {
-            okhttp3.MediaType respContentType = response.body().contentType()
+
+            ResponseBody responseBody = response.body()
+            okhttp3.MediaType respContentType = responseBody.contentType()
             String subType = respContentType.subtype()?.toLowerCase()
             def responseData
-            String responseBody = response.body().string()
+
             switch (subType) {
                 case "json":
                     ObjectMapper objectMapper = new ObjectMapper()
-                    responseData = objectMapper.readValue(responseBody, Object)
+                    responseData = objectMapper.readValue(responseBody.string(), Object)
                     break
                 case "text":
+                    responseData = responseBody.string()
+                    break
                 default:
-                    responseData = responseBody
+                    responseData = responseBody.byteStream()
                     break
             }
 
@@ -660,7 +664,7 @@ class EcpWebService {
     }
 
     Map postMultipart(String url, Map params, File file, String contentType, String originalFilename, String fileParamName = 'files', boolean useToken = false, boolean userToken = false) {
-        RequestBody fileBody = RequestBody.create(okhttp3.MediaType.parse(contentType), file)
+        RequestBody fileBody = RequestBody.create(file, okhttp3.MediaType.parse(contentType))
         postMultipart(url, params, fileBody, contentType, originalFilename, fileParamName, useToken, userToken)
     }
 
