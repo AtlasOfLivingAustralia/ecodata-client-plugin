@@ -624,7 +624,7 @@ class EcpWebService {
                 responseData = responseBody.string()
                 if (mediaType.contains('json')) {
                     ObjectMapper objectMapper = new ObjectMapper()
-                    responseData = objectMapper.readValue(responseBody.string(), Object)
+                    responseData = objectMapper.readValue(responseData, Object)
                 }
             } else {
                 responseData = responseBody.byteStream()
