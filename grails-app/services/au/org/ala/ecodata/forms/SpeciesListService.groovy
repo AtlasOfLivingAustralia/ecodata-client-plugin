@@ -28,6 +28,7 @@ class SpeciesListService {
     static final String UPLOAD_V2 = "/upload"
     public static final String INGEST_V2 = "/ingest"
     public static final String PROGRESS_V2 = "/progress"
+    public static final String ENCODING = 'UTF-8'
 
     GrailsApplication grailsApplication
     EcpWebService ecpWebService
@@ -245,7 +246,7 @@ class SpeciesListService {
         if (!listId) {
             return null
         }
-        String url = grailsApplication.config.getProperty('lists.baseURL') + SPECIES_LIST_ITEMS_PATH_V2 + '/' + listId
+        String url = grailsApplication.config.getProperty('lists.baseURL') + SPECIES_LIST_ITEMS_PATH_V2 + '/' + URLEncoder.encode(listId, ENCODING)
         Map params = [pageSize: pageSize, page: page]
         if (query) {
             params.q = query
