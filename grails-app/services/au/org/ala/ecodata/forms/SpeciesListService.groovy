@@ -222,8 +222,8 @@ class SpeciesListService {
             return null
         }
 
-        String url = grailsApplication.config.getProperty('lists.baseURL') + SPECIES_LIST_ITEMS_PATH_V1 + '/' + listId
-        Map params = [includeKVP: true, pageSize: pageSize, page: page]
+        String url = grailsApplication.config.getProperty('lists.baseURL') + SPECIES_LIST_ITEMS_PATH_V1 + '/' + URLEncoder.encode(listId, ENCODING)
+        Map params = [includeKVP: true, offset: (page - 1) * page, max: pageSize]
         if (query) {
             params.q = query
         }
