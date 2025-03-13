@@ -615,19 +615,22 @@ class EcpWebService {
 
         // Execute request
         try (Response response = client.newCall(requestBuilder.build()).execute()) {
-            okhttp3.MediaType respContentType = response.body().contentType()
-            String subType = respContentType.subtype()?.toLowerCase()
+
+            ResponseBody responseBody = response.body()
+            okhttp3.MediaType respContentType = responseBody.contentType()
+            String mediaType = respContentType.toString()?.toLowerCase()
             def responseData
-            String responseBody = response.body().string()
-            switch (subType) {
-                case "json":
+            if (isTextBased(mediaType)) {
+                responseData = responseBody.string()
+                if (mediaType.contains('json')) {
                     ObjectMapper objectMapper = new ObjectMapper()
-                    responseData = objectMapper.readValue(responseBody, Object)
-                    break
-                case "text":
-                default:
-                    responseData = responseBody
-                    break
+                    responseData = objectMapper.readValue(responseData, Object)
+                }
+            } else {
+                // This is only used for the /document/createThumbnail endpoint.  Because the thumbnail is small we
+                // can get away with reading the entire response into memory.  If dealing with large files
+                // we might have to remove the try with resources and handle the stream manually.
+                responseData = responseBody.bytes()
             }
 
             result.statusCode = result.status = response.code()
@@ -639,6 +642,18 @@ class EcpWebService {
         }
 
         return result
+    }
+
+    private static boolean isTextBased(String contentType) {
+        if (!contentType) {
+            log.error("Missing content type")
+            return false
+        }
+        String contentTypeLower = contentType.toLowerCase()
+        return contentTypeLower.contains('json') ||
+                contentTypeLower.contains('text') ||
+                contentTypeLower.contains('xml') ||
+                contentTypeLower.contains('graphql')
     }
 
     /**
@@ -660,7 +675,7 @@ class EcpWebService {
     }
 
     Map postMultipart(String url, Map params, File file, String contentType, String originalFilename, String fileParamName = 'files', boolean useToken = false, boolean userToken = false) {
-        RequestBody fileBody = RequestBody.create(okhttp3.MediaType.parse(contentType), file)
+        RequestBody fileBody = RequestBody.create(file, okhttp3.MediaType.parse(contentType))
         postMultipart(url, params, fileBody, contentType, originalFilename, fileParamName, useToken, userToken)
     }
 
