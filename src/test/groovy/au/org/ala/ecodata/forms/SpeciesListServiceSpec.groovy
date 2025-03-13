@@ -180,7 +180,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         def result = service.speciesListItemsUsingV1(listId, params.pageSize, params.page, params.q)
 
         then:
-        1 * webService.getJson({it.endsWith("/ws/speciesListItems/${listId}")}, params) >> mockResponse
+        1 * webService.getJson({it.endsWith("/ws/speciesListItems/${listId}")}, [includeKVP: true, max:10, offset: 0, q: "test"]) >> mockResponse
 
         and:
         if (expectedResult) {
