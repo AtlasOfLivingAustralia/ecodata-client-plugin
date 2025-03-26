@@ -9,11 +9,11 @@ import java.text.SimpleDateFormat
 class ModelService {
     static DateFormat ISO8601 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
 
-    def grailsApplication, webService, cacheService, userInfoService
+    def grailsApplication, ecpWebService, cacheService, userInfoService
 
     def activitiesModel() {
         return cacheService.get('activity-model',{
-            webService.getJson(grailsApplication.config.getProperty('ecodata.service.url') +
+            ecpWebService.getJson(grailsApplication.config.getProperty('ecodata.service.url') +
                 '/metadata/activitiesModel')
         })
     }
@@ -25,7 +25,7 @@ class ModelService {
 
     def getDataModel(template) {
         return cacheService.get(template + '-model',{
-            webService.getJson(grailsApplication.config.getProperty('ecodata.service.url') +
+            ecpWebService.getJson(grailsApplication.config.getProperty('ecodata.service.url') +
                     "/metadata/dataModel/${template}")
         })
     }
