@@ -128,8 +128,8 @@ class UserInfoService {
                 if (credentials && credentials instanceof TokenCredentials) {
                     def userProfile = credentials.userProfile
 
-                    //String userId = userProfile?.getAttribute(grailsApplication.config.getProperty('userProfile.userIdAttribute'))
-                    String userId = userProfile?.getAttribute("username")
+                    String userId = userProfile?.getAttribute(grailsApplication.config.getProperty('userProfile.userIdAttribute'))
+//                    String userId = userProfile?.getAttribute("username")
                     if (userId) {
                         return authService.getUserForUserId(userId)
                     }
