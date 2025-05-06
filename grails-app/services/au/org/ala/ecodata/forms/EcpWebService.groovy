@@ -488,7 +488,7 @@ class EcpWebService {
         }
     }
 
-    def doDelete(String url, boolean useToken = false) {
+    int doDelete(String url, boolean useToken = false) {
         useToken = useToken || useJWT()
         if (!useToken) {
             url += (url.indexOf('?') == -1 ? '?' : '&') + "api_key=${grailsApplication.config.getProperty('api_key')}"
@@ -512,8 +512,8 @@ class EcpWebService {
 
             return conn.getResponseCode()
         } catch(Exception e){
-            println e.message
-            return 500
+            log.error("Call to DELETE "+url+" failed", e)
+            return HttpStatus.SC_INTERNAL_SERVER_ERROR
         } finally {
             if (conn != null){
                 conn?.disconnect()
