@@ -443,7 +443,7 @@ class EcpWebService {
         }
     }
 
-    def doPost(String url, Map postBody, boolean useToken = false, boolean userToken = false) {
+    Map doPost(String url, Map postBody, boolean useToken = false, boolean userToken = false) {
         useToken = useToken || useJWT()
         def conn = null
         def charEncoding = 'utf-8'
