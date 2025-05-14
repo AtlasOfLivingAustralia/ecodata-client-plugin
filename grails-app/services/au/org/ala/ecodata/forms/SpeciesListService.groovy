@@ -13,20 +13,19 @@ import java.time.format.DateTimeFormatter
  */
 class SpeciesListService {
     static final String SPECIES_LIST_ITEMS_PATH_V1 = '/ws/speciesListItems'
-    static final String SPECIES_LIST_ITEMS_PATH_V2 = '/speciesListItems'
-    static final String SPECIES_LIST_PATH_V2 = '/speciesList'
+    static final String SPECIES_LIST_ITEMS_PATH_V2 = '/v2/speciesListItems'
+    static final String SPECIES_LIST_PATH_V2 = '/v2/speciesList'
     static final String SPECIES_LIST_PATH_V1 = '/ws/speciesList'
-    static final String SPECIES_V2 = '/species'
     static final String COMMON_KEYS_PATH_V1 = '/ws/listCommonKeys'
-    static final String COMMON_KEYS_PATH_V2 = '/listCommonKeys'
+    static final String COMMON_KEYS_PATH_V2 = '/v2/listCommonKeys'
     static final String SPECIES_LIST_ITEMS_QUERY_V1 = "/ws/queryListItemOrKVP"
-    static final String SPECIES_LIST_ITEMS_QUERY_V2 = "/speciesListItems"
-    static final String SPECIES_LIST_BY_GUID_PATH_V2 = "/speciesList/byGuid"
+    static final String SPECIES_LIST_ITEMS_QUERY_V2 = "/v2/speciesListItems"
+    static final String SPECIES_LIST_BY_GUID_PATH_V2 = "/v2/speciesList/byGuid"
     int MAX_RETRIES = 60
     static final String LIST_VERSION_V2 = 'v2'
     static final String LIST_VERSION_V1 = 'v1'
-    static final String UPLOAD_V2 = "/upload"
-    public static final String INGEST_V2 = "/ingest"
+    static final String UPLOAD_V2 = "/v2/upload"
+    public static final String INGEST_V2 = "/v2/ingest"
     public static final String PROGRESS_V2 = "/progress"
     public static final String ENCODING = 'UTF-8'
 
