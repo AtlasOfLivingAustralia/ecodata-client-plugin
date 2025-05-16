@@ -88,7 +88,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
 
     void "should call list tool with empty search term" () {
         String searchTerm = null
-        String url = "https://lists-api.example.org/speciesList"
+        String url = "https://lists-api.example.org/v2/speciesList"
         Map params = [sort: 'listName', pageSize: 10, page: 1, order: 'asc', title: '']
 
         when:
@@ -100,7 +100,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
 
     void "should call list tool with passed search term"() {
         String searchTerm = 'abc'
-        String url = "https://lists-api.example.org/speciesList"
+        String url = "https://lists-api.example.org/v2/speciesList"
         Map params = [sort: 'listName', pageSize: 10, page: 1, order: 'asc', title: 'abc']
 
         when:
@@ -149,7 +149,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         def result = service.getSpeciesListMetadataUsingV2(druid)
 
         then:
-        1 * webService.getJson("https://lists-api.example.org/speciesList", [druid: druid]) >> mockResponse
+        1 * webService.getJson({it.endsWith(SpeciesListService.SPECIES_LIST_PATH_V2)}, [druid: druid]) >> mockResponse
 
 
         and:
