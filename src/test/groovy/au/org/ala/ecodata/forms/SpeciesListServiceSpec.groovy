@@ -149,7 +149,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         def result = service.getSpeciesListMetadataUsingV2(druid)
 
         then:
-        1 * webService.getJson("https://lists-api.example.org/speciesList", [druid: druid]) >> mockResponse
+        1 * webService.getJson({it.endsWith(SpeciesListService.SPECIES_LIST_PATH_V2)}, [druid: druid]) >> mockResponse
 
 
         and:
