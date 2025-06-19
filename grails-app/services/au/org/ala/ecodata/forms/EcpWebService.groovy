@@ -138,6 +138,7 @@ class EcpWebService {
         URLConnection conn = createAndConfigureConnection(url, timeout)
         boolean addUserId = false
         if(canAddSecret(url)) {
+            addHostName(conn)
             if (authorizationHeaderType == AUTHORIZATION_HEADER_TYPE_USER_BEARER_TOKEN) {
                 conn.setRequestProperty(HttpHeaders.AUTHORIZATION, getToken(true))
             } else if (authorizationHeaderType == AUTHORIZATION_HEADER_TYPE_SYSTEM_BEARER_TOKEN) {
@@ -590,9 +591,11 @@ class EcpWebService {
                 .url(url)
                 .post(multipartBodyBuilder.build())
 
-
         // Add Authorization headers
         if (canAddSecret(url)) {
+            // add host name
+            addHostName(requestBuilder)
+
             if (useToken) {
                 if (useJWT()) {
                     requestBuilder.addHeader("Authorization", getToken(userToken))
@@ -708,5 +711,23 @@ class EcpWebService {
 
     boolean useJWT() {
         grailsApplication.config.getProperty('ala.supports_jwt', Boolean.class, true)
+    }
+
+    URLConnection addHostName(URLConnection conn) {
+        def hostName = grailsApplication.config.getProperty('grails.serverURL', String)
+        if (hostName) {
+            conn.setRequestProperty(grailsApplication.config.getProperty("app.http.header.hostName", String), hostName)
+        }
+
+        conn
+    }
+
+    Request.Builder addHostName(Request.Builder requestBuilder) {
+        def hostName = grailsApplication.config.getProperty('grails.serverURL', String)
+        if (hostName) {
+            requestBuilder.addHeader(grailsApplication.config.getProperty("app.http.header.hostName", String), hostName)
+        }
+
+        requestBuilder
     }
 }
