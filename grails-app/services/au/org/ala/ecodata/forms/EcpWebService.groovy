@@ -136,9 +136,9 @@ class EcpWebService {
 
     private URLConnection configureConnection(String url, String authorizationHeaderType, Integer timeout = null, String externalToken = null) {
         URLConnection conn = createAndConfigureConnection(url, timeout)
-        addHostName(conn)
         boolean addUserId = false
         if(canAddSecret(url)) {
+            addHostName(conn)
             if (authorizationHeaderType == AUTHORIZATION_HEADER_TYPE_USER_BEARER_TOKEN) {
                 conn.setRequestProperty(HttpHeaders.AUTHORIZATION, getToken(true))
             } else if (authorizationHeaderType == AUTHORIZATION_HEADER_TYPE_SYSTEM_BEARER_TOKEN) {
@@ -591,11 +591,11 @@ class EcpWebService {
                 .url(url)
                 .post(multipartBodyBuilder.build())
 
-        // add host name
-        addHostName(requestBuilder)
-
         // Add Authorization headers
         if (canAddSecret(url)) {
+            // add host name
+            addHostName(requestBuilder)
+
             if (useToken) {
                 if (useJWT()) {
                     requestBuilder.addHeader("Authorization", getToken(userToken))
