@@ -36,6 +36,10 @@ management:
 
 lists.baseURL : https://lists-ws.test.ala.org.au/
 
+app:
+    http:
+        header:
+            hostName: "X-ALA-hostname"
 ---
 grails:
     mime:
