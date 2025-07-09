@@ -1295,15 +1295,17 @@
                             console.log("Warning: target for pre-populate is invalid");
                         }
                     }
-                    var dependencyTracker = ko.computed(function () {
-                        var initialised = (dataModelItem.context.lifecycleState && dataModelItem.context.lifecycleState.state == 'initialised');
+                    dataModelItem.subscribe(function () {
 
-                        dataLoader.prepop(config).done(function (data) {
-
-                            if (config.waitForInitialisation && !initialised) {
-                                console.log("Not applying any updates during initialisation")
+                        // Don't fire pre-populate requests during form initialisation / data load if the
+                        // config doesn't require (or want) it.
+                        if (config.waitForInitialisation) {
+                            var initialised = (dataModelItem.context.lifecycleState && dataModelItem.context.lifecycleState.state == 'initialised');
+                            if (!initialised) {
                                 return;
                             }
+                        }
+                        dataLoader.prepop(config).done(function (data) {
 
                             data = data || {};
                             var configTarget = config.target;
@@ -1336,7 +1338,7 @@
                                 }
                             }
 
-                        }); // This is a computed rather than a pureComputed as it has a side effect.
+                        });
                     });
                 }
             });
