@@ -296,6 +296,18 @@ function orEmptyArray(v) {
             return _.findWhere(list, obj);
         };
 
+        /**
+         * Finds an object in an array by matching the value of a single property then
+         * returns a single property of that result.  This works around the expression parser
+         * syntax limitations that prevents a direct property de-reference from a function return value
+         */
+        parser.functions.findProperty = function(list, property, value, propertyToReturn) {
+            var obj = {};
+            obj[property] = value;
+            var result = _.findWhere(list, obj);
+            return result && result[propertyToReturn];
+        };
+
         parser.functions.deepEquals = function(value1, value2, isSortArray) {
             // set isSortArray to true if content of array is important and not the order i.e. [1,2,3] == [3,2,1]
             isSortArray = isSortArray || false;
@@ -692,6 +704,7 @@ function orEmptyArray(v) {
                     var mapping = conf.mapping;
 
                     function postProcessPrepopData(processingFunction, processingConfig, data) {
+                        data = ko.utils.unwrapObservable(data);
                         if (!_.isArray(data)) {
                             throw "Filter/find is only supported for array typed prepop data."
                         }
