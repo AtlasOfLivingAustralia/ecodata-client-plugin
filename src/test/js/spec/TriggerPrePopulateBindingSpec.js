@@ -55,6 +55,7 @@ describe("triggerPrePopulate binding handler Spec", function () {
         $(mockElement).attr('data-bind', 'triggerPrePopulate:item');
         ko.applyBindings(model, mockElement);
 
+        dataItem(3); // trigger a change to the observable
         jasmine.clock().tick(10);
 
         expect(model.item2.item3()).toEqual("3");
