@@ -1080,11 +1080,16 @@
                 element.removeAttribute("disabled");
             else if ((!value) && (!element.disabled)) {
                 element.disabled = true;
-                var possibleValueBindings = ['value', 'datepicker'];
+                var possibleValueBindings = ['value', 'datepicker', 'selectedOptions', 'multiSelect2', 'speciesSelect'];
                 for (var i=0; i<possibleValueBindings.length; i++) {
                     var value = allBindings.get(possibleValueBindings[i]);
+                    // Special case - the multiselect2 binding includes the value binding as an options attribute.
+                    if (possibleValueBindings[i] == 'multiSelect2' && value) {
+                        value = value.value;
+                    }
                     if (ko.isObservable(value)) {
                         value(undefined);
+                        break;
                     }
                 }
             }
