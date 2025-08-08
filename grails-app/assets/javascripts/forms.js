@@ -7,6 +7,8 @@
 //= require images.js
 //= require image-gallery.js
 //= require viewModels.js
+//= require jquery.timeentry.package-2.0.1/jquery.plugin.min.js
+//= require jquery.timeentry.package-2.0.1/jquery.timeentry.min.js
 
 // returns blank string if the property is undefined, else the value
 function orBlank(v) {
