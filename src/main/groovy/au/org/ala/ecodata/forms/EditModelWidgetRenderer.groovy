@@ -91,9 +91,26 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
 
     @Override
     void renderTime(WidgetRenderContext context) {
-        context.attributes.addClass context.getInputWidth()
-        context.attributes.add 'style','text-align:center'
-        context.databindAttrs.add 'value', context.source
+
+        context.attributes.addClass(context.getInputWidth())
+        context.attributes.add('style', 'text-align:center')
+
+        context.databindAttrs.add('value', context.source)
+        context.databindAttrs.add('timeEntry', 'true')
+
+        String spinnerImage = "/assets/jquery.timeentry.package-2.0.1/spinnerOrange.png"
+        String spinnerBigImage = "/assets/jquery.timeentry.package-2.0.1/spinnerOrangeBig.png"
+
+
+        String optionsJson = "{ " +
+            "ampmPrefix: ' ', " +
+            "spinnerImage: '${spinnerImage}', " +
+            "spinnerBigImage: '${spinnerBigImage}', " +
+            "spinnerSize: [20, 20, 8], " +
+            "spinnerBigSize: [40, 40, 16] " +
+            "}"
+
+        context.databindAttrs.add('timeEntryOptions', optionsJson)
 
         Map model = [:]
         model.source = context.model.source
@@ -102,7 +119,6 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         model.validationAttr = context.validationAttr
 
         context.writer << context.g.render(template: '/output/timeDataTypeEditModelTemplate', plugin: 'ecodata-client-plugin', model: model)
-
     }
 
     @Override

@@ -1069,6 +1069,17 @@
     };
 
     /**
+     *
+     * Custom binding handler for initializing the jQuery TimeEntry plugin
+     */
+    ko.bindingHandlers.timeEntry = {
+        init: function(element, valueAccessor, allBindings) {
+            var options = allBindings.get('timeEntryOptions') || {};
+            $(element).timeEntry(options);
+        }
+    };
+
+    /**
      * Behaves as per the knockoutjs enable binding, but additionally clears the observable associated with the
      * value binding if it is also applied to the same element.
      * @type {{update: ko.bindingHandlers.enableAndClear.update}}
