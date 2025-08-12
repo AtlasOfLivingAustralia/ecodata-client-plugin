@@ -613,13 +613,7 @@ class ModelJSTagLib {
     }
 
     def timeViewModel(JSModelRenderContext ctx) {
-        // see http://keith-wood.name/timeEntry.html for details
-
-        String spinnerLocation = "${assetPath(src: '/jquery.timeentry.package-2.0.1/spinnerOrange.png')}"
-        String spinnerBigLocation = "${assetPath(src: '/jquery.timeentry.package-2.0.1/spinnerOrangeBig.png')}"
-
-        observable(ctx, [])
-        out << "\n" << INDENT*3 << "\$('#${ctx.fieldName()}TimeField').timeEntry({ampmPrefix: ' ', spinnerImage: '${spinnerLocation}', spinnerBigImage: '${spinnerBigLocation}', spinnerSize: [20, 20, 8], spinnerBigSize: [40, 40, 16]});"
+        observable(ctx)
     }
 
     def numberViewModel(JSModelRenderContext ctx) {

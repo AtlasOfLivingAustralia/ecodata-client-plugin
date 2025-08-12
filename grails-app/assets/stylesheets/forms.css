@@ -223,3 +223,27 @@ the bottom margin, add it to the input group.
 input.score {
     border-color: #4983a0;
 }
+
+/* this fixes the misalignment of the timeentry input field and spinner  */
+.timefield.input-append{
+    display:flex !important;
+    align-items:center !important;
+}
+
+.timefield.input-append > input.form-control{
+    width:auto !important;
+    display:inline-block !important;
+    margin:0;
+}
+
+.timefield.input-append > .timeEntry-control{
+    display:block;                 /* block avoids baseline alignment quirks */
+    width:20px;
+    height:20px;
+    background-position:center center;
+    background-repeat:no-repeat;
+    background-size:20px 20px;
+    line-height:0;                 /* kill extra inline box height */
+    margin-left:15px;
+    align-self:center;             /* belt-and-braces centering */
+}

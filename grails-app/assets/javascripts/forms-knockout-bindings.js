@@ -1069,6 +1069,31 @@
     };
 
     /**
+     *
+     * Custom binding handler for initializing the jQuery TimeEntry plugin
+     */
+    ko.bindingHandlers.timeEntry = {
+        init: function(element, valueAccessor, allBindings) {
+            var options = allBindings.get('timeEntryOptions') || {};
+
+            // Initialize the jQuery timeEntry plugin
+            $(element).timeEntry(options);
+
+            // Attach imagedatetime event listener if enabled
+            if (options.listenForImageEvent) {
+                $(document).on('imagedatetime', function(event, data) {
+                    var observable = valueAccessor();
+                    if (ko.isObservable(observable) && data && data.date) {
+                        var date = new Date(data.date);
+                        $(element).timeEntry('setTime', date);
+                        observable(date);
+                    }
+                });
+            }
+        }
+    };
+
+    /**
      * Behaves as per the knockoutjs enable binding, but additionally clears the observable associated with the
      * value binding if it is also applied to the same element.
      * @type {{update: ko.bindingHandlers.enableAndClear.update}}
