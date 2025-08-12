@@ -91,34 +91,38 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
 
     @Override
     void renderTime(WidgetRenderContext context) {
-
+        // classes/attributes for the input
         context.attributes.addClass(context.getInputWidth())
-        context.attributes.add('style', 'text-align:center')
+        context.attributes.addClass('input-mini timepicker')
+        context.attributes.add('style', 'text-align:left')
 
+        // KO bindings
         context.databindAttrs.add('value', context.source)
         context.databindAttrs.add('timeEntry', 'true')
 
-        String spinnerImage = "/assets/jquery.timeentry.package-2.0.1/spinnerOrange.png"
-        String spinnerBigImage = "/assets/jquery.timeentry.package-2.0.1/spinnerOrangeBig.png"
+        // default + overrides
+        Map defaultOptions = [
+            ampmPrefix: ' ',
+            spinnerImage: "/assets/jquery.timeentry.package-2.0.1/spinnerOrange.png",
+            spinnerBigImage: "/assets/jquery.timeentry.package-2.0.1/spinnerOrangeBig.png",
+            spinnerSize: [20, 20, 8],
+            spinnerBigSize: [40, 40, 16],
+            listenForImageEvent: true,
+            use24Hour: false
+        ]
+        if (context.model.options instanceof Map) {
+            defaultOptions.putAll(context.model.options)
+        }
 
-
-        String optionsJson = "{ " +
-            "ampmPrefix: ' ', " +
-            "spinnerImage: '${spinnerImage}', " +
-            "spinnerBigImage: '${spinnerBigImage}', " +
-            "spinnerSize: [20, 20, 8], " +
-            "spinnerBigSize: [40, 40, 16] " +
-            "}"
-
+        String optionsJson = (defaultOptions as grails.converters.JSON).toString()
         context.databindAttrs.add('timeEntryOptions', optionsJson)
 
-        Map model = [:]
-        model.source = context.model.source
-        model.attr = context.attributes
-        model.databindAttrs = context.databindAttrs
-        model.validationAttr = context.validationAttr
+        String attrString = context.attributes.toString()
+        String databindString = context.databindAttrs.toString()
+        String validation = context.validationAttr ?: ''
 
-        context.writer << context.g.render(template: '/output/timeDataTypeEditModelTemplate', plugin: 'ecodata-client-plugin', model: model)
+        // programmatic conversion of the old gsp (_timeDataTypeEditModelTemplate.gsp)
+        context.writer << """<div class="timefield input-append" style="position:relative"><input ${attrString} id="${context.source}TimeField" data-bind='${databindString}' ${validation} type='text' /></div>"""
     }
 
     @Override
