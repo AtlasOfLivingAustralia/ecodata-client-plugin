@@ -27,4 +27,17 @@ describe("ecodata.forms.expressionEvaluator Spec", function () {
 
     });
 
+    it ("Supports returning a property from an object in an array where the object is selected based on an expression", function() {
+        var data = {match:2, list:[
+                {prop1:1, prop2: 5},
+                {prop1:2, prop2: 4},
+                {prop1:3, prop2: 3},
+                {prop1:4, prop2: 2},
+                {prop1:5, prop2: 1}
+
+                ]};
+        expect(ecodata.forms.expressionEvaluator.evaluateString("findProperty(list, \"prop1\", match, \"prop2\")", data)).toEqual('4');
+
+    })
+
 });

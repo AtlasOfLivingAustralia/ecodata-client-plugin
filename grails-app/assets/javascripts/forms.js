@@ -7,6 +7,8 @@
 //= require images.js
 //= require image-gallery.js
 //= require viewModels.js
+//= require jquery.timeentry.package-2.0.1/jquery.plugin.min.js
+//= require jquery.timeentry.package-2.0.1/jquery.timeentry.min.js
 
 // returns blank string if the property is undefined, else the value
 function orBlank(v) {
@@ -294,6 +296,18 @@ function orEmptyArray(v) {
             var obj = {};
             obj[property] = value;
             return _.findWhere(list, obj);
+        };
+
+        /**
+         * Finds an object in an array by matching the value of a single property then
+         * returns a single property of that result.  This works around the expression parser
+         * syntax limitations that prevents a direct property de-reference from a function return value
+         */
+        parser.functions.findProperty = function(list, property, value, propertyToReturn) {
+            var obj = {};
+            obj[property] = value;
+            var result = _.findWhere(list, obj);
+            return result && result[propertyToReturn];
         };
 
         parser.functions.deepEquals = function(value1, value2, isSortArray) {
@@ -692,6 +706,7 @@ function orEmptyArray(v) {
                     var mapping = conf.mapping;
 
                     function postProcessPrepopData(processingFunction, processingConfig, data) {
+                        data = ko.utils.unwrapObservable(data);
                         if (!_.isArray(data)) {
                             throw "Filter/find is only supported for array typed prepop data."
                         }

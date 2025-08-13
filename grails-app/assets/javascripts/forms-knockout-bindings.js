@@ -1069,6 +1069,31 @@
     };
 
     /**
+     *
+     * Custom binding handler for initializing the jQuery TimeEntry plugin
+     */
+    ko.bindingHandlers.timeEntry = {
+        init: function(element, valueAccessor, allBindings) {
+            var options = allBindings.get('timeEntryOptions') || {};
+
+            // Initialize the jQuery timeEntry plugin
+            $(element).timeEntry(options);
+
+            // Attach imagedatetime event listener if enabled
+            if (options.listenForImageEvent) {
+                $(document).on('imagedatetime', function(event, data) {
+                    var observable = valueAccessor();
+                    if (ko.isObservable(observable) && data && data.date) {
+                        var date = new Date(data.date);
+                        $(element).timeEntry('setTime', date);
+                        observable(date);
+                    }
+                });
+            }
+        }
+    };
+
+    /**
      * Behaves as per the knockoutjs enable binding, but additionally clears the observable associated with the
      * value binding if it is also applied to the same element.
      * @type {{update: ko.bindingHandlers.enableAndClear.update}}
@@ -1080,11 +1105,16 @@
                 element.removeAttribute("disabled");
             else if ((!value) && (!element.disabled)) {
                 element.disabled = true;
-                var possibleValueBindings = ['value', 'datepicker'];
+                var possibleValueBindings = ['value', 'datepicker', 'selectedOptions', 'multiSelect2', 'speciesSelect'];
                 for (var i=0; i<possibleValueBindings.length; i++) {
                     var value = allBindings.get(possibleValueBindings[i]);
+                    // Special case - the multiselect2 binding includes the value binding as an options attribute.
+                    if (possibleValueBindings[i] == 'multiSelect2' && value) {
+                        value = value.value;
+                    }
                     if (ko.isObservable(value)) {
                         value(undefined);
+                        break;
                     }
                 }
             }
@@ -1295,15 +1325,17 @@
                             console.log("Warning: target for pre-populate is invalid");
                         }
                     }
-                    var dependencyTracker = ko.computed(function () {
-                        var initialised = (dataModelItem.context.lifecycleState && dataModelItem.context.lifecycleState.state == 'initialised');
+                    dataModelItem.subscribe(function () {
 
-                        dataLoader.prepop(config).done(function (data) {
-
-                            if (config.waitForInitialisation && !initialised) {
-                                console.log("Not applying any updates during initialisation")
+                        // Don't fire pre-populate requests during form initialisation / data load if the
+                        // config doesn't require (or want) it.
+                        if (config.waitForInitialisation) {
+                            var initialised = (dataModelItem.context.lifecycleState && dataModelItem.context.lifecycleState.state == 'initialised');
+                            if (!initialised) {
                                 return;
                             }
+                        }
+                        dataLoader.prepop(config).done(function (data) {
 
                             data = data || {};
                             var configTarget = config.target;
@@ -1336,7 +1368,7 @@
                                 }
                             }
 
-                        }); // This is a computed rather than a pureComputed as it has a side effect.
+                        });
                     });
                 }
             });

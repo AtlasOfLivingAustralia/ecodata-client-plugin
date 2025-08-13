@@ -613,13 +613,7 @@ class ModelJSTagLib {
     }
 
     def timeViewModel(JSModelRenderContext ctx) {
-        // see http://keith-wood.name/timeEntry.html for details
-
-        String spinnerLocation = "${assetPath(src: '/jquery.timeentry.package-2.0.1/spinnerOrange.png')}"
-        String spinnerBigLocation = "${assetPath(src: '/jquery.timeentry.package-2.0.1/spinnerOrangeBig.png')}"
-
-        observable(ctx, [])
-        out << "\n" << INDENT*3 << "\$('#${ctx.fieldName()}TimeField').timeEntry({ampmPrefix: ' ', spinnerImage: '${spinnerLocation}', spinnerBigImage: '${spinnerBigLocation}', spinnerSize: [20, 20, 8], spinnerBigSize: [40, 40, 16]});"
+        observable(ctx)
     }
 
     def numberViewModel(JSModelRenderContext ctx) {
@@ -851,7 +845,14 @@ class ModelJSTagLib {
             model.behaviour.each { constraint ->
                 ConstraintType type = ConstraintType.valueOf(constraint.type.toUpperCase())
                 if (type.isBoolean) {
-                    out << INDENT * 3 << "${ctx.propertyPath}.${model.name}.${constraint.type}Constraint = ko.computed(function() {\n"
+                    // Using a pureComputed instead of a computed observable means the computed won't be
+                    // evaluated for the first time until the first subscriber is added to the observable.
+                    // For behaviours, this typically won't happen until the bindings are applied, which means
+                    // the rest of the model has been declared.   This works around an issue where the expression
+                    // is evaluated before a dependency of the expression is declared (because of the order of
+                    // declaration in the model) and when it's evaluated immediately it's unable to register a
+                    // dependency on the observable that hasn't been declared yet which prevents any future updates.
+                    out << INDENT * 3 << "${ctx.propertyPath}.${model.name}.${constraint.type}Constraint = ko.pureComputed(function() {\n"
                     out << INDENT * 4 << "var condition = '${constraint.condition}';\n";
                     out << INDENT * 4 << "return ecodata.forms.expressionEvaluator.evaluateBoolean(condition, ${ctx.propertyPath});\n"
                     out << INDENT * 3 << "});\n"
