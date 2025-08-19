@@ -902,8 +902,13 @@ class ModelJSTagLib {
             out << INDENT*3 << "\n // jsClass ${model.name} custom script implementation >> START \n"
             model?.jsClass?.toURL()?.text?.eachLine{ lines << it }
         } else if(type == "jsMain") {
-            out << INDENT*3 << "\n // jsMain ${model.name} custom script implementation >> START \n"
-            model?.jsMain?.toURL()?.text?.eachLine{ lines << it }
+            if (attrs.readonly && model.ignoreJsMainWhenReadonly) {
+                out << INDENT*3 << "\n // not adding jsMain ${model.name} on readonly page\n"
+            }
+            else {
+                out << INDENT*3 << "\n // jsMain ${model.name} custom script implementation >> START \n"
+                model?.jsMain?.toURL()?.text?.eachLine{ lines << it }
+            }
         } else {
             out << INDENT*3 << "\n // Custom script not avaialble for ${model.name} \n"
         }
