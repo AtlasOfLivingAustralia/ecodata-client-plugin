@@ -53,3 +53,6 @@ out/
 /.slcache
 
 /.gradle/
+
+/grails-app/assets/components/compile
+/grails-app/assets/vendor/turf/turf-packaged.js
