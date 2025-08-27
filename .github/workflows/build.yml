@@ -17,16 +17,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'adopt'
 
       - name: Install nodejs
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '16.x'
           registry-url: 'https://npm.pkg.github.com'
@@ -38,31 +38,26 @@ jobs:
 
       - name: Update your package.json with an npm pre-release version
         id: pre-release-version
-        uses: adobe/update-prerelease-npm-version@v1.0.0
+        uses: adobe/update-prerelease-npm-version@4dea8f295023f5b18126afd79bae1057a5b92d6e #v1.2.0
 
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
+
 
       - name: Run tests and jacoco coverage report with Gradle
-        uses: gradle/gradle-build-action@v2.4.2
-        with:
-          arguments: -PenableJacoco=true check
+        run: ./gradlew -PenableJacoco=true check
 
       - name: Run javascript unit tests
         run: node_modules/karma/bin/karma start karma.conf.js --single-run --browsers ChromeHeadless
 
       - name: Clean to remove clover instrumentation
-        uses: gradle/gradle-build-action@v2.4.2
-        with:
-          arguments: clean
+        run: ./gradlew clean
 
       - name: Publish the JAR to the repository
-        uses: gradle/gradle-build-action@v2.4.2
-        with:
-          arguments: publish
+        run: ./gradlew publish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
