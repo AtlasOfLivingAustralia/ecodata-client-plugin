@@ -584,8 +584,13 @@ class ModelTagLib {
         switch (layoutContext.parentView) {
             case 'col':
                 out << "<div class=\"row form-group\">"
-                labelAttributes.addSpan 'col-sm-'+labelColWidth
-                dataTag = "<div class=\"col-sm-${inputFieldColWidth}\">"+dataTag+"</div>"
+                if (model.fullWidthLabelAbove) {
+                    labelAttributes.addSpan 'col-sm-12'
+                    dataTag = "<div class=\"col-sm-12\">"+dataTag+"</div>"
+                } else {
+                    labelAttributes.addSpan 'col-sm-'+labelColWidth
+                    dataTag = "<div class=\"col-sm-${inputFieldColWidth}\">"+dataTag+"</div>"
+                }
                 break
             case 'table':
                 if (model.type == 'boolean') {
