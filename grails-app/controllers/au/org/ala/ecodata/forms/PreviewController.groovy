@@ -120,32 +120,6 @@ class PreviewController {
         respond constraints
     }
 
-    def speciesItemsForList() {
-        List items = [
-                [
-                    id: 1,
-                    scientificName: "Macropus rufus",
-                    commonName: "Red Kangaroo",
-                    guid: "urn:lsid:biodiversity.org.au:afd.taxon:12345678-1234-1234-1234-123456789012",
-                    kvpValues: [
-                            [key: 'common name', value: "Kangaroo"],
-                            [key: "scientific name", value: "Osphranter rufus"]
-                    ]
-                ],
-                [
-                    id: 2,
-                    scientificName: "Gymnorhina tibicen",
-                    commonName: "Australian Magpie",
-                    guid: "urn:lsid:biodiversity.org.au:afd.taxon:87654321-4321-4321-4321-210987654321",
-                    kvpValues: [
-                            [key: 'common name', value: "Australian Magpie"],
-                            [key: "scientific name", value: "Cracticus tibicen"]
-                    ]
-                ]
-        ]
-        render items as JSON, contentType: 'application/json'
-    }
-
     /**
      * Stub function for testing geoMap dataType.
      */

@@ -455,11 +455,10 @@
                             source: item
                         }
                     });
-                    // add missing species last
-                    items.push({label:"Missing or unidentified species", value:_.escape(request.term), source: {listId:'unmatched', name: _.escape(request.term), scientificName: _.escape(request.term)}});
+                    items = [{label:"Missing or unidentified species", value:request.term, source: {listId:'unmatched', name: request.term}}].concat(items);
                     response(items);
                 }).fail(function(e) {
-                    items = [{label:"Error during species lookup", value:_.escape(request.term), source: {listId:'error-unmatched', name: _.escape(request.term), scientificName: _.escape(request.term)}}];
+                    items = [{label:"Error during species lookup", value:request.term, source: {listId:'error-unmatched', name: request.term}}];
                     response(items);
                 }).always(function() {
                     $(element).removeClass("ac_loading");

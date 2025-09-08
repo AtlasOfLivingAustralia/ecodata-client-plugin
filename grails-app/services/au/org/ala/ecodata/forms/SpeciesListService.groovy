@@ -37,7 +37,6 @@ class SpeciesListService {
         String id
         String name
         String dataResourceUid
-        String rawScientificName
         String scientificName
         String commonName
         List kvpValues
@@ -224,7 +223,7 @@ class SpeciesListService {
         }
 
         String url = grailsApplication.config.getProperty('lists.baseURL') + SPECIES_LIST_ITEMS_PATH_V1 + '/' + URLEncoder.encode(listId, ENCODING)
-        Map params = [includeKVP: true, offset: (page - 1) * pageSize, max: pageSize]
+        Map params = [includeKVP: true, offset: (page - 1) * page, max: pageSize]
         if (query) {
             params.q = query
         }
@@ -564,7 +563,6 @@ class SpeciesListService {
                 dataResourceUid: speciesListItem.speciesListID,
                 lsid: lsid,
                 name:scientificName,
-                rawScientificName: speciesListItem.scientificName,
                 scientificName:scientificName,
                 commonName:commonName,
                 kvpValues: speciesListItem.properties,
@@ -575,8 +573,7 @@ class SpeciesListService {
         new SpeciesListItem(
                 id: speciesListItem.id,
                 dataResourceUid: speciesListItem.dataResourceUid,
-                name: speciesListItem.name,
-                rawScientificName: speciesListItem.rawScientificName ?: speciesListItem.name,
+                name:speciesListItem.name,
                 scientificName: speciesListItem.scientificName,
                 commonName: speciesListItem.commonName,
                 kvpValues: speciesListItem.kvpValues,

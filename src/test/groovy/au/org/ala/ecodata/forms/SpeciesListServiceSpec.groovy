@@ -37,7 +37,6 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         result.size() == 1
         result[0].name == "Testus species"
         result[0].scientificName == "Testus species"
-        result[0].rawScientificName == "Testus species"
         result[0].commonName == "Test Species"
         result[0].lsid == "testLsid"
         result[0].kvpValues == []
@@ -83,7 +82,6 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         result.size() == 1
         result[0].name == "Testus species"
         result[0].scientificName == "Testus species"
-        result[0].rawScientificName == "Testus species"
         result[0].commonName == "Test Species"
         result[0].lsid == "testLsid"
     }
@@ -188,15 +186,14 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         if (expectedResult) {
             result[0].id == expectedResult.id
             result[0].name == expectedResult.name
-            result[0].rawScientificName == expectedResult.rawScientificName
         } else {
             result == null
         }
 
         where:
         statusCode | responseData                                          | expectedResult
-        200        | [[id: "item1", name: "Species 1", rawScientificName: 'species 1']]                   | [[id: "item1", name: "Species 1", rawScientificName: 'species 1']]
-        201        | [[id: "item2", name: "Species 2", rawScientificName: 'species 1']]                   | [[id: "item2", name: "Species 2", rawScientificName: 'species 1']]
+        200        | [[id: "item1", name: "Species 1"]]                   | [[id: "item1", name: "Species 1"]]
+        201        | [[id: "item2", name: "Species 2"]]                   | [[id: "item2", name: "Species 2"]]
         204        | []                                                    | []
         400        | [error: "Bad request"]                                | null
         404        | [error: "Not found"]                                  | null
@@ -484,14 +481,12 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
                         [
                                 id: 123,
                                 scientificName: "Eucalyptus globulus",
-                                rawScientificName: "Eucalyptus globulus",
                                 commonName: "Tasmanian Blue Gum",
                                 kvpValues: [[kingdom: "Plantae"]]
                         ],
                         [
                                 id: 124,
                                 scientificName: "Eucalyptus camaldulensis",
-                                rawScientificName: "Eucalyptus camaldulensis",
                                 commonName: "River Red Gum",
                                 kvpValues: [[kingdom: "Plantae"]]
                         ]
@@ -506,9 +501,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         then:
         result.size() == 2
         result[0].scientificName == "Eucalyptus globulus"
-        result[0].rawScientificName == "Eucalyptus globulus"
         result[1].scientificName == "Eucalyptus camaldulensis"
-        result[1].rawScientificName == "Eucalyptus camaldulensis"
     }
 
 
@@ -600,11 +593,9 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         then:
         result.size() == 2
         result[0].scientificName == "Eucalyptus globulus"
-        result[0].rawScientificName == "Eucalyptus globilus"
         result[0].commonName == "Tasmanian Blue Gum"
         result[0].lsid == "testLsid1"
         result[0].kvpValues == [[kingdom: "Plantae"]]
-        result[1].rawScientificName == "Eucalyptus cameldulensis"
         result[1].scientificName == "Eucalyptus camaldulensis"
         result[1].commonName == "River Red Gum"
         result[1].kvpValues == [[kingdom: "Plantae"]]

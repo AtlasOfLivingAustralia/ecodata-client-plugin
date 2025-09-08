@@ -1,14 +1,17 @@
 //= require uuid.js
 
 var speciesFormatters = function() {
-    const COMMON_SCIENTIFIC_NAME = "COMMONNAME(SCIENTIFICNAME)",
-        SCIENTIFIC_COMMON_NAME = "SCIENTIFICNAME(COMMONNAME)",
-        SCIENTIFIC_NAME = "SCIENTIFICNAME",
-        COMMON_NAME = "COMMONNAME";
-    var singleLineSpeciesFormatter = function(species, speciesConfig) {
-        var result = formatTaxonName(species, speciesConfig, true);
-        if (result)
-            return $(result);
+
+    var singleLineSpeciesFormatter = function(species) {
+        if (species.scientificName && species.commonName) {
+            return $('<span/>').append($('<span class="scientific-name"/>').text(scientificName(species))).append($('<span class="common-name"/>').text(' (' + commonName(species)+ ')'));
+        }
+        else if (species.scientificName) {
+            return $('<span class="scientific-name"/>').text(scientificName(species));
+        }
+        else {
+            return $('<span class="common-name"/>').html(commonName(species)); // Html is used to avoid double escaping user entered data.
+        }
     };
 
     function image(species, config) {
@@ -42,7 +45,7 @@ var speciesFormatters = function() {
         key = key.toLowerCase();
         return _.find(kvpValues, function (kvp) {
             if (kvp && kvp.key) {
-                return kvp.key.toLowerCase() == key.toLowerCase();
+                return kvp.key.toLowerCase() == key;
             }
         });
     };
@@ -87,68 +90,8 @@ var speciesFormatters = function() {
         return result;
     };
 
-    var formatTaxonName = function (data, speciesConfig, htmlMarkup) {
-        var name = "";
-        var displayType = speciesConfig.speciesDisplayFormat || SCIENTIFIC_COMMON_NAME;
-
-        switch (displayType) {
-            case COMMON_SCIENTIFIC_NAME:
-                if (data.commonName && data.scientificName) {
-                    if (htmlMarkup)
-                        return `<span class="common-name"/>${data.commonName}</span> <span class="scientific-name">(${data.scientificName})</span>`;
-                    else
-                        return `${data.commonName} (${data.scientificName})`;
-                }
-                break;
-
-            case SCIENTIFIC_COMMON_NAME:
-                if (data.scientificName && data.commonName) {
-                    if (htmlMarkup)
-                        return `<span class="scientific-name">${data.scientificName}</span> <span class="common-name">(${data.commonName})</span>`;
-                    else
-                        return `${data.scientificName} (${data.commonName})`;
-                }
-                break;
-
-            case COMMON_NAME:
-                if (data.commonName) {
-                    if (htmlMarkup)
-                        return `<span class="common-name">${data.commonName}</span>`;
-                    else
-                        return data.commonName;
-                }
-                break;
-
-            case SCIENTIFIC_NAME:
-                if (data.scientificName) {
-                    if (htmlMarkup)
-                        return `<span class="scientific-name">${data.scientificName}</span>`;
-                    else
-                        return data.scientificName;
-                }
-                break;
-        }
-
-        if (data.scientificName) {
-            if (htmlMarkup)
-                return `<span class="scientific-name">${data.scientificName}</span>`;
-            else
-                return  data.scientificName;
-        } else if (data.commonName) {
-            if (htmlMarkup)
-                return `<span class="common-name">${data.commonName}</span>`;
-            else
-                return data.commonName;
-        }
-
-        return name;
-    }
-
 
     return {
-        scientificName:scientificName,
-        commonName: commonName,
-        formatTaxonName: formatTaxonName,
         singleLineSpeciesFormatter:singleLineSpeciesFormatter,
         multiLineSpeciesFormatter:multiLineSpeciesFormatter
     }
@@ -157,43 +100,13 @@ var speciesFormatters = function() {
 
 
 var speciesSearchEngines = function() {
-    var speciesId = function (species, config) {
-        if (species.id) {
-            return species.id;
-        } else {
-            return findSpeciesId(species, config);
+
+    var speciesId = function (species) {
+        if (species.guid || species.lsid) {
+            return species.guid || species.lsid;
         }
+        return species.name;
     };
-
-    var findSpeciesId = function(species, config) {
-        if (!config)
-            return ;
-
-        var engine = speciesSearchEngines.get(config);
-        var list = engine.all(),
-            item, scientificName, commonName,
-            speciesScientificName = species.scientificName && species.scientificName.trim().toLowerCase(),
-            speciesCommonName = species.commonName && species.commonName.trim().toLowerCase(),
-            speciesName = species.name && species.name.trim().toLowerCase();
-
-        for (var i in list) {
-            item = list[i];
-            scientificName = speciesFormatters.scientificName(item, config);
-            scientificName = scientificName && scientificName.trim().toLowerCase();
-            commonName = speciesFormatters.commonName(item, config);
-            commonName = commonName && commonName.trim().toLowerCase();
-
-            if (speciesScientificName === scientificName || speciesName === scientificName) {
-                if (speciesCommonName) {
-                    if (speciesCommonName === commonName) {
-                        return item.id;
-                    }
-                } else {
-                    return item.id;
-                }
-            }
-        }
-    }
 
     var speciesTokenizer = function (species) {
         var result = [];
@@ -206,15 +119,9 @@ var speciesSearchEngines = function() {
         if (species.name) {
             result = result.concat(species.name.split(/\W+/));
         }
-
-        if (species.rawScientificName) {
-            result = result.concat(species.rawScientificName.split(/\W+/));
-        }
-
         if (species.kvpValues) {
-            // BioCollect can use any KVP as scientific or common name
             for (var i in species.kvpValues) {
-                if (species.kvpValues[i].value) {
+                if (species.kvpValues[i].key.indexOf('name') >= 0) {
                     result = result.concat(species.kvpValues[i].value.split(/\W+/));
                 }
             }
@@ -227,8 +134,7 @@ var speciesSearchEngines = function() {
             return [];
         }
         for (var i in speciesArray) {
-            if(!speciesArray[i].id)
-                speciesArray[i].id = UUID.generate();
+            speciesArray[i].id = speciesId(speciesArray[i]);
         }
         return speciesArray;
     };
@@ -252,39 +158,29 @@ var speciesSearchEngines = function() {
 
     var engines = {};
 
-    function engineKey(listIds, alaFallback) {
-        // version to force data reload as functionality has significantly changed.
-        var version = "v1";
-        return version + (listIds || []).sort().join("") + alaFallback;
+    function engineKey(listId, alaFallback) {
+        return listId || '' + alaFallback;
     }
 
     function get(config) {
-        var key = engineKey(config.listIds, config.useAla);
+        var key = engineKey(config.listId, config.useAla);
         var engine = engines[key];
         if (!engine) {
-            engine = define(config, key);
+            engine = define(config);
             engines[key] = engine;
         }
         return engine;
     };
 
-    function define(config, cacheKey) {
+    function define(config) {
         var options = {
             datumTokenizer: speciesTokenizer,
             queryTokenizer: Bloodhound.tokenizers.nonword,
             identify: speciesId
         };
-
-        // In BioCollect, we only want to search ALA if there are no constraints on field i.e. All Species is selected.
-        // The overrideUseAlaFlag is set in BioCollect to enable this.
-        if (config.overrideUseAlaFlag) {
-            config.useAla = (config.type  === 'ALL_SPECIES');
-        }
-
         if (config.listId) {
             options.prefetch = {
                 url: config.speciesListUrl + '?druid='+config.listIds.join(',')+'&includeKvp=true',
-                cacheKey: cacheKey,
                 transform: select2ListTransformer
             };
         }
@@ -544,18 +440,15 @@ var SpeciesViewModel = function(data, options, context) {
     };
 
     var speciesConfig = self.findSpeciesConfig(options);
-    self.transients.speciesConfig = speciesConfig;
 
     self.formatSearchResult = function(species) {
         return speciesFormatters.multiLineSpeciesFormatter(species, self.transients.currentSearchTerm || '', speciesConfig);
     };
-    self.formatSelectedSpecies = function (species) {
-        return speciesFormatters.singleLineSpeciesFormatter(species, self.transients.speciesConfig);
-    }
+    self.formatSelectedSpecies = speciesFormatters.singleLineSpeciesFormatter;
 
     self.transients.engine = speciesSearchEngines.get(speciesConfig);
     self.id = function() {
-        return speciesSearchEngines.speciesId({guid:self.guid(), name:self.name(), scientificName:self.scientificName(), commonName:self.commonName(), listId:self.listId()}, speciesConfig);
+        return speciesSearchEngines.speciesId({guid:self.guid(), name:self.name()});
     };
 
     function markMatch (text, term) {
@@ -614,7 +507,7 @@ var SpeciesViewModel = function(data, options, context) {
                         suppliedResults = true;
                     }
                     if (!speciesConfig.useAla && speciesConfig.allowUnmatched && term.length >= speciesConfig.unmatchedTermlength) {
-                        results.push({text: "Missing or unidentified species", children: [{id:name, scientificName: _.escape(term), name: _.escape(term), listId:"unmatched"}]});
+                        results.push({text: "Missing or unidentified species", children: [{id:name, name: _.escape(term), listId:"unmatched"}]});
                     }
                     callback({results: results}, false);
                 },
@@ -624,7 +517,7 @@ var SpeciesViewModel = function(data, options, context) {
                         results.push({text: "Atlas of Living Australia", children: resultArr});
                     }
                     if (speciesConfig.allowUnmatched && term.length >= speciesConfig.unmatchedTermlength) {
-                        results.push({text: "Missing or unidentified species", children: [{id:name, name:_.escape(term), scientificName: _.escape(term), listId:"unmatched"}]});
+                        results.push({text: "Missing or unidentified species", children: [{id:name, name:_.escape(term), listId:"unmatched"}]});
                     }
                     callback({results:results}, suppliedResults);
                 });
@@ -653,7 +546,7 @@ var SpeciesViewModel = function(data, options, context) {
 
     self.name.subscribe(function (newName) {
         if (!self.outputSpeciesId() && newName != species.name) {
-            self.nameChangeHandler();
+            self.assignOutputSpeciesId();
         }
     });
 
@@ -702,22 +595,16 @@ var SpeciesViewModel = function(data, options, context) {
     };
 
     /**
-     * Obtain a unique id for this species to correlate the form data with occurrence
+     * Obtain a unique id for this species to correlate the form data with occurance
      * records produced for export to the ALA
      */
     self.assignOutputSpeciesId = function() {
-        if (!self.outputSpeciesId()) {
+        var idRequired = options.getOutputSpeciesIdUrl;
+        if (idRequired && !self.outputSpeciesId() && self.guid()) {
+            self.transients.bieUrl(options.bieUrl + '/species/' + self.guid());
             self.outputSpeciesId(UUID.generate());
         }
     };
-
-    self.nameChangeHandler = function() {
-        self.assignOutputSpeciesId();
-
-        if (self.guid()) {
-            self.transients.bieUrl(options.bieUrl + '/species/' + self.guid());
-        }
-    }
 
     self.guidFromOutputSpeciesId(species);
     setTimeout(self.populateSingleSpecies, 0);
@@ -727,7 +614,7 @@ var SpeciesViewModel = function(data, options, context) {
     }
 
     if (species.name && !self.outputSpeciesId()) {
-        self.nameChangeHandler(); // This will result in the data being marked as dirty.
+        self.assignOutputSpeciesId(); // This will result in the data being marked as dirty.
     }
 };
 
@@ -741,19 +628,15 @@ $.fn.select2.amd.define('select2/species', [
         this.$element = $element;
         SpeciesAdapter.__super__.constructor.call(this, $element, options);
 
-        var species = this.model.toJS();
+        var id = this.model.id();
 
-        if (species.name) {
-            this.addOptions(this.option({id:species.name, text:this.model.name()}));
+        if (id) {
+            this.addOptions(this.option({id:id, text:this.model.name()}));
         }
         else {
             this.addOptions(this.option({text:options.placeholder}));
         }
 
-        // disable select2 if species field is single species
-        if (this.model.transients.speciesConfig && (this.model.transients.speciesConfig.type === 'SINGLE_SPECIES')) {
-            $element.prop("disabled", true);
-        }
     }
 
     Utils.Extend(SpeciesAdapter, AjaxAdapter);
@@ -796,22 +679,16 @@ $.fn.select2.amd.define('select2/species', [
 
     SpeciesAdapter.prototype.current = function (callback) {
         var data = this.model.toJS();
-        data.id = speciesSearchEngines.speciesId(data, this.model.transients.speciesConfig) || data.name;
+        data.id = speciesSearchEngines.speciesId(data);
         if (!data.id) {
             data = {id: -1, text: "Please select..."}
         }
-
         callback([data]);
     };
 
     SpeciesAdapter.prototype.select = function(data) {
-        // don't want to pollute the select2 bound data.
-        var dataCopy = $.extend({}, data);
-        dataCopy.scientificName = speciesFormatters.scientificName(dataCopy, this.model.transients.speciesConfig);
-        dataCopy.commonName = speciesFormatters.commonName(dataCopy, this.model.transients.speciesConfig);
-        dataCopy.name = speciesFormatters.formatTaxonName(data, this.model.transients.speciesConfig.speciesDisplayFormat);
-        this.model.loadData(dataCopy);
-        AjaxAdapter.__super__.select.call(this, dataCopy);
+        this.model.loadData(data);
+        AjaxAdapter.__super__.select.call(this, data);
     };
 
     return SpeciesAdapter;
