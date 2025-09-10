@@ -809,7 +809,7 @@ $.fn.select2.amd.define('select2/species', [
         var dataCopy = $.extend({}, data);
         dataCopy.scientificName = speciesFormatters.scientificName(dataCopy, this.model.transients.speciesConfig);
         dataCopy.commonName = speciesFormatters.commonName(dataCopy, this.model.transients.speciesConfig);
-        dataCopy.name = speciesFormatters.formatTaxonName(data, this.model.transients.speciesConfig.speciesDisplayFormat);
+        dataCopy.name = speciesFormatters.formatTaxonName(data, this.model.transients.speciesConfig);
         this.model.loadData(dataCopy);
         AjaxAdapter.__super__.select.call(this, dataCopy);
     };
