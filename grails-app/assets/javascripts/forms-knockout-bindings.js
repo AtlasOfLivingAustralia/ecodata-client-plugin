@@ -536,6 +536,89 @@
         }).attr("data-prompt-position", "topRight:"+select2.width());
     }
 
+    /**
+     * Converts an array of data to the format expected by select2.
+     * @param dataArray - Array of objects or strings/numbers
+     * @param idField - The name of the field to use as the id for objects in the dataArray
+     * @param textField - The name of the field to use as the text for objects in the dataArray
+     * @param selectedValue - The value to mark as selected
+     * @returns {[{id: ... , text: ..., selected: true|false}, ...]} An array of objects with id and text attributes and optionally selected:true
+     */
+    function convertDataArrayToSelect2Representation(dataArray, idField, textField, selectedValue) {
+        var result = [];
+        dataArray.forEach(function(item) {
+            var option;
+            if (typeof item === 'string' || typeof item === 'number') {
+                option = {id:item, text:item};
+            }
+            else if (typeof item === 'object') {
+                option = convertDataToSelect2Representation(item, idField, textField, selectedValue);
+            }
+
+            if (option) {
+                result.push(option);
+            }
+        });
+
+        return result;
+    }
+
+    /**
+     * Converts a single object to the format expected by select2.
+     * @param item - An object, string or number
+     * @param idField - The name of the field to use as the id for the object
+     * @param textField - The name of the field to use as the text for the object
+     * @returns {{id: *, text: *}|null}
+     */
+    function convertDataToSelect2Representation(item, idField, textField, selectedValue) {
+        if (!item)
+            return null;
+
+        var option;
+        if (typeof item === 'string' || typeof item === 'number') {
+            option = {id:item, text:item};
+        } else if (typeof item === 'object') {
+            if (!idField || !textField || !item.hasOwnProperty(idField) || !item.hasOwnProperty(textField)) {
+                console.error("Either idField or textField is not specified or item does not have the specified fields");
+                return;
+            }
+
+            option = {id: item[idField], text: item[textField]};
+        }
+
+        if (option.id == selectedValue) {
+            option.selected = true;
+        }
+
+        return option;
+    }
+
+    /**
+     * Finds an option in an array of options by matching the idField to the supplied value.
+     * @param dataArray - Array of objects, strings or numbers
+     * @param idField - The name of the field to use as the id for objects in the dataArray
+     * @param value - The value to match against the idField
+     * @returns {*|null}
+     */
+    function findOption(dataArray, idField, value) {
+        for (var i=0; i<dataArray.length; i++) {
+            var item = dataArray[i];
+            if (typeof item === 'object' && item.hasOwnProperty(idField)) {
+                if (dataArray[i][idField] == value) {
+                    return dataArray[i];
+                }
+            }
+            else if (typeof item === 'string' || typeof item === 'number') {
+                if (item == value) {
+                    return item;
+                }
+            }
+        }
+
+        return null;
+    }
+
+
     ko.bindingHandlers.speciesSelect2 = {
         select2AwareFormatter: function(data, container, delegate) {
             if (data.text) {
@@ -655,6 +738,107 @@
             else {
                 applySelect2ValidationCompatibility(element);
             }
+        }
+    };
+
+    /**
+     * A more performant version of the select2 binding that is designed to work with large
+     * number of options.  The options are supplied as an array via the dataArray option.
+     *
+     * @param {Array} dataArray An array of objects, string or number representing the options to be displayed.
+     * @param {String} optionsText The name of the field in the dataArray objects to use as the option text.
+     * @param {String} optionsValue The name of the field in the dataArray objects to use as the option value.
+     * @param {Observable} value An observable to be updated when the selection changes.
+     * @param {String} placeholder Placeholder text to display when no option is selected.
+     * @param * any other options supported by select2 can be supplied.
+     * @type {{init: ko.bindingHandlers.select2WithData.init}}
+     */
+    ko.bindingHandlers.select2FromArray = {
+        init: function(element, valueAccessor, allBindings, viewModel, bindingContext) {
+            var defaults = {
+                placeholder:'Please select...',
+                dropdownAutoWidth:true,
+                allowClear:true,
+                pageSize:50
+            };
+            var options = _.defaults(valueAccessor() || {}, defaults);
+
+            var $element = $(element);
+            var valueObservable = options.value,
+                dataArray = options.dataArray || [],
+                dataArrayObservable = ko.isObservable(dataArray) ? dataArray : ko.observableArray(dataArray);
+
+            options.ajax = {
+                // Instead of using the ajax capabilities of select2 to call a remote service to get options,
+                // we are going to paginate and filter the dataArray supplied.
+                transport: function(params, success, failure) {
+                    var term = params.data.term || '';
+                    var page = params.data.page || 1;
+                    var pageSize =  options.pageSize;
+                    var start = (page - 1) * pageSize;
+                    var allOptions = ko.unwrap(dataArrayObservable),
+                        selectedValue = ko.unwrap(valueObservable);
+
+                    // Convert the data to select2 format with id and text attributes.
+                    allOptions = convertDataArrayToSelect2Representation(allOptions, options.optionsValue, options.optionsText, selectedValue);
+                    var filtered = [];
+                    // Simple case-insensitive match.
+                    allOptions.forEach(function (option) {
+                        if (option.text.toLowerCase().indexOf(term.toLowerCase())>=0) {
+                            filtered.push(option);
+                        }
+                    });
+
+                    var results = filtered.slice(start, start + pageSize);
+                    success({
+                        results: results,
+                        pagination: {
+                            more: start + pageSize < filtered.length
+                        }
+                    });
+                }
+            }
+            $element.select2(options);
+            applySelect2ValidationCompatibility(element);
+
+            // Listen for changes to the view model and ensure the select2 component is
+            // updated to reflect the change.
+            if (ko.isObservable(valueObservable)) {
+                valueObservable.subscribe(initSelectOption);
+
+                $element.on('select2:select', function(e) {
+                    var selected = e.params.data;
+                    if (valueObservable() !== selected.id) {
+                        valueObservable(selected.id);
+                    }
+                })
+            }
+            if (options.preserveColumnWidth) {
+                forceSelect2ToRespectPercentageTableWidths(element, options.preserveColumnWidth);
+            }
+            else {
+                applySelect2ValidationCompatibility(element);
+            }
+
+            function initSelectOption(newValue) {
+                // Depending on the order the bindings are declared (value before select2
+                // or vice versa), they can interfere with each other.
+                var currentValue = $element.val();
+                if (currentValue != newValue) {
+                    var option = convertDataToSelect2Representation(findOption(ko.unwrap(dataArrayObservable), options.optionsValue, newValue), options.optionsValue, options.optionsText, newValue);
+                    if (option) {
+                        $element.append(new Option(option.text, option.id, true, true));
+                    }
+
+                    // If the value is out of sync with the model, update the value.
+                    $element.val(newValue);
+                }
+
+                // Make sure the select2 library is aware of the change.
+                $element.trigger('change');
+            }
+
+            initSelectOption(ko.unwrap(valueObservable));
         }
     };
 

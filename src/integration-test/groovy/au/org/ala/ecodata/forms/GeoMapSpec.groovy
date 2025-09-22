@@ -38,7 +38,6 @@ class GeoMapSpec extends GebReportingSpec {
         then:
         page.geoMap.displayed == true
         page.findById("siteLocation").size() == 1
-        page.findById("siteLocation").find("option").size() == 2;
 
         when:
         //site location select2 drop down
