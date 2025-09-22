@@ -571,6 +571,9 @@
      * @returns {{id: *, text: *}|null}
      */
     function convertDataToSelect2Representation(item, idField, textField, selectedValue) {
+        if (!item)
+            return null;
+
         var option;
         if (typeof item === 'string' || typeof item === 'number') {
             option = {id:item, text:item};
