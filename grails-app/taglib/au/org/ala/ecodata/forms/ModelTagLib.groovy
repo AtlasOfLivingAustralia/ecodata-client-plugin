@@ -579,8 +579,13 @@ class ModelTagLib {
         // These two items must add up to 12, and determine the space allocated to the label and input field
         // respectively in the row.
         // For tables with controls without labels (which is most of time), use col-12
-        int labelColWidth = 4
-        int inputFieldColWidth = layoutContext.hasTableAncestor ? 12 : 8
+        Boolean labelAboveField = model.labelAboveField
+        if (labelAboveField == null) {
+            labelAboveField = layoutContext.hasTableAncestor
+        }
+
+        int labelColWidth = labelAboveField ? 12 : (model.labelColWidth ?: 4)
+        int inputFieldColWidth = labelAboveField ? 12 : (LAYOUT_COLUMNS - labelColWidth)
         switch (layoutContext.parentView) {
             case 'col':
                 out << "<div class=\"row form-group\">"

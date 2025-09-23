@@ -80,7 +80,33 @@
             searchBieUrl:'',
             model: outputModel,
             prepopUrlPrefix: window.location.origin, //"http://localhost:${serverPort}",
-            viewRootElementId:'output-container'
+            viewRootElementId:'output-container',
+            speciesListUrl: "${createLink(controller: 'preview', action: 'speciesItemsForList')}",
+            dataFieldName: "species",
+            outputName: outputModel.name,
+            speciesConfig: {
+                surveyConfig: {
+                    speciesFields : [
+                        {
+                            output: outputModel.name,
+                            dataFieldName: "species",
+                            config: {
+                                scientificNameField: "scientific name",
+                                commonNameField: "common name",
+                                speciesDisplayFormat: "SCIENTIFICNAME(COMMONNAME)",
+                                speciesLists: [
+                                    {
+                                        dataResourceUid: "dr123",
+                                    },
+                                    {
+                                        dataResourceUid: "dr456",
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
         };
         var output = {};
         <g:if test="${data}">
