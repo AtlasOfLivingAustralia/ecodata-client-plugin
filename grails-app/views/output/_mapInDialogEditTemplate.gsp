@@ -6,15 +6,15 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Mapping Site Activities</h3>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true">
+                    
                 </button>
             </div>
             <div class="modal-body">
                 <g:render template="/output/featureMap"/>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-sm btn-danger" type="button" data-dismiss="modal" aria-hidden="true">Cancel</button>
+                <button class="btn btn-sm btn-danger" type="button" data-bs-dismiss="modal" aria-hidden="true">Cancel</button>
                 <button class="btn btn-sm btn-primary" type="button" aria-hidden="true">Ok</button>
             </div>
         </div>

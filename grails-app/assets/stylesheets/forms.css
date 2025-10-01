@@ -247,3 +247,8 @@ input.score {
     margin-left:15px;
     align-self:center;             /* belt-and-braces centering */
 }
+
+/** Match output-section background in tables inside output-sections */
+.output-section table > :not(caption) > * > * {
+    background-color: #f5f5f5
+}

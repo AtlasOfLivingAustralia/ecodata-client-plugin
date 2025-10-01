@@ -41,9 +41,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     private void renderWithAddon(String addOnText, String modelElementText, writer) {
         writer << "<div class=\"input-group\">"
         writer << modelElementText
-        writer << "<div class=\"input-group-append\">"
         writer << "<span class=\"add-on input-group-text\">${addOnText}</span>"
-        writer << "</div>"
         writer << "</div>"
     }
 
@@ -135,12 +133,12 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.databindAttrs.add 'optionsText', context.source + '.constraints.text'
 
         context.databindAttrs.add 'optionsCaption', '"Please select"'
-        context.attributes.addSpan("form-control form-control-sm")
+        context.attributes.addSpan("form-select form-select-sm")
         if (isReadOnly(context)) { // HTML Select elements don't support the readonly attribute so we add disabled.  This will break validation though.
             context.databindAttrs.add('disableClick', 'true')
         }
 
-        context.writer <<  "<select${context.attributes.toString()} class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select>"
+        context.writer <<  "<select${context.attributes.toString()} class=\"select form-select form-select-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select>"
     }
 
     @Override
@@ -154,7 +152,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.databindAttrs.add 'optionsText', context.source + '.constraints.text'
 
         context.databindAttrs.add 'select2', context.source + '.displayOptions'
-        context.writer <<  "<div${context.attributes.toString()}><select class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
+        context.writer <<  "<div${context.attributes.toString()}><select class=\"select form-select form-select-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
     }
 
     private static boolean isReadOnly(WidgetRenderContext context) {
@@ -187,7 +185,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
                 options = "_.extend({value:${context.source}}, ${context.source}.displayOptions)"
             }
             context.databindAttrs.add 'multiSelect2', options
-            context.writer <<  "<div${context.attributes.toString()}><select multiple=\"multiple\" class=\"select form-control form-control-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
+            context.writer <<  "<div${context.attributes.toString()}><select multiple=\"multiple\" class=\"select form-select form-select-sm\" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
         }
 
     }
@@ -254,7 +252,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.databindAttrs.add 'optionsCaption', '"Please select"'
         context.databindAttrs.add 'value', "${context.source}.addWord"
 
-        context.writer <<  "<div class='row'><div class='col-sm-6'><select${context.attributes.toString()} class='form-control' comboList='${context.source}' data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
+        context.writer <<  "<div class='row'><div class='col-sm-6'><select${context.attributes.toString()} class='form-select' comboList='${context.source}' data-bind='${context.databindAttrs.toString()}'${context.validationAttr}></select></div>"
 
         def tagsBlock = "<div class='col-sm-6'><div id='tagsBlock' data-bind='foreach: ${context.source}'>" +
                 " <span class='tag label label-default'>" +
@@ -390,11 +388,10 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.attributes.addClass("species-select2")
         context.writer << """<div${context.attributes.toString()}>
                                 <div data-bind="with:${context.source}" class="input-group"">
-                                <select class="form-control form-control-sm" data-bind="speciesSelect2:\$data" ${context.validationAttr}></select>
-                                <div class="input-group-append"">
-                                    <span class="input-group-text" data-bind="visible:name(), popover: {title: transients.speciesTitle, content: transients.speciesInformation}, event: { 'shown.bs.popover': fetchSpeciesImage}, css:{'bg-warning':!transients.matched()}"><i class="fa" data-bind="css:{'fa-info-circle':transients.matched(), 'fa-question-circle':!transients.matched()}"></i></span>
+                                  <select class="form-select form-select-sm" data-bind="speciesSelect2:\$data" ${context.validationAttr}></select>                           
+                                  <span class="input-group-text" data-bind="visible:name(), popover: {title: transients.speciesTitle, content: transients.speciesInformation}, event: { 'shown.bs.popover': fetchSpeciesImage}, css:{'bg-warning':!transients.matched()}"><i class="fa" data-bind="css:{'fa-info-circle':transients.matched(), 'fa-question-circle':!transients.matched()}"></i></span>
                                 </div>
-                             </div></div>"""
+                             </div>"""
     }
 
     @Override
@@ -402,13 +399,10 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         context.attributes.addClass context.getInputWidth()
         context.databindAttrs.add('value', context.source)
         context.writer << """<div class="input-group currency-input">
-            <div class="input-group-prepend customAddOn">
-            <span class="input-group-text">\$</span>
-            </div>
+          
+            <span class="input-group-text">\$</span>            
             <input type="number" ${context.attributes.toString()} class="form-control form-control-sm" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}'>
-            <div class="input-group-append customAddOn">
-            <span class="input-group-text">.00</span>
-            </div>
+            <span class="input-group-text">.00</span>            
            </div>"""
     }
 

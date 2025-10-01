@@ -438,7 +438,7 @@ class ModelTagLib {
             out << "<h4>${model.title}</h4>"
             out << "<div class=\"row output-section\">\n"
         } else if (model.title && model.boxed) {
-            out << "<div class=\"boxed-heading col-sm-12\" data-content='${model.title}'>\n"
+            out << "<div class=\"boxed-heading col-sm-12\" data-bs-content='${model.title}'>\n"
             out << "<div class=\"row\">\n"
         }
         else {
