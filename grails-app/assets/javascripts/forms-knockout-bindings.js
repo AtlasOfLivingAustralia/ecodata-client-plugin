@@ -949,6 +949,11 @@
                 }
             });
 
+            function isPopoverShown(element) {
+                const popoverId = $(element).attr("aria-describedby");
+                return $("#" + popoverId).length > 0;
+            }
+
             // We are implementing the validation routine by adding a subscriber to avoid triggering the validation
             // on initialisation.
             target.subscribe(function() {
@@ -962,14 +967,16 @@
                         if (!popover) {
                             const options = _.extend({content:result.val[0]}, popoverWarningOptions);
                             popover = new bootstrap.Popover(element, options);
-                           //var popover = $element.data('bs.popover').getTipElement();
-                            // $(popover).click(function() {
-                            //     $element.popover('hide');
-                            // });
-                            // target.popoverInitialised = true;
                         }
-                        popover.show();
-                        popover.update();
+
+                        if (!isPopoverShown(element)) {
+                            popover.show();
+                            $element.on('shown.bs.popover', function() {
+                                $(popover._getTipElement()).one('click', function() {
+                                    popover.hide();
+                                })
+                            })
+                        }
                     }
                     else {
                         if (popover) {
