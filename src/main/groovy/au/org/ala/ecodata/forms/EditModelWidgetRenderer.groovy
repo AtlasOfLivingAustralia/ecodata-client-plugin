@@ -39,7 +39,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     }
 
     private void renderWithAddon(String addOnText, String modelElementText, writer) {
-        writer << "<div class=\"input-group\">"
+        writer << "<div class=\"input-group input-group-sm\">"
         writer << modelElementText
         writer << "<span class=\"add-on input-group-text\">${addOnText}</span>"
         writer << "</div>"
@@ -398,7 +398,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     void renderCurrency(WidgetRenderContext context) {
         context.attributes.addClass context.getInputWidth()
         context.databindAttrs.add('value', context.source)
-        context.writer << """<div class="input-group currency-input">
+        context.writer << """<div class="input-group input-group-sm currency-input">
           
             <span class="input-group-text">\$</span>            
             <input type="number" ${context.attributes.toString()} class="form-control form-control-sm" data-bind='${context.databindAttrs.toString()}'${context.validationAttr}'>
