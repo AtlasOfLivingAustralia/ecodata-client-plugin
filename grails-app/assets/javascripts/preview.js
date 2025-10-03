@@ -8,7 +8,7 @@
 //= require jquery.validationEngine/3.1.0/jquery.validationEngine.js
 //= require jquery.validationEngine/3.1.0/jquery.validationEngine-en.js
 //= require fancybox/jquery.fancybox
-//= require bootbox/5.5.2/bootbox.all.js
+//= require bootbox/6.0.4/bootbox.js
 //= require jquery.blockUI/jquery.blockUI.js
 //= require select2/4.0.3/js/select2.full
 //= require typeahead/0.11.1/bloodhound
