@@ -137,7 +137,7 @@
 
                     <div class="col-sm-9">
                         <input placeholder="Decimal longitude" id="${source}LongitudeStaged" type="number" min="-180" max="180" data-bind="value: transients.${source}LongitudeStaged"
-                                ${lngValidation} class="form-control full-collapse-horizontal-input manual-point-lng-input">
+                                ${lngValidation} class="form-control full-width-input manual-point-lng-input">
                     </div>
                 </div>
 
@@ -248,7 +248,7 @@
                                 </g:if>
                                 <g:else>
                                     <form>
-                                        <textarea id="${source}Locality" type="text" data-bind="value: data.${source}Locality" class="form-control form-control-sm full-collapse-horizontal"></textarea>
+                                        <textarea id="${source}Locality" type="text" data-bind="value: data.${source}Locality" class="form-control form-control-sm full-width"></textarea>
                                         <g:if test="${!autoLocalitySearch}">
                                             <button id="reverseGeocodeLocality" class="btn btn-primary-dark margin-top-1">Search for locality match</button>
                                         </g:if>
