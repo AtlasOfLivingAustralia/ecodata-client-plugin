@@ -35,7 +35,7 @@
         <div class="${isHorizontal ? '' : 'col-12'}" data-bind="visible: transients.showDataEntryFields">
             <!-- ko if: transients.showCentroid() -->
 
-            <div class="form-group row" data-bind="if: data.${source}CentroidLatitude">
+            <div class="mb-3 row" data-bind="if: data.${source}CentroidLatitude">
                 <div class="col-sm-3">
                     <label for="${source}CentroidLatitude">Centroid Latitude
                         <a href="#" class="helphover" data-bind="popover: {title:'<g:message code="record.edit.map.centroidLatLon"/>', content:'<g:message code="record.edit.map.centroidLatLon.content"/>'}">
@@ -55,7 +55,7 @@
                 </div>
             </div>
 
-            <div class="form-group row" data-bind="if: data.${source}CentroidLongitude">
+            <div class="mb-3 row" data-bind="if: data.${source}CentroidLongitude">
                 <div class="col-sm-3">
                     <label for="${source}CentroidLongitude">Centroid Longitude</label>
                 </div>
@@ -75,7 +75,7 @@
 
             <!-- ko if: transients.showPointLatLon() -->
 
-            <div class="form-group row" data-bind="slideVisible: !transients.editCoordinates()">
+            <div class="mb-3 row" data-bind="slideVisible: !transients.editCoordinates()">
                 <div class="col-sm-3">
                     <label for="${source}Latitude">Latitude
                         <a href="#" class="helphover" data-bind="popover: {title:'<g:message code="record.edit.map.latLon"/>', content:'<g:message code="record.edit.map.latLon.content"/>'}">
@@ -95,7 +95,7 @@
                 </div>
             </div>
 
-            <div class="form-group row" data-bind="slideVisible: !transients.editCoordinates()">
+            <div class="mb-3 row" data-bind="slideVisible: !transients.editCoordinates()">
                 <div class="col-sm-3">
                     <label for="${source}Longitude">Longitude</label>
                 </div>
@@ -115,7 +115,7 @@
 
             <!-- ko if: transients.showManualCoordinateForm -->
             <g:if test="${!readonly}">
-                <div class="form-group row" data-bind="slideVisible: transients.editCoordinates">
+                <div class="mb-3 row" data-bind="slideVisible: transients.editCoordinates">
                     <div class="col-sm-3">
                         <label for="${source}Latitude">Enter latitude
                             <a href="#" class="helphover" data-bind="popover: {title:'<g:message code="record.edit.map.latLon"/>', content:'<g:message code="record.edit.map.latLon.content"/>'}">
@@ -130,7 +130,7 @@
                     </div>
                 </div>
 
-                <div class="form-group row" data-bind="slideVisible: transients.editCoordinates">
+                <div class="mb-3 row" data-bind="slideVisible: transients.editCoordinates">
                     <div class="col-sm-3">
                         <label for="${source}Longitude">Enter longitude</label>
                     </div>
@@ -141,7 +141,7 @@
                     </div>
                 </div>
 
-                <div class="form-group row mb-2">
+                <div class="mb-3 row mb-2">
                     <div class="col-sm-3">
                     </div>
                     <div class="col-sm-9">
@@ -160,7 +160,7 @@
             <input id = "${source}geoInfo" hidden="true">
 
             <g:if test="${includeAccuracy}">
-                <div class="form-group row">
+                <div class="mb-3 row">
                     <div class="col-sm-3">
                         <label for="${source}Accuracy">Accuracy (metres)</label>
                     </div>
@@ -173,14 +173,14 @@
                             <select data-bind="options: [0, 10, 50, 100, 500, 1000, 5000, 10000]
                            optionsCaption: 'Choose one...',
                            value: data.${source}Accuracy,
-                           valueAllowUnset: true" class="form-control full-width">
+                           valueAllowUnset: true" class="form-select full-width">
                             </select>
                         </g:else>
                     </div>
                 </div>
             </g:if>
             <g:if test="${includeSource}">
-                <div class="form-group row">
+                <div class="mb-3 row">
                     <div class="col-sm-3">
                         <label for="${source}Source">Source of coordinates</label>
                     </div>
@@ -193,13 +193,13 @@
                             <select data-bind="options: ['', 'Google maps', 'Google earth', 'GPS device', 'camera/phone', 'physical maps', 'other']
                            optionsCaption: 'Choose one...',
                            value: data.${source}Source,
-                           valueAllowUnset: true" class="form-control full-width"></select>
+                           valueAllowUnset: true" class="form-select full-width"></select>
                         </g:else>
                     </div>
                 </div>
             </g:if>
             <g:if test="${includeNotes}">
-                <div class="form-group row">
+                <div class="mb-3 row">
                     <div class="col-sm-3">
                         <label for="${source}Notes">Location notes</label>
                     </div>
@@ -219,14 +219,14 @@
                 </div>
             </g:if>
             <g:if test="${includeLocality}">
-                <div class="form-group row">
+                <div class="mb-3 row">
                     <g:if test="${!readonly}">
                         <div class="col-sm-3">
                             <label for="bookmarkedLocations">Saved locations</label>
                         </div>
                         <div class="col-sm-9">
                             <form class="">
-                                <select name="bookmarkedLocations" id="bookmarkedLocations" class="form-control full-width">
+                                <select name="bookmarkedLocations" id="bookmarkedLocations" class="form-select full-width">
                                     <option value="">-- saved locations --</option>
                                 </select>
                             </form>
@@ -235,7 +235,7 @@
                 </div>
             </g:if>
             <g:if test="${includeLocality}">
-                <div class="form-group row" data-bind="slideVisible: data.${source}Latitude() && data.${source}Latitude()">
+                <div class="mb-3 row" data-bind="slideVisible: data.${source}Latitude() && data.${source}Latitude()">
                     <div class="col-sm-3">
                         <label for="${source}Locality">Matched locality</label>
                     </div>
@@ -270,8 +270,8 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 class="modal-title">Add Site</h3>
-                <button type="button" class="close" data-bind="click: cancel" aria-hidden="true">
-                    <span aria-hidden="true">&times;</span>
+                <button type="button" class="btn-close" data-bind="click: cancel" aria-hidden="true">
+                    
                 </button>
             </div>
             <div class="modal-body">
@@ -303,7 +303,7 @@
         <g:set var="textOnSiteLocation" value="Create or select a location"/>
         <g:set var="textOnSiteLocation" value="Select a location"/>
 
-        <div class="form-group row">
+        <div class="mb-3 row">
             <div class="col-sm-12">
                 <div class="row">
                     <span class="col-sm-4 preLabel">
@@ -322,7 +322,7 @@
                                         optionsText: "name",
                                         optionsValue: "siteId",
                                         value: data.${source},
-                                        placeholder: "${textOnSiteLocation}"}' class="form-control input-xlarge full-width"></select>
+                                        placeholder: "${textOnSiteLocation}"}' class="form-select input-xlarge full-width"></select>
                         </g:else>
                     </div>
                 </div>

@@ -12,16 +12,16 @@
 <tr data-bind="visible:${property}.tableDataUploadVisible">
     <td colspan="${colCount}">
         <g:if test="${containsSpecies}">
-            <div class="text-error text-left">
+            <div class="text-error text-start">
                 Note: Only valid exact scientific names will be matched and populated from the database (indicated by a green tick). Unmatched species will load, but will be indicated by a green <b>?</b>. Please check your uploaded data and correct as required.
             </div>
         </g:if>
 
-        <div class="text-left" data-bind="visible:${property}.allowUserAddedRows" style="margin:5px;">
+        <div class="text-start" data-bind="visible:${property}.allowUserAddedRows" style="margin:5px;">
             <input type="checkbox" data-bind="checked:${property}.appendTableRows" style="margin-right:5px">Append uploaded data to table (unticking this checkbox will result in all table rows being replaced)
         </div>
 
-        <div class="text-left" style="margin:5px">
+        <div class="text-start" style="margin:5px">
             <a data-bind="click:${property}.downloadTemplate" target="${name}TemplateDownload" class="btn">Step 1 - Download template (.xlsx)</a>
         </div>
 

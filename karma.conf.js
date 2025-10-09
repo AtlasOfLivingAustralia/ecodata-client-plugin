@@ -24,7 +24,7 @@ module.exports = function (config) {
         },
         // list of files / patterns to load in the browser
         files: [
-            'grails-app/assets/vendor/bootstrap/4.6.0/js/bootstrap.bundle.js',
+            'grails-app/assets/vendor/bootstrap/5.3/js/bootstrap.bundle.js',
             'grails-app/assets/vendor/knockout/3.5.0/knockout.debug.js',
             'grails-app/assets/vendor/knockout/3.5.0/knockout.mapping-latest.js',
             'node_modules/jasmine-ajax/lib/mock-ajax.js',

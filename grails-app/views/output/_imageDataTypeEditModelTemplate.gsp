@@ -3,7 +3,7 @@
     <!-- Images -->
     <div data-bind="visible: $data.status() != 'deleted'" class="margin-bottom-20" style="display:none;">
         <div class="row">
-            <div class="col-sm-4 text-left">
+            <div class="col-sm-4 text-start">
                 <div class="row">
                     <div class="col-sm-12">
                         <a data-bind="attr:{href:url, title:'[click to expand] '+name()}"
@@ -24,7 +24,7 @@
             </div>
             <div class="col-sm-8"  style="display:${showImgMetadata};">
                 <div class="row">
-                    <div class="col-sm-4 text-left control-group required">
+                    <div class="col-sm-4 text-start control-group required">
                         <label class="control-label">Title: <g:if test="${options?.titleHelpText}"><i class="fa fa-question-circle" data-bind="popover:{container:'body', content:'${options.titleHelpText}', placement:'top'}"></i></g:if> </label>
                     </div>
                     <div class="col-sm-8">
@@ -34,7 +34,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-sm-4 text-left control-group required">
+                    <div class="col-sm-4 text-start control-group required">
                         <label class="control-label" >Date Taken: <i class="fa fa-question-circle" data-bind="popover:{container:'body', content:'Please ensure that this information is accurate and the date that the photograph was taken, not the date it was uploaded (unless they are the same date).', placement:'top'}">&nbsp;</i></label>
                     </div>
                     <div class="col-sm-8">
@@ -49,13 +49,13 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-sm-4 text-left">
+                    <div class="col-sm-4 text-start">
                         <label class="control-label">Licence: <i class="fa fa-question-circle"
                                                                 data-bind="popover:{content:'Creative Commons Attribution (CC BY), Creative Commons-Noncommercial (CC BY-NC), Creative Commons Attribution-Share Alike (CC BY-SA), Creative Commons Attribution-Noncommercial-Share Alike (CC BY-NC-SA)', placement:'top'}">&nbsp;</i>
                         </label>
                     </div>
                     <div class="col-sm-8">
-                        <select id="licence" data-bind="value:licence" class="form-control form-control-sm col-sm-12">
+                        <select id="licence" data-bind="value:licence" class="form-select form-select-sm col-sm-12">
                             <option value="CC BY 3.0">Creative Commons Attribution 3.0</option>
                             <option value="CC BY 0">Creative Commons Attribution 0</option>
                             <option value="CC BY 4.0">Creative Commons Attribution 4.0</option>
@@ -65,7 +65,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-sm-4 text-left">
+                    <div class="col-sm-4 text-start">
                         <label class="control-label" for="attribution">
                             Attribution: <i class="fa fa-question-circle" data-bind="popover:{content:'The name of the photographer', placement:'top'}">&nbsp;</i>
                         </label>
@@ -77,7 +77,7 @@
 
 
                 <div class="row">
-                    <div class="col-sm-4 text-left">
+                    <div class="col-sm-4 text-start">
                         <label class="control-label" for="notes">Notes: <i class="fa fa-question-circle" data-bind="popover:{content:'Additional notes you would like to supply regarding the photo point or photograph.', placement:'top'}">&nbsp;</i></label>
                     </div>
                     <div class="col-sm-8">
@@ -86,7 +86,7 @@
                 </div>
 
                 <div class="row readonly ">
-                    <div class="col-sm-4 text-left">
+                    <div class="col-sm-4 text-start">
                         <label class="control-label">File Name:</label>
                     </div>
                     <div class="col-sm-8">
@@ -95,7 +95,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-sm-4 text-left">
+                    <div class="col-sm-4 text-start">
                     </div>
                     <div class="col-sm-8">
                         <a class="btn btn-danger btn-sm" data-bind="click: remove.bind($data,$parent.${name})"><i

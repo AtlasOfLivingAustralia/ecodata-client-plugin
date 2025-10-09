@@ -92,7 +92,7 @@ class PreviewController {
         InputStream fileIn = null
         // Allow easy reloading in development environments.
         if (Environment.current == Environment.DEVELOPMENT) {
-            File file = new File("./grails-app/conf"+relativePath)
+            File file = new File("../ecodata-client-plugin/grails-app/conf"+relativePath)
             if (file.exists()) {
                 fileIn = new FileInputStream(file)
             }

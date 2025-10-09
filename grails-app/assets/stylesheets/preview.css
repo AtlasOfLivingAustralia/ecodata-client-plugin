@@ -1,5 +1,5 @@
 /*
-*= require bootstrap/4.6.0/css/bootstrap.css
+*= require bootstrap/5.3/css/bootstrap.css
 *= require font-awesome/4.4.0/css/font-awesome.css
 *= require bootstrap-datepicker/1.9/css/bootstrap-datepicker
 *= require modal-fullscreen-bootstrap-2.3.2/css/bootstrap-modal-fullscreen
@@ -60,12 +60,6 @@ span.title {
 }
 body {
     background-color:#fffef7 !important;
-}
-input, button, select, optgroup, textarea {
-    margin-bottom: 8px !important;
-}
-textarea {
-    border: 1px solid #cccccc;
 }
 
 .datepicker {

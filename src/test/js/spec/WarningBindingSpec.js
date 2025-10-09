@@ -36,7 +36,7 @@ describe("warning binding handler Spec", function () {
         var model = {
             item:dataItem
         }
-        $(mockElement).attr('data-bind', 'warning:item');
+        $(mockElement).attr('name', 'test').attr('data-bind', 'warning:item, value:item');
         ko.applyBindings(model, mockElement);
 
         jasmine.clock().tick(10);
@@ -48,7 +48,7 @@ describe("warning binding handler Spec", function () {
         expect($('.popover-body').text()).toEqual(metadata.warning.numericality.message);
 
         model.item(1);
-        jasmine.clock().tick(1);
+        jasmine.clock().tick(10);
         expect($('.popover.warning').length).toEqual(0);
 
         model.item(0);
