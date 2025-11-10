@@ -58,7 +58,7 @@
             placement: "right",
             animation: true,
             html: true,
-            trigger: "hover",
+            trigger: "hover focus",
             container: 'body'
         },
 
