@@ -5,6 +5,11 @@ import okhttp3.Request
 import spock.lang.Specification
 
 class EcpWebServiceSpec extends Specification implements ServiceUnitTest<EcpWebService> {
+
+    void setupSpec() {
+        grailsApplication.config.app.domain.whiteList = 'ala.org.au,localhost'
+    }
+
     def "hub header must be added to URL connection"() {
         given:
         grailsApplication.config.grails.serverURL = 'http://xyz.com'
@@ -30,5 +35,22 @@ class EcpWebServiceSpec extends Specification implements ServiceUnitTest<EcpWebS
 
         then:
         req.header(grailsApplication.config.getProperty("app.http.header.hostName")) == grailsApplication.config.grails.serverURL
+    }
+
+    def "Host names are validated correctly"() {
+        given:
+        service.grailsApplication = grailsApplication
+
+        expect:
+        service.isValidDomain(host) == isValid
+
+        where:
+        host           | isValid
+        'example.com'  | false
+        'localhost'    | true
+        'ecodata.ala.org.au'     | true
+        'ecodata.ala.org' | false
+        'invalid.com'  | false
+        'example.org'  | false
     }
 }
