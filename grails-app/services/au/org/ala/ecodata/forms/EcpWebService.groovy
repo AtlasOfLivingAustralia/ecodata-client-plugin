@@ -701,7 +701,7 @@ class EcpWebService {
         try {
             URL urlObj = new URL(url)
             String host = urlObj.getHost()
-            return WHITE_LISTED_DOMAINS.find { host.endsWith(it) } != null
+            return isValidDomain(host)
         } catch (Exception e) {
             log.error("Error parsing URL: ${url}")
         }
@@ -729,5 +729,10 @@ class EcpWebService {
         }
 
         requestBuilder
+    }
+
+    boolean isValidDomain(String host) {
+        boolean valid = WHITE_LISTED_DOMAINS.find { host.endsWith(it) } != null
+        return valid
     }
 }
