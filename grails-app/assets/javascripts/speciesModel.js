@@ -680,24 +680,16 @@ var SpeciesViewModel = function(data, options, context) {
         self.transients.commonName("");
     };
 
-    self.guidFromOutputSpeciesId = function(species) {
-        if (species.outputSpeciesId) {
-            self.outputSpeciesId(species.outputSpeciesId);
-            isOffline().then(function() {
-                self.transients.bieUrl(species.guid ? options.bieUrl + '/species/' + species.guid : options.bieUrl);
-            }, function () {
-                $.ajax({
-                    url: options.getGuidForOutputSpeciesUrl+ "/" + species.outputSpeciesId,
-                    type: 'GET',
-                    contentType: 'application/json',
-                    success: function (data) {
-                        self.transients.bieUrl(data.guid ? options.bieUrl + '/species/' + data.guid : options.bieUrl);
-                    },
-                    error: function (data) {
-                        bootbox.alert("Error retrieving species data, please try again later.");
-                    }
-                });
-            });
+    self.guidFromOutputSpeciesId = function (species) {
+        if (!species || !species.outputSpeciesId) {
+            return;
+        }
+
+        self.outputSpeciesId(species.outputSpeciesId);
+
+        // Use species.guid immediately (species object already contain a guid)
+        if (species.guid) {
+            self.transients.bieUrl(options.bieUrl + '/species/' + species.guid);
         }
     };
 
