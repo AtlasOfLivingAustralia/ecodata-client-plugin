@@ -690,25 +690,7 @@ var SpeciesViewModel = function(data, options, context) {
         // Use species.guid immediately (species object already contain a guid)
         if (species.guid) {
             self.transients.bieUrl(options.bieUrl + '/species/' + species.guid);
-            return;
         }
-
-        isOffline().then(function () {
-            self.transients.bieUrl(options.bieUrl);
-        }, function () {
-            $.ajax({
-                url: options.getGuidForOutputSpeciesUrl+ "/" + species.outputSpeciesId,
-                type: 'GET',
-                contentType: 'application/json',
-                success: function (data) {
-                    self.transients.bieUrl(data && data.guid ? options.bieUrl + '/species/' + data.guid : options.bieUrl);
-                },
-                error: function () {
-                    bootbox.alert("Error retrieving species data, please try again later.");
-                    self.transients.bieUrl(options.bieUrl);
-                }
-            });
-        });
     };
 
     /**
