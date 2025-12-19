@@ -2,6 +2,7 @@ ko.components.register('multi-input', {
     viewModel: function(params) {
         var self = this;
 
+        self.editable = _.isUndefined(params.editable) ? true : params.editable;
         self.observableValues = ko.observableArray();
         self.addValueText = params.addValueText;
 
