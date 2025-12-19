@@ -693,12 +693,6 @@ var SpeciesViewModel = function(data, options, context) {
             return;
         }
 
-        // Guard against runtime error(undefined/<outputSpeciesId>)
-        if (!options.getGuidForOutputSpeciesUrl) {
-            self.transients.bieUrl(options.bieUrl);
-            return;
-        }
-
         isOffline().then(function () {
             self.transients.bieUrl(options.bieUrl);
         }, function () {
