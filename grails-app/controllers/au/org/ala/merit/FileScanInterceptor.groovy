@@ -1,0 +1,40 @@
+package au.org.ala.merit
+
+import au.org.ala.ecodata.forms.ScanService
+import grails.converters.JSON
+
+class FileScanInterceptor {
+    ScanService scanService
+    int order = HIGHEST_PRECEDENCE + 15 // Run before AclInterceptor
+
+    FileScanInterceptor() {
+        matchAll()
+    }
+
+    boolean before() {
+        if (request.respondsTo('getFile')) {
+            boolean clean = true
+            def files = request.getFileNames()
+            while(files.hasNext()) {
+                def fileName = files.next()
+                def file = request.getFile(fileName)
+                if (file) {
+                    boolean isClean = scanService.isDocumentClean(file)
+                    clean &= isClean
+                }
+            }
+
+            if (!clean) {
+                response.status = 400
+                render contentType: 'application/json', text: [success: false, message: "File upload rejected: virus detected"] as JSON, status: 400
+                return false
+            }
+        }
+
+        true
+    }
+
+    boolean after() { true }
+
+    void afterView() { }
+}
