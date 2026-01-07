@@ -13,7 +13,7 @@ class ScanService {
         }
 
         if (grailsApplication.config.getProperty('scanFile.enabled', Boolean, true)) {
-            String baseUrl = grailsApplication.config.getProperty('ecodata.service.url')
+            String baseUrl = grailsApplication.config.getProperty('ecodata.service.url', String, '')
             if (baseUrl.endsWith('/')) {
                 baseUrl = baseUrl.substring(0, baseUrl.length() - 1)
             }
