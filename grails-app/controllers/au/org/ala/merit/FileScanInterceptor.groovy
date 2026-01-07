@@ -5,7 +5,7 @@ import grails.converters.JSON
 
 class FileScanInterceptor {
     ScanService scanService
-    int order = HIGHEST_PRECEDENCE + 15 // Run before AclInterceptor
+    int order = LOWEST_PRECEDENCE - 15 // Run after AclInterceptor. BioCollect AclInterceptor has order 3.
 
     FileScanInterceptor() {
         matchAll()
