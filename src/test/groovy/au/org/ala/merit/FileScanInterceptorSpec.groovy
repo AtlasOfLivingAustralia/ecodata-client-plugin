@@ -12,7 +12,7 @@ class FileScanInterceptorSpec extends Specification implements InterceptorUnitTe
 
     def setup() {
         interceptor.scanService = scanService = new ScanService()
-        scanService.webService = webService
+        scanService.ecpWebService = webService
         scanService.grailsApplication = grailsApplication
     }
 
