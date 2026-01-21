@@ -36,7 +36,7 @@
     "knockout": "^3.5.0",
     "leaflet": "^1.4.0",
     "leaflet-draw": "^1.0.4",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.23"
   },
   "scripts": {
     "test": "karma start karma.conf.js",
