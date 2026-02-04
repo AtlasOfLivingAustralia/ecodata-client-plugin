@@ -1145,46 +1145,75 @@ function orEmptyArray(v) {
             self.tableDataUploadVisible(!self.tableDataUploadVisible());
         };
 
-        self.downloadTemplate = function () {
-            // Download a blank template if we are appending, otherwise download a template containing the existing data.
-            if (self.appendTableRows()) {
-                var url = config.excelOutputTemplateUrl + '?listName=' + listName + '&activityForm='+activityForm+'&type=' + modelName;
-                if (formVersion) {
-                    url+= '&formVersion=' + formVersion;
-                }
-                $.fileDownload(url)
-                    .fail(function (error){
-                            bootbox.alert('File download failed! ' + error);
-                     });
-            }
-            else {
-                self.downloadTemplateWithData(true, userAddedRows)
-                    .fail(function (error){
-                        bootbox.alert('File download failed! ' + error);
-                     });
-            }
-        };
+        function buildConstraintHintsForDownload() {
+            let hints = {};
+            for (let i=0; i<dataModel[listName].columns.length; i++) {
+                let dataModelItem = dataModel[listName].columns[i];
+                if (dataModelItem.hasOwnProperty("constraints")) {
+                    let listModel = ko.utils.unwrapObservable(self);
+                    // The evaluation of pre-populated constraints is tied to the creation of the model
+                    // for each row in the table.  Hence we can only use them if at least one row exists.
+                    if (listModel.length > 0) {
+                        let modelValue = listModel[0][dataModelItem.name];
+                        let constraints = modelValue.constraints;
+                        if (ko.isObservable(constraints)) {
+                            let constraintsArray = ko.utils.unwrapObservable(constraints);
+                            if (dataModelItem.constraints.hasOwnProperty("valueProperty")) {
+                                constraintsArray = constraintsArray.map(function(constraint) {
+                                    return modelValue.constraintValue(constraint);
+                                });
+                            }
+                            hints[dataModelItem.name] = {constraints:constraintsArray};
 
-        self.downloadTableData = function() {
-            self.downloadTemplateWithData(false, false);
-        };
-        self.downloadTemplateWithData = function (editMode, userAddedRows) {
-            var data = ko.mapping.toJS(self(), toIgnore);
-            var params = {
+                        }
+                    }
+
+                }
+            }
+            return hints;
+        }
+
+        const downloadTemplateWithOptions = function (includeData, editMode, userAddedRows) {
+
+            let params = {
                 listName: listName,
                 type: modelName,
                 editMode: editMode || false,
                 allowExtraRows: userAddedRows || false,
                 activityForm: activityForm,
                 formVersion: formVersion,
-                data: JSON.stringify(data)
+                hints: JSON.stringify(buildConstraintHintsForDownload())
             };
-            var url = config.excelOutputTemplateUrl;
+            if (includeData) {
+                const data = ko.mapping.toJS(self(), toIgnore);
+                params.data = JSON.stringify(data);
+            }
+            if (formVersion) {
+                params.formVersion = formVersion;
+            }
+            const url = config.excelOutputTemplateUrl;
+
             return $.fileDownload(url, {
                 httpMethod: 'POST',
                 data: params
-            });
+            }).fail(
+                function (error){
+                    bootbox.alert('File download failed! ' + error);
+                }
+            );
         };
+
+        self.downloadTemplate = function() {
+            // Download a blank template if we are appending, otherwise download a template containing the existing data.
+            const includeData = self.appendTableRows();
+            downloadTemplateWithOptions(includeData, true, userAddedRows);
+        }
+
+        self.downloadTableData = function() {
+            return downloadTemplateWithOptions(true, false, false);
+        };
+
+
         self.tableDataUploadOptions = {
             url: config.excelDataUploadUrl,
             done: function (e, data) {
