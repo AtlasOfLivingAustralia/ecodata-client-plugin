@@ -2,10 +2,10 @@
     <div class="input-group mb-1">
         <!-- ko template: { nodes: $componentTemplateNodes } -->
         <!-- /ko -->
-        <div class="input-group-append">
+        <div class="input-group-append" data-bind="if: $parent.editable">
             <span class="input-group-text" data-bind="click:$parent.removeValue"><i class="fa fa-remove"></i></span>
         </div>
 
     </div>
 </div>
-<span><i class="fa fa-plus" data-bind="click:addValue"></i> <span data-bind="text:addValueText || 'Click to add'"></span></span>
+<span data-bind="if:editable"><i class="fa fa-plus" data-bind="click:addValue"></i> <span data-bind="text:addValueText || 'Click to add'"></span></span>
