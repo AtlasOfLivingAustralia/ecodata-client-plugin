@@ -12,7 +12,7 @@ class FileScanInterceptorSpec extends Specification implements InterceptorUnitTe
 
     def setup() {
         interceptor.scanService = scanService = new ScanService()
-        scanService.webService = webService
+        scanService.ecpWebService = webService
         scanService.grailsApplication = grailsApplication
     }
 
@@ -48,8 +48,8 @@ class FileScanInterceptorSpec extends Specification implements InterceptorUnitTe
         }
 
         then:
-        1 * webService.postMultipart(*_) >> [statusCode: HttpStatus.BAD_REQUEST.value() ]
-        response.status == 400
+        1 * webService.postMultipart(*_) >> [statusCode: HttpStatus.UNPROCESSABLE_ENTITY.value() ]
+        response.status == 422
     }
 
     void "interceptor should check multiple files"() {
@@ -73,7 +73,7 @@ class FileScanInterceptorSpec extends Specification implements InterceptorUnitTe
         }
 
         then:
-        2 * webService.postMultipart(*_) >> [statusCode: HttpStatus.BAD_REQUEST.value()]
-        response.status == 400
+        2 * webService.postMultipart(*_) >> [statusCode: HttpStatus.UNPROCESSABLE_ENTITY.value()]
+        response.status == 422
     }
 }
