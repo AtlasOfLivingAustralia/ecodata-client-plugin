@@ -11,29 +11,29 @@
      * The content and title must be supplied, other popover options have defaults.
      *
      */
-    ko.bindingHandlers.popover = {
+    ko.bindingHandlers.popover  = {
 
         init: function(element, valueAccessor) {
             ko.bindingHandlers.popover.initPopover(element, valueAccessor);
         },
         update: function(element, valueAccessor) {
             var $element = $(element),
-                instance = $element.data('bs.popover'),
+                instance = bootstrap.Popover.getInstance(element),
                 popOptions = ko.bindingHandlers.popover.getOptions(valueAccessor),
                 combinedOptions = popOptions.combinedOptions,
                 options = popOptions.options;
 
             if (!instance) {
                 ko.bindingHandlers.popover.initPopover(element, valueAccessor);
-                instance = $element.data('bs.popover');
+                instance = bootstrap.Popover.getInstance(element);
             }
 
             if (!instance)
                 return;
 
             // if view model has changed, update the popover
-            instance.config.title = combinedOptions.title || "";
-            instance.config.content = combinedOptions.content || "";
+            instance._config.title = ko.utils.unwrapObservable(combinedOptions.title) || "";
+            instance._config.content = ko.utils.unwrapObservable(combinedOptions.content);
 
             if (options.autoShow) {
                 if ($element.data('firstPopover') === false) {
@@ -58,16 +58,20 @@
             placement: "right",
             animation: true,
             html: true,
-            trigger: "hover"
+            trigger: "hover focus",
+            container: 'body'
         },
 
         initPopover: function(element, valueAccessor) {
             var popOptions = ko.bindingHandlers.popover.getOptions(valueAccessor),
                 options = popOptions.options,
                 combinedOptions = popOptions.combinedOptions;
-            $(element).popover(combinedOptions);
+            new bootstrap.Popover(element, combinedOptions)
             ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
-                $(element).popover("dispose");
+                let popover = bootstrap.Popover.getInstance(element);
+                if (popover) {
+                    popover.dispose();
+                }
             });
 
             return options;
@@ -79,14 +83,14 @@
          */
         getOptions: function(valueAccessor) {
             var options = ko.utils.unwrapObservable(valueAccessor());
-            if (typeof(options.content) === "undefined") {
-                options.content = ""
-            }
+
+            options.title = ko.utils.unwrapObservable(options.title) || "";
+            options.content = ko.utils.unwrapObservable(options.content) || "";
 
             var combinedOptions = ko.utils.extend({}, ko.bindingHandlers.popover.defaultOptions);
-            var content = ko.utils.unwrapObservable(options.content);
+
             ko.utils.extend(combinedOptions, options);
-            combinedOptions.description = content;
+            combinedOptions.description = options.content;
             return {combinedOptions: combinedOptions, options: options};
         },
         /**

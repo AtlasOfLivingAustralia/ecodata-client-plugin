@@ -627,7 +627,7 @@ ecodata.forms.maps.showMapInModal = function(options) {
             window.history.back();
         }
 
-    }).modal();
+    }).modal('show');
 
     return self.featureMapInstance;
 };

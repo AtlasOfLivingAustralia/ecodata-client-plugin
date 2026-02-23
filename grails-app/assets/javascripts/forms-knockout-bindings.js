@@ -103,7 +103,14 @@
                 }
 
             }).on('fileuploadfail', function(e, data) {
-                error(data.errorThrown);
+                var jqXHR = data.jqXHR;
+                if (jqXHR && jqXHR.status === 422) {
+                    var resp = jqXHR.responseJSON || {message: "File upload could not be processed. Possible virus detected."};
+                    error(resp.message);
+                }
+                else {
+                    error(data.errorThrown);
+                }
             });
 
             ko.applyBindingsToDescendants(innerContext, element);
@@ -220,7 +227,14 @@
                 }
 
             }).on(eventPrefix+'fail', function(e, data) {
+                var jqXHR = data.jqXHR;
+                if (jqXHR && jqXHR.status === 422) {
+                    var resp = jqXHR.responseJSON || {message: "File upload could not be processed. Possible virus detected."};
+                    error(resp.message);
+                }
+                else {
                     error(data.errorThrown);
+                }
             });
 
             ko.applyBindingsToDescendants(innerContext, element);
@@ -923,11 +937,10 @@
     };
 
     var popoverWarningOptions = {
-        placement:'top',
+        placement:'auto',
         trigger:'manual',
         template: '<div class="popover warning"><h3 class="popover-header"></h3><div class="popover-body"></div><div class="arrow"></div></div>'
     };
-
 
     /**
      * This binding requires that the observable has used the metadata extender.  It is meant to work with the
@@ -944,40 +957,50 @@
 
             var $element = $(element);
             ko.utils.domNodeDisposal.addDisposeCallback(element, function() {
-                if (target.popoverInitialised) {
-                    $element.popover("destroy");
+                let popover = bootstrap.Popover.getInstance(element);
+                if (popover) {
+                    popover.dispose();
                 }
             });
+
+            function isPopoverShown(element) {
+                const popoverId = $(element).attr("aria-describedby");
+                return $("#" + popoverId).length > 0;
+            }
 
             // We are implementing the validation routine by adding a subscriber to avoid triggering the validation
             // on initialisation.
             target.subscribe(function() {
-                var valid = $element.validationEngine('validate');
+                let valid = $element.validationEngine('validate');
+                let popover = bootstrap.Popover.getInstance(element);
 
                 // Only check warnings if the validation passes to avoid showing two sets of popups.
                 if (valid) {
                     var result = target.checkWarnings();
-
                     if (result) {
-                        if (!target.popoverInitialised) {
-                            $element.popover(_.extend({content:result.val[0]}, popoverWarningOptions));
-                            var popover = $element.data('bs.popover').getTipElement();
-                            $(popover).click(function() {
-                                $element.popover('hide');
-                            });
-                            target.popoverInitialised = true;
+                        if (!popover) {
+                            const options = _.extend({content:result.val[0]}, popoverWarningOptions);
+                            popover = new bootstrap.Popover(element, options);
                         }
-                        $element.popover('show');
+
+                        if (!isPopoverShown(element)) {
+                            popover.show();
+                            $element.on('shown.bs.popover', function() {
+                                $(popover._getTipElement()).one('click', function() {
+                                    popover.hide();
+                                })
+                            })
+                        }
                     }
                     else {
-                        if (target.popoverInitialised) {
-                            $element.popover('hide');
+                        if (popover) {
+                            popover.hide();
                         }
                     }
                 }
                 else {
-                    if (target.popoverInitialised) {
-                        $element.popover('hide');
+                    if (popover) {
+                        popover.hide();
                     }
                 }
             });

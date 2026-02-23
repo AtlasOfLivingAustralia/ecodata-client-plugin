@@ -7,7 +7,7 @@
                 <a href=""
                    data-bind="attr:{href:getImageViewerUrl()}, fancybox: {nextEffect:'fade', preload:0, 'prevEffect':'fade', type: 'iframe', width: '80%', title: function(){ return $(this).next().find('.metadata').html()}}"
                    target="fancybox">
-                    <img class="image-logo image-window" data-toggle="popover" data-trigger="hover" data-title="Photo metadata"
+                    <img class="image-logo image-window" data-bs-toggle="popover" data-bs-trigger="hover" data-bs-title="Photo metadata"
                          data-bind="attr:{title:name, src:thumbnailUrl}, popover: {placement:'top', content: function(){ return $(this).parent().parent().find('.metadata').html()} }"
                          onload="ecodata.forms.utils.findLogoScalingClass(this, 200, 150)">
                 </a>

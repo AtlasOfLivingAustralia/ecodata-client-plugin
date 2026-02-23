@@ -1,14 +1,14 @@
 //= require jquery/3.6.0/jquery.min.js
 //= require knockout/3.5.0/knockout.debug.js
 //= require knockout/3.5.0/knockout.mapping-latest.js
-//= require bootstrap/4.6.0/js/bootstrap.bundle.js
+//= require bootstrap/5.3/js/bootstrap.bundle.js
 //= require bootstrap-datepicker/1.9/js/bootstrap-datepicker.js
 //= require file-upload-with-tmpl-manifest.js
 //= require underscorejs/1.8.3/underscore.js
 //= require jquery.validationEngine/3.1.0/jquery.validationEngine.js
 //= require jquery.validationEngine/3.1.0/jquery.validationEngine-en.js
 //= require fancybox/jquery.fancybox
-//= require bootbox/5.5.2/bootbox.all.js
+//= require bootbox/6.0.4/bootbox.js
 //= require jquery.blockUI/jquery.blockUI.js
 //= require select2/4.0.3/js/select2.full
 //= require typeahead/0.11.1/bloodhound

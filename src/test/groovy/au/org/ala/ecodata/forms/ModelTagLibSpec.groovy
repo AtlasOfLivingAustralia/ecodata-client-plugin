@@ -62,7 +62,7 @@ class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLi
         tagLib.section(model, ctx)
 
         then:
-        mb.div(class:"boxed-heading col-sm-12", "data-content":title) {
+        mb.div(class:"boxed-heading col-sm-12", "data-bs-content":title) {
             div(class:'row') {
                 div(class:"col-sm-12") {}
             }
