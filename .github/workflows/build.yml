@@ -49,7 +49,7 @@ jobs:
 
 
       - name: Run tests and jacoco coverage report with Gradle
-        run: ./gradlew -PenableJacoco=true check -Dwebdriver.chrome.driver=$CHROMEWEBDRIVER
+        run: ./gradlew -PenableJacoco=true check -Dwebdriver.chrome.driver=${{env.CHROMEWEBDRIVER}}
 
       - name: Run javascript unit tests
         run: npm run test
