@@ -6,7 +6,8 @@
  * in a browser or when Karma served them to Chrome.
  */
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import vm from 'vm';
 import { vi } from 'vitest';
 // Polyfill IndexedDB for Dexie (jsdom does not ship with IndexedDB)
@@ -40,8 +41,9 @@ Object.assign(globalThis, {
     IDBVersionChangeEvent,
 });
 
-// ESM-compatible __dirname (import.meta.dirname available in Node 21+)
-const root = resolve(import.meta.dirname, '../../..');
+// ESM-compatible __dirname
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = resolve(__dirname, '../../..');
 
 function runScript(relativePath) {
     const fullPath = resolve(root, relativePath);
