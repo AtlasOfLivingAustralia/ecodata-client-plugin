@@ -54,9 +54,7 @@ jobs:
         run: $CHROMEWEBDRIVER/chromedriver --version
 
       - name: Run tests and jacoco coverage report with Gradle
-        run: ./gradlew -PenableJacoco=true -Dwebdriver.chrome.driver=$CHROMEWEBDRIVER/chromedriver check
-        env:
-          CHROMEWEBDRIVER: $CHROMEWEBDRIVER
+        run: ./gradlew -PenableJacoco=true -Dwebdriver.chrome.driver=/usr/local/share/chromedriver-linux64/chromedriver check
 
       - name: Run javascript unit tests
         run: npm run test
