@@ -108,6 +108,7 @@ dependencies {
 tasks.withType(Test) {
     systemProperty 'geb.env', System.getProperty('geb.env') ?: 'chromeHeadless'
     systemProperty "geb.build.reportsDir", reporting.file("geb/integrationTest")
+    systemProperty "webdriver.chrome.driver", System.getProperty('webdriver.chrome.driver')
 
     testLogging {
         events "passed", "skipped", "failed"
