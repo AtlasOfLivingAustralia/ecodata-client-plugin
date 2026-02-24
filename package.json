@@ -9,6 +9,7 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "description": "Vitest configuration for testing project javascript",
+  "type": "module",
   "main": "test/unit/javascript",
   "directories": {
     "test": "test"
