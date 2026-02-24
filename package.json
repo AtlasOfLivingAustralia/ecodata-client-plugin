@@ -29,7 +29,8 @@
     "leaflet": "^1.4.0",
     "leaflet-draw": "^1.0.4",
     "lodash": "^4.17.23",
-    "vitest": "^4.0.0"
+    "vitest": "^4.0.0",
+    "chromedriver": "^145.0.5"
   },
   "scripts": {
     "test": "vitest run",

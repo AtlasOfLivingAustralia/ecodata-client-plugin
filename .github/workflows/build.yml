@@ -52,7 +52,7 @@ jobs:
         run: ./gradlew -PenableJacoco=true check
 
       - name: Run javascript unit tests
-        run: node_modules/karma/bin/karma start karma.conf.js --single-run --browsers ChromeHeadless
+        run: npm run test
 
       - name: Clean to remove clover instrumentation
         run: ./gradlew clean
