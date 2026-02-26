@@ -22,7 +22,7 @@ describe("Expand on validate Spec", function () {
         expect($(section).css('display')).toEqual('none');
         $(mockForm).trigger("jqv.form.validating");
 
-        expect($(mockForm).css('display')).not.toEqual('none');
+        expect($(mockForm).css('display')).toEqual('block');
 
     });
 
