@@ -28,7 +28,7 @@ jobs:
       - name: Install nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '16.x'
+          node-version: '20.x'
           registry-url: 'https://npm.pkg.github.com'
           scope: 'AtlasOfLivingAustralia'
 
@@ -47,12 +47,17 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
 
+      - name: Check chromedriver is available
+        run: echo $CHROMEWEBDRIVER
+
+      - name: Check chromedriver version
+        run: $CHROMEWEBDRIVER/chromedriver --version
 
       - name: Run tests and jacoco coverage report with Gradle
-        run: ./gradlew -PenableJacoco=true check
+        run: ./gradlew -PenableJacoco=true -Dwebdriver.chrome.driver=$CHROMEWEBDRIVER/chromedriver check
 
       - name: Run javascript unit tests
-        run: node_modules/karma/bin/karma start karma.conf.js --single-run --browsers ChromeHeadless
+        run: npm run test
 
       - name: Clean to remove clover instrumentation
         run: ./gradlew clean

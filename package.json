@@ -1,6 +1,6 @@
 {
   "name": "@atlasoflivingaustralia/ecodata-client-plugin",
-  "version": "9.0.0-snapshot",
+  "version": "9.1.0-snapshot",
   "repository": {
     "type": "git",
     "url": "https://github.com/AtlasOfLivingAustralia/ecodata-client-plugin.git"
@@ -8,45 +8,40 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
   },
-  "description": "Karma / jasmine configuration for testing project javascript",
+  "description": "Vitest configuration for testing project javascript",
+  "type": "module",
   "main": "test/unit/javascript",
   "directories": {
     "test": "test"
   },
   "devDependencies": {
-    "@metahub/karma-jasmine-jquery": "^2.0.1",
     "@turf/area": "^6.0.1",
     "@turf/bbox": "^6.0.1",
     "@turf/clone": "^6.0.2",
     "@turf/convex": "^6.0.2",
     "@turf/length": "^6.0.2",
     "@turf/simplify": "^5.1.5",
-    "chromedriver": "^143.0.4",
+    "fake-indexeddb": "^6.0.0",
     "geojson2svg": "^1.2.3",
     "handlebars": "^4.7.7",
-    "jasmine-ajax": "^4.0.0",
-    "jasmine-core": "^5.1.1",
-    "jasmine-jquery": "^2.1.1",
     "jquery": "^3.6.2",
-    "karma": "^6.4.2",
-    "karma-chrome-launcher": "^3.1.0",
-    "karma-coverage": "^2.2.1",
-    "karma-jasmine": "^4.0.1",
-    "karma-verbose-reporter": "^0.0.8",
+    "jsdom": "^26.1.0",
     "knockout": "^3.5.0",
     "leaflet": "^1.4.0",
     "leaflet-draw": "^1.0.4",
-    "lodash": "^4.17.23"
+    "lodash": "^4.17.23",
+    "vitest": "^4.0.0",
+    "vite": "^6.0.0",
+    "chromedriver": "^145.0.5"
   },
   "scripts": {
-    "test": "karma start karma.conf.js",
-    "debug": "karma start --debug --browsers=Chrome --single-run=false",
-    "package-turf": "browserify -s turf turf-package-instructions.js -o ./grails-app/assets/vendor/turf/turf-packaged.js"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "package-turf": "vite build --config vite.turf.config.js"
   },
   "author": "",
   "license": "",
   "dependencies": {
-    "bootstrap": "^5.3.8",
-    "browserify": "^16.2.3"
+    "bootstrap": "^5.3.8"
   }
 }
