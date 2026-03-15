@@ -7,7 +7,7 @@ class ScanService {
     EcpWebService ecpWebService
     def grailsApplication
 
-    int isDocumentClean(MultipartFile file) {
+    int getDocumentScanStatus(MultipartFile file) {
         if (file == null) {
             return HttpStatus.OK.value()
         }

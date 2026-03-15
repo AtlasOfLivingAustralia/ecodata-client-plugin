@@ -78,7 +78,7 @@ class FileScanInterceptorSpec extends Specification implements InterceptorUnitTe
         response.status == 422
     }
 
-    void "interceptor should handle mixed file scan results"() {
+    void "interceptor should handle multiple failed file scan results"() {
         given:
         def controller = (PreviewController) mockController(PreviewController)
         def cleanFile = Mock(org.springframework.web.multipart.MultipartFile)

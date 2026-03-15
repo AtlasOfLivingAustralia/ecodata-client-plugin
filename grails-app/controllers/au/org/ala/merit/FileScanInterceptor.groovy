@@ -21,7 +21,7 @@ class FileScanInterceptor {
                 def fileName = files.next()
                 def file = request.getFile(fileName)
                 if (file) {
-                    statusCodes << scanService.isDocumentClean(file)
+                    statusCodes << scanService.getDocumentScanStatus(file)
                 }
             }
 
