@@ -14,7 +14,6 @@ class FileScanInterceptor {
 
     boolean before() {
         if (request.respondsTo('getFile')) {
-            boolean clean = true
             List statusCodes = []
             def files = request.getFileNames()
             while(files.hasNext()) {
