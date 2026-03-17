@@ -1,15 +1,15 @@
 package au.org.ala.ecodata.forms
 
-
+import org.springframework.http.HttpStatus
 import org.springframework.web.multipart.MultipartFile
 
 class ScanService {
     EcpWebService ecpWebService
     def grailsApplication
 
-    boolean isDocumentClean(MultipartFile file) {
+    int getDocumentScanStatus(MultipartFile file) {
         if (file == null) {
-            return true
+            return HttpStatus.OK.value()
         }
 
         if (grailsApplication.config.getProperty('scanFile.enabled', Boolean, true)) {
@@ -20,9 +20,9 @@ class ScanService {
 
             baseUrl = baseUrl.replaceAll("/ws", '/reporting/ws')
             def result = ecpWebService.postMultipart("${baseUrl}/document/scanDocument", [:], file, "fileToScan", true)
-            return result.statusCode == org.springframework.http.HttpStatus.OK.value()
+            return result.statusCode
         }
 
-        return true
+        return HttpStatus.OK.value()
     }
 }
