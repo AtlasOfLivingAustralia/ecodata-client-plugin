@@ -112,14 +112,17 @@ class EcpWebService {
             resp = [statusCode: conn.responseCode]
 
         } catch (SocketTimeoutException e) {
-            resp = [error: "Timed out calling web service. URL= ${url}.", statusCode: conn?.responseCode?:""]
+            int statusCode = conn ? (conn.responseCode ?: HttpStatus.SC_GATEWAY_TIMEOUT) : HttpStatus.SC_GATEWAY_TIMEOUT
+            resp = [error: "Timed out calling web service. URL= ${url}.", statusCode: statusCode]
             log.error "Timed out calling web service. URL= ${url}.", e
         } catch (SocketException se) {
-            resp = [error: "Error calling web service. URL= ${url}.", statusCode: conn?.responseCode?:""]
+            int statusCode = conn ? (conn.responseCode ?: HttpStatus.SC_GATEWAY_TIMEOUT) : HttpStatus.SC_GATEWAY_TIMEOUT
+            resp = [error: "Timed out calling web service. URL= ${url}.", statusCode: statusCode]
 
             log.warn "Socket connection closed. ${se.getMessage()} URL= ${url}.", se
         } catch (Exception e) {
-            resp = [error: "Error calling web service. URL= ${url}.", statusCode: conn?.responseCode?:""]
+            int statusCode = conn ? (conn.responseCode ?: HttpStatus.SC_INTERNAL_SERVER_ERROR) : HttpStatus.SC_INTERNAL_SERVER_ERROR
+            resp = [error: "Timed out calling web service. URL= ${url}.", statusCode: statusCode]
 
             log.error "Failed calling web service. ${e.getClass()} ${e.getMessage()} URL= ${url}.", e
         }
