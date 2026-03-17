@@ -40,7 +40,7 @@ jobs:
         id: pre-release-version
         uses: adobe/update-prerelease-npm-version@4dea8f295023f5b18126afd79bae1057a5b92d6e #v1.2.0
 
-      - run: npm publish
+      - run: npm publish --tag=${{ steps.pre-release-version.outputs.tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

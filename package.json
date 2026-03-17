@@ -3,7 +3,7 @@
   "version": "9.1.0-snapshot",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AtlasOfLivingAustralia/ecodata-client-plugin.git"
+    "url": "git+https://github.com/AtlasOfLivingAustralia/ecodata-client-plugin.git"
   },
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/"
