@@ -115,14 +115,15 @@ class EcpWebService {
             resp = [error: "Timed out calling web service. URL= ${url}.", statusCode: conn?.responseCode?:""]
             log.error "Timed out calling web service. URL= ${url}.", e
         } catch (SocketException se) {
-            resp = [error: "Timed out calling web service. URL= ${url}.", statusCode: conn?.responseCode?:""]
+            resp = [error: "Error calling web service. URL= ${url}.", statusCode: conn?.responseCode?:""]
 
             log.warn "Socket connection closed. ${se.getMessage()} URL= ${url}.", se
         } catch (Exception e) {
-            resp = [error: "Timed out calling web service. URL= ${url}.", statusCode: conn?.responseCode?:""]
+            resp = [error: "Error calling web service. URL= ${url}.", statusCode: conn?.responseCode?:""]
 
             log.error "Failed calling web service. ${e.getClass()} ${e.getMessage()} URL= ${url}.", e
         }
+
         resp
     }
 
