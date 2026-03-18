@@ -28,7 +28,7 @@ jobs:
       - name: Install nodejs
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '24.x'
           registry-url: 'https://npm.pkg.github.com'
           scope: 'AtlasOfLivingAustralia'
 
@@ -40,7 +40,7 @@ jobs:
         id: pre-release-version
         uses: adobe/update-prerelease-npm-version@4dea8f295023f5b18126afd79bae1057a5b92d6e #v1.2.0
 
-      - run: npm publish
+      - run: npm publish --tag=snapshot
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

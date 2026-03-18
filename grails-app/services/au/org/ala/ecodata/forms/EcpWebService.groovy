@@ -95,6 +95,41 @@ class EcpWebService {
         }
     }
 
+    /**
+     * This method is used when the response is expected to be a stream, e.g. for downloading files.
+     * It returns a Map with keys [statusCode: <http status code>, error: <error message if applicable>]
+     * The supplied outputStream will be written to with the response from the web service if the call is successful.
+     * The caller is responsible for closing the outputStream.
+     */
+    Map readToStream(String url, OutputStream outputStream, boolean includeUserId = true, Integer timeout = null) {
+        HttpURLConnection conn = null
+        Map resp = [:]
+        try {
+            conn = configureConnection(url, includeUserId, timeout)
+            try (InputStream inputStream = conn.inputStream) {
+                outputStream << inputStream
+            }
+            resp = [statusCode: conn.responseCode]
+
+        } catch (SocketTimeoutException e) {
+            int statusCode = conn ? (conn.responseCode ?: HttpStatus.SC_GATEWAY_TIMEOUT) : HttpStatus.SC_GATEWAY_TIMEOUT
+            resp = [error: "Timed out calling web service. URL= ${url}.", statusCode: statusCode]
+            log.error "Timed out calling web service. URL= ${url}.", e
+        } catch (SocketException se) {
+            int statusCode = conn ? (conn.responseCode ?: HttpStatus.SC_GATEWAY_TIMEOUT) : HttpStatus.SC_GATEWAY_TIMEOUT
+            resp = [error: "Timed out calling web service. URL= ${url}.", statusCode: statusCode]
+
+            log.warn "Socket connection closed. ${se.getMessage()} URL= ${url}.", se
+        } catch (Exception e) {
+            int statusCode = conn ? (conn.responseCode ?: HttpStatus.SC_INTERNAL_SERVER_ERROR) : HttpStatus.SC_INTERNAL_SERVER_ERROR
+            resp = [error: "Timed out calling web service. URL= ${url}.", statusCode: statusCode]
+
+            log.error "Failed calling web service. ${e.getClass()} ${e.getMessage()} URL= ${url}.", e
+        }
+
+        resp
+    }
+
     Map getString(String url, boolean includeAuth) {
         URLConnection conn = null
         Map resp = [:]
@@ -104,7 +139,7 @@ class EcpWebService {
             resp.statusCode = conn.responseCode
         } catch (SocketTimeoutException e) {
             resp.error = "Timed out calling web service. URL= ${url}."
-            resp.statusCode = HttpStatus.CONNECTION_TIMED_OUT
+            resp.statusCode = HttpStatus.SC_GATEWAY_TIMEOUT
             log.warn resp.error
         } catch (SocketException se) {
             resp.error = "Socket connection closed. ${se.getMessage()} URL= ${url}."
@@ -607,9 +642,10 @@ class EcpWebService {
             }
 
             def user = userService.getUser()
-            String userId = user.userId
-            String userIdHeader = grailsApplication.config.getProperty('app.http.header.userId')
+
             if (user) {
+                String userIdHeader = grailsApplication.config.getProperty('app.http.header.userId')
+                String userId = user.userId
                 requestBuilder.addHeader(userIdHeader, userId)
             } else {
                 log.warn("No user associated with request: ${url}")
