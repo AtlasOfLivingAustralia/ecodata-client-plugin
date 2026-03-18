@@ -32,6 +32,9 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: 'AtlasOfLivingAustralia'
 
+      - name: Clear Gradle cache
+        run: rm -rf ~/.gradle/caches
+
       - run: npm install
       - run: npm run package-turf
 
