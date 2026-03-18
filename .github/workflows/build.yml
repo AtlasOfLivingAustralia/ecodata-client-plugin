@@ -53,6 +53,9 @@ jobs:
       - name: Check chromedriver version
         run: $CHROMEWEBDRIVER/chromedriver --version
 
+      - name: Clean to remove clover instrumentation
+        run: ./gradlew clean
+
       - name: Run tests and jacoco coverage report with Gradle
         run: ./gradlew -PenableJacoco=true -Dwebdriver.chrome.driver=$CHROMEWEBDRIVER/chromedriver check
 
