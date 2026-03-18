@@ -22,7 +22,7 @@ describe("DataModelItem Spec", function () {
         expect(dataItem.getId()).toBe("Feature_Test-"+metadata.name);
     });
 
-    it("Will defer loading if the constraints are pre-populated to avoid a race condition", function(done) {
+    it("Will defer loading if the constraints are pre-populated to avoid a race condition", function() {
         var constraints = ['1', '2', '3'];
         var metadata = {
             name:'item',
@@ -66,17 +66,19 @@ describe("DataModelItem Spec", function () {
         expect(dataItem()).toBeUndefined();
 
         // Now we fake the return of the ajax call with the constraints.
-        deferred.resolve(constraints).then(function() {
-            // The constraints should be populated
-            expect(dataItem.constraints()).toEqual(constraints);
-            // And the load should proceed.
-            expect(dataItem()).toEqual("2");
+        return new Promise(function(resolve) {
+            deferred.resolve(constraints).then(function() {
+                // The constraints should be populated
+                expect(dataItem.constraints()).toEqual(constraints);
+                // And the load should proceed.
+                expect(dataItem()).toEqual("2");
 
-            done();
+                resolve();
+            });
         });
     });
 
-    it("Can return the label associated with a selected value for a DataModelItem with constraints", function(done) {
+    it("Can return the label associated with a selected value for a DataModelItem with constraints", function() {
         var constraints = ['1', '2', '3'];
         var metadata = {
             name:'item',
@@ -125,11 +127,13 @@ describe("DataModelItem Spec", function () {
         dataItem = ko.observable().extend({metadata:{metadata:metadata, context:context, config:config}});
         dataItem('2');
 
-        deferred.resolve(objectConstraints).then(function() {
-            expect(dataItem.constraints.label()).toEqual('label 2')
-            expect(dataItem.constraints.label('3')).toEqual('label 3')
+        return new Promise(function(resolve) {
+            deferred.resolve(objectConstraints).then(function() {
+                expect(dataItem.constraints.label()).toEqual('label 2')
+                expect(dataItem.constraints.label('3')).toEqual('label 3')
 
-            done();
+                resolve();
+            });
         });
     });
 

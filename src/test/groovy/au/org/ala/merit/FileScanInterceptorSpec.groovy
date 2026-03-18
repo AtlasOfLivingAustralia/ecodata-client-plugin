@@ -8,11 +8,12 @@ import org.springframework.http.HttpStatus
 import spock.lang.Specification
 
 class FileScanInterceptorSpec extends Specification implements InterceptorUnitTest<FileScanInterceptor> {
-    def scanService, webService = Mock(EcpWebService)
+    def scanService, webService
 
     def setup() {
         interceptor.scanService = scanService = new ScanService()
-        scanService.ecpWebService = webService
+        scanService.ecpWebService = Mock(EcpWebService)
+        webService = scanService.ecpWebService
         scanService.grailsApplication = grailsApplication
     }
 
@@ -75,5 +76,30 @@ class FileScanInterceptorSpec extends Specification implements InterceptorUnitTe
         then:
         2 * webService.postMultipart(*_) >> [statusCode: HttpStatus.UNPROCESSABLE_ENTITY.value()]
         response.status == 422
+    }
+
+    void "interceptor should handle multiple failed file scan results"() {
+        given:
+        def controller = (PreviewController) mockController(PreviewController)
+        def cleanFile = Mock(org.springframework.web.multipart.MultipartFile)
+        cleanFile.name >> "clean"
+        cleanFile.originalFilename >> "clean.txt"
+        cleanFile.inputStream >> new ByteArrayInputStream("clean file content".bytes)
+        def corruptFile = Mock(org.springframework.web.multipart.MultipartFile)
+        corruptFile.name >> "corrupt"
+        corruptFile.originalFilename >> "corrupt.txt"
+        corruptFile.inputStream >> new ByteArrayInputStream("corrupt file content".bytes)
+        request.getFileNames() >> ['clean.txt', 'corrupt.txt'].iterator()
+        request.addFile(cleanFile)
+        request.addFile(corruptFile)
+
+        when:
+        def result = withInterceptors(controller: PreviewController) {
+            controller.prepopulateConstraints()
+        }
+
+        then:
+        2 * scanService.ecpWebService.postMultipart(*_) >> [statusCode: HttpStatus.INTERNAL_SERVER_ERROR.value()]
+        response.status == 500
     }
 }

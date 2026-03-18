@@ -1,11 +1,9 @@
 // Use npm run-script package-turf
-// This will roduce turf-packaged.js in grails-app/assets/vendor/turf/turf-packaged.js
+// This will produce turf-packaged.js in grails-app/assets/vendor/turf/turf-packaged.js
 // The functions will be exported to a global "turf" namespace.
-module.exports = {
-    area: require('@turf/area').default,
-    length: require('@turf/length').default,
-    bbox: require('@turf/bbox').default,
-    convex: require('@turf/convex').default,
-    simplify: require('@turf/simplify').default,
-    clone: require('@turf/clone').default
-};
+export { default as area } from '@turf/area';
+export { default as length } from '@turf/length';
+export { default as bbox } from '@turf/bbox';
+export { default as convex } from '@turf/convex';
+export { default as simplify } from '@turf/simplify';
+export { default as clone } from '@turf/clone';
