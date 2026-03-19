@@ -122,7 +122,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         String validation = context.validationAttr ?: ''
 
         // programmatic conversion of the old gsp (_timeDataTypeEditModelTemplate.gsp)
-        context.writer << """<div class="timefield input-append" style="position:relative"><input ${attrString} id="${context.source}TimeField" data-bind='${databindString}' ${validation} type='text' /></div>"""
+        context.writer << """<div class="timefield input-append" style="position:relative"><input ${attrString} data-source="${context.source}TimeField" data-bind='${databindString}' ${validation} type='text' /></div>"""
     }
 
     @Override
