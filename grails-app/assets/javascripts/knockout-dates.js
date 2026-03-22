@@ -78,16 +78,19 @@
 //  a JS Date object - useful with datepicker; and
 //  a simple formatted date of the form dd-mm-yyyy useful for display.
 // The formatted date will include hh:MM if the includeTime argument is true
-ko.extenders.simpleDate = function (target, options) {
-    var includeTime = false;
-    var isReadOnly = false;
-    if (_.isObject(options)) {
-        includeTime = options.includeTime || false;
-        isReadOnly = options.readOnly || false;
-    }
-    else {
-        includeTime = options || false;
-    }
+    ko.extenders.simpleDate = function (target, options) {
+        var includeTime = false;
+        var isReadOnly = false;
+        var showInUserTimeZone = false;
+
+        if (_.isObject(options)) {
+            includeTime = options.includeTime || false;
+            isReadOnly = options.readOnly || false;
+            showInUserTimeZone = options.showInUserTimeZone || false;
+        }
+        else {
+            includeTime = options || false;
+        }
 
         target.date = ko.computed({
             read: function () {
@@ -106,20 +109,19 @@ ko.extenders.simpleDate = function (target, options) {
                         target(valueToWrite);
                     }
                 } else {
-                    // date has been cleared
                     target("");
                 }
             }
         });
         target.formattedDate = ko.computed({
             read: function () {
-                return convertToSimpleDate(target(), includeTime);
+                return convertToSimpleDate(target(), includeTime, showInUserTimeZone);
             },
 
             write: function (newValue) {
-            if (isReadOnly) {
-                return;
-            }
+                if (isReadOnly) {
+                    return;
+                }
                 if (newValue) {
                     var current = target(),
                         valueToWrite = convertToIsoDate(newValue);
@@ -130,6 +132,7 @@ ko.extenders.simpleDate = function (target, options) {
                 }
             }
         });
+
         target.date(target());
         target.formattedDate(target());
 
