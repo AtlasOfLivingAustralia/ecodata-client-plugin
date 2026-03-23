@@ -55,9 +55,9 @@ class DateSpec extends GebReportingSpec {
 
         and: "The values from the data model are displayed"
         $("span[data-bind*=date1").text() == "01-07-2019"
-        $("span[data-bind*=date2").text() == "02-08-2019"
-        $("span[data-bind*=date3")*.text() == ["02-09-2019", "02-11-2019"]
-        $("span[data-bind*=date4")*.text() == ["02-10-2019", '']
+        $("span[data-bind*=date2").text() == "01-08-2019"
+        $("span[data-bind*=date3")*.text() == ["01-09-2019", "01-11-2019"]
+        $("span[data-bind*=date4")*.text() == ["01-10-2019", '']
     }
 
 }
