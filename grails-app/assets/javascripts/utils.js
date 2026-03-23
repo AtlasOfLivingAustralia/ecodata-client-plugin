@@ -90,12 +90,15 @@ function convertToSimpleDate(isoDate, includeTime, showInUserTimeZone) {
         }
     }
 
-    var timezone = "Australia/Sydney";
+    var date;
     if (showInUserTimeZone === true) {
-        timezone = moment.tz.guess() || timezone;
+        var timezone = moment.tz.guess() || "Australia/Sydney";
+        date = moment.tz(isoDate, timezone);
+    }
+    else {
+        date = moment(isoDate);
     }
 
-    var date = moment.tz(isoDate, timezone);
     var format = includeTime ? "DD-MM-YYYY HH:mm" : "DD-MM-YYYY";
     return date.format(format);
 }
