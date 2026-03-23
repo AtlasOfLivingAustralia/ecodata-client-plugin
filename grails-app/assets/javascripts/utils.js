@@ -92,11 +92,12 @@ function convertToSimpleDate(isoDate, includeTime, showInUserTimeZone) {
 
     var date;
     if (showInUserTimeZone === true) {
-        var timezone = moment.tz.guess() || "Australia/Sydney";
-        date = moment.tz(isoDate, timezone);
+        // use the user’s local timezone
+        date = moment(isoDate);
     }
     else {
-        date = moment(isoDate);
+        // keep the date in UTC to avoid shifting it for other viewers
+        date = moment.utc(isoDate);
     }
 
     var format = includeTime ? "DD-MM-YYYY HH:mm" : "DD-MM-YYYY";
