@@ -37,6 +37,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         result.size() == 1
         result[0].name == "Testus species"
         result[0].scientificName == "Testus species"
+        result[0].matchedName == "Testus species"
         result[0].rawScientificName == "Testus species"
         result[0].commonName == "Test Species"
         result[0].lsid == "testLsid"
@@ -83,6 +84,7 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         result.size() == 1
         result[0].name == "Testus species"
         result[0].scientificName == "Testus species"
+        result[0].matchedName == "Testus species"
         result[0].rawScientificName == "Testus species"
         result[0].commonName == "Test Species"
         result[0].lsid == "testLsid"
@@ -483,14 +485,14 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
                 resp: [
                         [
                                 id: 123,
-                                scientificName: "Eucalyptus globulus",
+                                matchedName: "Eucalyptus globulus",
                                 rawScientificName: "Eucalyptus globulus",
                                 commonName: "Tasmanian Blue Gum",
                                 kvpValues: [[kingdom: "Plantae"]]
                         ],
                         [
                                 id: 124,
-                                scientificName: "Eucalyptus camaldulensis",
+                                matchedName: "Eucalyptus camaldulensis",
                                 rawScientificName: "Eucalyptus camaldulensis",
                                 commonName: "River Red Gum",
                                 kvpValues: [[kingdom: "Plantae"]]
@@ -506,8 +508,9 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         then:
         result.size() == 2
         result[0].scientificName == "Eucalyptus globulus"
+        result[0].matchedName == "Eucalyptus globulus"
         result[0].rawScientificName == "Eucalyptus globulus"
-        result[1].scientificName == "Eucalyptus camaldulensis"
+        result[1].matchedName == "Eucalyptus camaldulensis"
         result[1].rawScientificName == "Eucalyptus camaldulensis"
     }
 
@@ -600,12 +603,14 @@ class SpeciesListServiceSpec extends Specification implements ServiceUnitTest<Sp
         then:
         result.size() == 2
         result[0].scientificName == "Eucalyptus globulus"
+        result[0].matchedName == "Eucalyptus globulus"
         result[0].rawScientificName == "Eucalyptus globilus"
         result[0].commonName == "Tasmanian Blue Gum"
         result[0].lsid == "testLsid1"
         result[0].kvpValues == [[kingdom: "Plantae"]]
         result[1].rawScientificName == "Eucalyptus cameldulensis"
         result[1].scientificName == "Eucalyptus camaldulensis"
+        result[1].matchedName == "Eucalyptus camaldulensis"
         result[1].commonName == "River Red Gum"
         result[1].kvpValues == [[kingdom: "Plantae"]]
         result[1].lsid == "testLsid2"
