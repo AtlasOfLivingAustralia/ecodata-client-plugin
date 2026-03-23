@@ -91,13 +91,13 @@ function convertToSimpleDate(isoDate, includeTime, showInUserTimeZone) {
     }
 
     var date;
-    if (showInUserTimeZone === true) {
-        // use the user’s local timezone
-        date = moment(isoDate);
+    if (showInUserTimeZone === false) {
+        // keep the date in UTC
+        date = moment.utc(isoDate);
     }
     else {
-        // keep the date in UTC to avoid shifting it for other viewers
-        date = moment.utc(isoDate);
+        // default to user's local timezone
+        date = moment(isoDate);
     }
 
     var format = includeTime ? "DD-MM-YYYY HH:mm" : "DD-MM-YYYY";
