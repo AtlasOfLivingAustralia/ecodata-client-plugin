@@ -4,6 +4,6 @@ describe("knockout dates spec", function () {
         var date = Date.fromISO("2019-05-30T14:00:00Z");
         simpleDate(date);
 
-        expect(simpleDate.formattedDate()).toBe("31-05-2019"); // AEST
+        expect(simpleDate.formattedDate()).toBe("30-05-2019"); // UTC
     });
 });
