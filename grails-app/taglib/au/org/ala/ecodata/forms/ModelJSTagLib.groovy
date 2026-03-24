@@ -626,9 +626,20 @@ class ModelJSTagLib {
     }
 
     def dateViewModel(JSModelRenderContext ctx) {
-        List extenders =  ["{simpleDate: {includeTime:false}}"]
+        def options = ["includeTime:false"]
+
         if (ctx.dataModel.computed) {
-            extenders = ["{simpleDate: {includeTime:false, readOnly:true}}"]
+            options << "readOnly:true"
+        }
+
+        if (ctx.dataModel.showInUserTimeZone) {
+            options << "showInUserTimeZone:true"
+        }
+
+        def extender = "{simpleDate: {${options.join(', ')}}}"
+        List extenders = [extender]
+
+        if (ctx.dataModel.computed) {
             computedModel(ctx, extenders)
         }
         else {
