@@ -23,7 +23,7 @@
     "@turf/simplify": "^5.1.5",
     "fake-indexeddb": "^6.0.0",
     "geojson2svg": "^1.2.3",
-    "handlebars": "^4.7.7",
+    "handlebars": "^4.7.9",
     "jquery": "^3.6.2",
     "jsdom": "^26.1.0",
     "knockout": "^3.5.0",
