@@ -232,7 +232,7 @@ function enmapify(args) {
 
     viewModel.transients.showMyLocationAndLocationByAddress = function () {
         if (readonly) {
-            return true;
+            return false;
         }
 
         // only show my location control if user can add point to map
