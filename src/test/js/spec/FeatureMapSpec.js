@@ -13,6 +13,8 @@ describe("Feature Map Spec", function () {
                 self.drawnItems = {
                     on : function() {return{}}
                 }
+
+                self.registerListener = function() {};
             }
         };
 
