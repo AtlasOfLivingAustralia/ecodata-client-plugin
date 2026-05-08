@@ -8,7 +8,7 @@ class FeatureMap extends Module {
 
     def drawPolygon() {
 
-        def polygonDraw = $('.leaflet-draw-draw-polygon')
+        def polygonDraw = $("[title='Draw Polygons']")
         waitFor { polygonDraw.displayed }
 
         // Wakeup the map (leaflet_sleep will be preventing interaction otherwise
@@ -22,7 +22,7 @@ class FeatureMap extends Module {
 
         polygonDraw.click()
         Thread.sleep(1000)
-        waitFor 10, {$('.leaflet-draw-actions').getAt(0).displayed}
+        waitFor 10, {$('[title="Draw Polygons"] .action-finish').getAt(0).displayed}
 
         interact {
             moveByOffset(100, 100)

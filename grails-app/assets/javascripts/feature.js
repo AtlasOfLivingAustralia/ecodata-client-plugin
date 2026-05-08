@@ -190,7 +190,7 @@ ecodata.forms.maps.featureMap = function (options) {
             mapElementId: 'map-holder',
             selectFromSitesOnly: false,
             allowPolygons: true,
-            allowPoints: false,
+            allowPoints: true,
             markerOrShapeNotBoth: true,
             hideMyLocation: false,
             baseLayersName: 'Open Layers',
@@ -201,6 +201,8 @@ ecodata.forms.maps.featureMap = function (options) {
             singleDraw: false,
             selectedStyle: {},
             displayScale: true,
+            addGeometryFromLocalFile: true,
+            addMarker: true,
             shapeOptions: {
                 color: '#f00',
                 fillOpacity: 0.2,
@@ -296,8 +298,12 @@ ecodata.forms.maps.featureMap = function (options) {
                 });
                 self.editableSites.push(feature);
 
-            }
+            },
+            'layerremove': layerRemoveHandlerToUpdateSelectedFeatures
         });
+
+        // leaflet geoman plugin doesn't fire layerremove event on FeatureGroup instance.
+        self.registerListener('pm:remove', layerRemoveHandlerToUpdateSelectedFeatures);
 
         self.areaHa = ko.observable(0).extend({numericString:2});
         self.lengthKm = ko.observable(0).extend({numericString:2});
@@ -312,36 +318,52 @@ ecodata.forms.maps.featureMap = function (options) {
             updateStatistics();
         });
 
-        var editStartEvents = ["draw:editstart", "draw:drawstart", "draw:deletestart"];
-        var editStopEvents = ["draw:editstop", "draw:deletestop", "draw:drawstop"];
-
         self.editing = ko.observable(false);
-        _.each(editStartEvents, function (e) {
-            self.getMapImpl().on(e, function() {
+        self.getMapImpl().on("pm:globaleditmodetoggled", function(e) {
+            if (e.enabled) {
                 self.editing(true);
-            });
-        });
-        _.each(editStopEvents, function (e) {
-            self.getMapImpl().on(e, function() {
+            }
+            else {
                 self.editing(false);
                 updateStatistics();
-            });
-        });
-
-        self.getMapImpl().on("draw:deleted", function(e) {
-            var layer = e.layers;
-            var toDelete = [];
-            _.each(self.editableSites(), function(site) {
-                if (layer._layers[site.layer._leaflet_id]) {
-                    toDelete.push(site);
-                }
-            });
-            if (toDelete.length > 0) {
-                self.editableSites.removeAll(toDelete);
             }
         });
 
         return self;
+    }
+
+    function layerRemoveHandlerToUpdateSelectedFeatures(e) {
+        var layer = e.layer;
+        var found ;
+        if (layer) {
+            self.editableSites.remove(function(feature) {
+                if (feature.layer === layer) {
+                    found = feature;
+                    return true;
+                }
+
+                return false;
+            });
+
+            if (!found) {
+                var featureId = layer.feature && layer.feature.properties && layer.feature.properties.featureId;
+                if (featureId) {
+                    self.editableSites.remove(function(feature) {
+                        if (layer.feature && feature.layer.feature && feature.layer.feature.properties &&
+                            feature.layer.feature.properties.featureId === featureId) {
+                            found = feature;
+                            return true;
+                        }
+
+                        return false;
+                    });
+                }
+            }
+
+            if (found && found.layer) {
+                self.drawnItems.removeLayer(found.layer);
+            }
+        }
     }
 
     self.copyFeature = function (feature) {
@@ -374,58 +396,21 @@ ecodata.forms.maps.featureMap = function (options) {
 
     self.unhighlightFeature = function (feature) {
         var layer = feature.layer;
-
-        if (layer.setStyle) {
-
-
-            if (self.selectableSitesLayer && self.selectableSitesLayer.hasLayer(layer)) {
-                self.selectableSitesLayer.resetStyle(layer);
-            }
-            else {
-                var options = layer.options;
-                if (options && layer.setStyle) {
-                    var style = {
-                        weight: options.weight / 3,
-                        fillOpacity: 0.2,
-                        color: options.color
-                    };
-                    layer.setStyle(style);
-                }
-
-            }
+        if (self.selectableSitesLayer && self.selectableSitesLayer.hasLayer(layer)) {
+            self.selectableSitesLayer.resetStyle(layer);
         }
-        else if (layer.options && layer.options.icon) {
-            var icon = layer.options.icon;
-            icon.options.iconSize = [icon.options.iconSize[0]/1.5, icon.options.iconSize[1]/1.5];
-            icon.options.iconAnchor = [icon.options.iconAnchor[0]/1.5, icon.options.iconAnchor[1]/1.5];
-            feature.layer.setIcon(icon);
+        else {
+            self.unHighlightLayer(layer);
         }
-
     };
 
     self.highlightFeature = function (feature) {
-        var options = feature.layer.options;
+        var options = feature.layer.options,
+            layer = feature.layer;
         if (!options) {
             return;  // TODO Known shapes don't have options
         }
-        if (feature.layer.setStyle) {
-
-            var style = {
-                weight: options.weight * 3,
-                fillOpacity: 1,
-                color: options.color
-            };
-            feature.layer.setStyle(style);
-            if (feature.layer.bringToFront()) {
-                feature.layer.bringToFront();
-            }
-        }
-        else if (options.icon) {
-            var icon = options.icon;
-            icon.options.iconSize = [icon.options.iconSize[0]*1.5, icon.options.iconSize[1]*1.5];
-            icon.options.iconAnchor = [icon.options.iconAnchor[0]*1.5, icon.options.iconAnchor[1]*1.5];
-            feature.layer.setIcon(icon);
-        }
+        self.highlightLayer(layer);
     };
 
     self.zoomToFeature = function (feature) {

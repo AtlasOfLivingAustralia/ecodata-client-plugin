@@ -25,7 +25,7 @@ class GeoMap extends Module {
 
     def drawPolygon() {
 
-        def polygonDraw = $('.leaflet-draw-draw-polygon')
+        def polygonDraw = $("[title='Draw Polygons']")
         Thread.sleep(1000)
         waitFor { polygonDraw.displayed }
 
@@ -41,7 +41,7 @@ class GeoMap extends Module {
         polygonDraw.click()
 
         Thread.sleep(1000)
-        waitFor 10, {$('.leaflet-draw-actions').getAt(0).displayed}
+        waitFor 50000, {$('[title="Draw Polygons"] .action-finish').getAt(0).displayed}
 
         moveAndClick(100, 100, 1)
         moveAndClick(200, -200, 2)
@@ -79,12 +79,12 @@ class GeoMap extends Module {
     }
 
     def markerCount() {
-        $('.leaflet-map-pane .leaflet-marker-icon.leaflet-editing-icon').size()
+        $('.leaflet-map-pane .leaflet-marker-icon.marker-icon.leaflet-interactive').size()
     }
 
     def drawLine() {
 
-        def lineDraw = $('.leaflet-draw-draw-polyline')
+        def lineDraw = $('[title="Draw Polyline"]')
         waitFor { lineDraw.displayed }
 
         // Wakeup the map (leaflet_sleep will be preventing interaction otherwise
@@ -98,7 +98,7 @@ class GeoMap extends Module {
 
         lineDraw.click()
 
-        waitFor{$('.leaflet-draw-actions').getAt(0).displayed}
+        waitFor{$('[title="Draw Polyline"] .action-finish').getAt(0).displayed}
 
         interact {
             moveByOffset(100, 100)
@@ -128,7 +128,7 @@ class GeoMap extends Module {
 
     def drawMarker() {
 
-        def markerDraw = $('.leaflet-draw-draw-marker')
+        def markerDraw = $('[title="Draw Marker"]')
         waitFor { markerDraw.displayed }
 
         // Wakeup the map (leaflet_sleep will be preventing interaction otherwise
@@ -142,7 +142,7 @@ class GeoMap extends Module {
 
         markerDraw.click()
 
-        waitFor{$('.leaflet-draw-actions').getAt(0).displayed}
+        waitFor{$('.action-cancel').getAt(0).displayed}
 
         interact {
             moveByOffset(100, 100)
