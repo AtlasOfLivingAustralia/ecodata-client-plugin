@@ -202,6 +202,10 @@ ecodata.forms.maps.featureMap = function (options) {
             selectedStyle: {},
             displayScale: true,
             addGeometryFromLocalFile: true,
+            simplifyImportedShapes: true,
+            simplifyOptions: {
+                tolerance: 0.0001
+            },
             addMarker: true,
             shapeOptions: {
                 color: '#f00',
