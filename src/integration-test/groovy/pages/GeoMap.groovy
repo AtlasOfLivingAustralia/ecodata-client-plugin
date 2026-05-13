@@ -41,7 +41,7 @@ class GeoMap extends Module {
         polygonDraw.click()
 
         Thread.sleep(1000)
-        waitFor 50000, {$('[title="Draw Polygons"] .action-finish').getAt(0).displayed}
+        waitFor { $('[title="Draw Polygons"] .action-finish').getAt(0).displayed }
 
         moveAndClick(100, 100, 1)
         moveAndClick(200, -200, 2)
