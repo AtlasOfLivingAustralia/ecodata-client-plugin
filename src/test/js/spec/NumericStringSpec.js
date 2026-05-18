@@ -20,4 +20,20 @@ describe("knockout dates spec", function () {
             expect(observable()).toEqual(inputOutput[i].output);
         }
     });
+
+    it("defaults empty numeric values to zero", () => {
+        var observable = ko.observable("2").extend({numericString:2});
+
+        observable("");
+
+        expect(observable()).toEqual("0");
+    });
+
+    it("can preserve empty numeric values when configured", () => {
+        var observable = ko.observable("2").extend({numericString:{decimalPlaces:2, allowEmpty:true}});
+
+        observable("");
+
+        expect(observable()).toEqual("");
+    });
 });

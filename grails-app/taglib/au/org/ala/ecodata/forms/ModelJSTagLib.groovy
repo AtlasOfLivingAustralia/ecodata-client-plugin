@@ -237,7 +237,7 @@ class ModelJSTagLib {
 
         switch (model.dataType) {
             case 'number':
-                return '0'
+                return numberAllowsEmpty(ctx) ? 'undefined' : '0'
             case 'stringList':
             case 'image':
                 return '[]'
@@ -249,6 +249,10 @@ class ModelJSTagLib {
             default:
                 return 'undefined'
         }
+    }
+
+    private boolean numberAllowsEmpty(JSModelRenderContext ctx) {
+        ctx.dataModel?.dataType == 'number' && ctx.viewModel()?.displayOptions?.allowEmpty == true
     }
 
     void renderInitialiser(JSModelRenderContext ctx) {
@@ -619,7 +623,7 @@ class ModelJSTagLib {
     def numberViewModel(JSModelRenderContext ctx) {
         int decimalPlaces = ctx.dataModel.decimalPlaces ?: 2
 
-        Map options = new HashMap(ctx.viewModel()?.displayOptions ?: [:])
+        Map options = new LinkedHashMap(ctx.viewModel()?.displayOptions ?: [:])
         options.decimalPlaces = decimalPlaces
         String optionString = (options as JSON).toString()
         observable(ctx, ["{numericString:${optionString}}"])
