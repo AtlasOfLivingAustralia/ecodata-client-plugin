@@ -51,15 +51,15 @@
                 <div class="row">
                     <div class="col-sm-4 text-start">
                         <label class="control-label">Licence: <i class="fa fa-question-circle"
-                                                                data-bind="popover:{content:'Creative Commons Attribution (CC BY), Creative Commons-Noncommercial (CC BY-NC), Creative Commons Attribution-Share Alike (CC BY-SA), Creative Commons Attribution-Noncommercial-Share Alike (CC BY-NC-SA)', placement:'top'}">&nbsp;</i>
+                                                                data-bind="popover:{content:'Creative Commons Attribution (CC BY), Creative Commons-Noncommercial (CC BY-NC), Creative Commons Zero (CC0)', placement:'top'}">&nbsp;</i>
                         </label>
                     </div>
                     <div class="col-sm-8">
                         <select id="licence" data-bind="value:licence" class="form-select form-select-sm col-sm-12">
                             <option value="CC BY 4.0">Creative Commons Attribution 4.0</option>
                             <option value="CC BY 3.0">Creative Commons Attribution 3.0</option>
-                            <option value="CC BY 0">Creative Commons Attribution 0</option>
                             <option value="CC BY-NC">Creative Commons Attribution-Noncommercial</option>
+                            <option value="CC BY 0">Creative Commons Zero</option>
                         </select>
                     </div>
                 </div>
