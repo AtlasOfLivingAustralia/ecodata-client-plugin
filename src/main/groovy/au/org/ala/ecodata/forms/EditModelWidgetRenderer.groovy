@@ -276,8 +276,8 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     void renderImage(WidgetRenderContext context) {
         context.databindAttrs.add 'imageUpload', "{target:${context.source}, context:\$context, config:{}}"
         def showImgMetadata = (context.model.showMetadata == null ||  context.model.showMetadata == true) ? "block" :"none"
-        def showImgAttribution = (context.model.showAttribution == null ||  context.model.showAttribution == true) ? "block" :"none"
-        def showImgNotes = (context.model.showNotes == null ||  context.model.showNotes == true) ? "block" :"none"
+        def showImgAttribution = context.model.showAttribution == null ||  context.model.showAttribution == true
+        def showImgNotes = context.model.showNotes == null ||  context.model.showNotes == true
         def allowImageAdd = (context.model.allowImageAdd == null ||  context.model.allowImageAdd == true) ? "block" :"none"
         context.writer << context.g.render(template: '/output/imageDataTypeEditModelTemplate', plugin:'ecodata-client-plugin', model: [databindAttrs:context.databindAttrs.toString(), showImgMetadata: showImgMetadata, showImgAttribution: showImgAttribution, showImgNotes: showImgNotes, allowImageAdd: allowImageAdd, name: context.source, validationAttrs:context.validationAttr, options: context.model.displayOptions])
     }

@@ -64,26 +64,30 @@
                     </div>
                 </div>
 
-                <div class="row" style="display:${showImgAttribution};">
-                    <div class="col-sm-4 text-start">
-                        <label class="control-label" for="attribution">
-                            Attribution: <i class="fa fa-question-circle" data-bind="popover:{content:'The name of the photographer', placement:'top'}">&nbsp;</i>
-                        </label>
+                <g:if test="${showImgAttribution}">
+                    <div class="row">
+                        <div class="col-sm-4 text-start">
+                            <label class="control-label" for="attribution">
+                                Attribution: <i class="fa fa-question-circle" data-bind="popover:{content:'The name of the photographer', placement:'top'}">&nbsp;</i>
+                            </label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input id="attribution" class="form-control form-control-sm full-width-input" type="text" data-bind="value:attribution">
+                        </div>
                     </div>
-                    <div class="col-sm-8">
-                        <input id="attribution" class="form-control form-control-sm full-width-input" type="text" data-bind="value:attribution">
-                    </div>
-                </div>
+                </g:if>
 
 
-                <div class="row" style="display:${showImgNotes};">
-                    <div class="col-sm-4 text-start">
-                        <label class="control-label" for="notes">Notes: <i class="fa fa-question-circle" data-bind="popover:{content:'Additional notes you would like to supply regarding the photo point or photograph.', placement:'top'}">&nbsp;</i></label>
+                <g:if test="${showImgNotes}">
+                    <div class="row">
+                        <div class="col-sm-4 text-start">
+                            <label class="control-label" for="notes">Notes: <i class="fa fa-question-circle" data-bind="popover:{content:'Additional notes you would like to supply regarding the photo point or photograph.', placement:'top'}">&nbsp;</i></label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input id="notes" class="form-control form-control-sm full-width-input" type="text" data-bind="value:notes">
+                        </div>
                     </div>
-                    <div class="col-sm-8">
-                        <input id="notes" class="form-control form-control-sm full-width-input" type="text" data-bind="value:notes">
-                    </div>
-                </div>
+                </g:if>
 
                 <div class="row readonly ">
                     <div class="col-sm-4 text-start">
