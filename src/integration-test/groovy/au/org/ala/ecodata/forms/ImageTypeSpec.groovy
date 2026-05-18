@@ -54,6 +54,10 @@ class ImageTypeSpec extends GebReportingSpec {
 
         and: "The remove button is displayed below image"
         $("a.remove-btn-with-image").size() == 1
+
+        and: "The metadata, attribution and notes fields configured as hidden are not displayed"
         $(".fileupload-buttonbar:nth-child(3) .image-title-input").displayed == false
+        $(".fileupload-buttonbar:nth-child(3) input[data-bind='value:attribution']").displayed == false
+        $(".fileupload-buttonbar:nth-child(3) input[data-bind='value:notes']").displayed == false
     }
 }
