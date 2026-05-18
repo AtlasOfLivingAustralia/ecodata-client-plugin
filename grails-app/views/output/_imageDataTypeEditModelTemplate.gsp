@@ -56,15 +56,15 @@
                     </div>
                     <div class="col-sm-8">
                         <select id="licence" data-bind="value:licence" class="form-select form-select-sm col-sm-12">
+                            <option value="CC BY 4.0">Creative Commons Attribution 4.0</option>
                             <option value="CC BY 3.0">Creative Commons Attribution 3.0</option>
                             <option value="CC BY 0">Creative Commons Attribution 0</option>
-                            <option value="CC BY 4.0">Creative Commons Attribution 4.0</option>
                             <option value="CC BY-NC">Creative Commons Attribution-Noncommercial</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="row">
+                <div class="row" style="display:${showImgAttribution};">
                     <div class="col-sm-4 text-start">
                         <label class="control-label" for="attribution">
                             Attribution: <i class="fa fa-question-circle" data-bind="popover:{content:'The name of the photographer', placement:'top'}">&nbsp;</i>
@@ -76,7 +76,7 @@
                 </div>
 
 
-                <div class="row">
+                <div class="row" style="display:${showImgNotes};">
                     <div class="col-sm-4 text-start">
                         <label class="control-label" for="notes">Notes: <i class="fa fa-question-circle" data-bind="popover:{content:'Additional notes you would like to supply regarding the photo point or photograph.', placement:'top'}">&nbsp;</i></label>
                     </div>
