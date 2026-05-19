@@ -227,14 +227,12 @@
             read: target,  //always return the original observables value
             write: function(newValue) {
                 var val = newValue;
-                var emptyValueToWrite;
                 if (typeof val === 'string') {
                     val = newValue.replace(/,|\$/g, '');
                 }
                 if (options.allowEmpty && (val === null || val === undefined || (typeof val === 'string' && val.trim() === ''))) {
-                    emptyValueToWrite = typeof val === 'string' ? '' : val;
-                    if (emptyValueToWrite !== target()) {
-                        target(emptyValueToWrite);
+                    if (target() !== null) {
+                        target(null);
                     }
                     return;
                 }

@@ -237,7 +237,7 @@ class ModelJSTagLib {
 
         switch (model.dataType) {
             case 'number':
-                return numberAllowsEmpty(ctx) ? 'undefined' : '0'
+                return numberAllowsEmpty(ctx) ? 'null' : '0'
             case 'stringList':
             case 'image':
                 return '[]'

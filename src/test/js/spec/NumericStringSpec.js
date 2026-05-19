@@ -29,11 +29,11 @@ describe("knockout dates spec", function () {
         expect(observable()).toEqual("0");
     });
 
-    it("can preserve empty numeric values when configured", () => {
+    it("can store empty numeric values as null when configured", () => {
         var observable = ko.observable("2").extend({numericString:{decimalPlaces:2, allowEmpty:true}});
 
         observable("");
 
-        expect(observable()).toEqual("");
+        expect(observable()).toBeNull();
     });
 });
