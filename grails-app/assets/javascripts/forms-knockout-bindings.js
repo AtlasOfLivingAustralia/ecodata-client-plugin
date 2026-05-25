@@ -103,7 +103,14 @@
                 }
 
             }).on('fileuploadfail', function(e, data) {
-                error(data.errorThrown);
+                var jqXHR = data.jqXHR;
+                if (jqXHR && (jqXHR.status === 422 || jqXHR.status === 500)) {
+                    var resp = jqXHR.responseJSON || {};
+                    error(resp.message || jqXHR.responseText || 'File upload failed');
+                }
+                else {
+                    error(data.errorThrown);
+                }
             });
 
             ko.applyBindingsToDescendants(innerContext, element);
@@ -220,7 +227,14 @@
                 }
 
             }).on(eventPrefix+'fail', function(e, data) {
+                var jqXHR = data.jqXHR;
+                if (jqXHR && (jqXHR.status === 422 || jqXHR.status === 500)) {
+                    var resp = jqXHR.responseJSON || {};
+                    error(resp.message || jqXHR.responseText || 'File upload failed');
+                }
+                else {
                     error(data.errorThrown);
+                }
             });
 
             ko.applyBindingsToDescendants(innerContext, element);

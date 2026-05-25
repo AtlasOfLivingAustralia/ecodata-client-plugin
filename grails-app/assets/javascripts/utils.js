@@ -81,7 +81,7 @@ function isValidDate(d) {
     return !isNaN(d.getTime());
 }
 
-function convertToSimpleDate(isoDate, includeTime) {
+function convertToSimpleDate(isoDate, includeTime, showInUserTimeZone) {
     if (!isoDate) { return ''}
     if (typeof isoDate === 'object') {
         // assume a date object
@@ -89,9 +89,17 @@ function convertToSimpleDate(isoDate, includeTime) {
             return '';
         }
     }
-    // Format the stage labels using Melbourne/Sydney/Canberra time to avoid problems where the date starts
-    // at midnight and displays as the previous day in other timezones.
-    var date = moment.tz(isoDate, "Australia/Sydney");
+
+    var date;
+    if (showInUserTimeZone === true) {
+        // default to user's local timezone
+        date = moment(isoDate);
+    }
+    else {
+        // use existing behaviour
+        date = moment.tz(isoDate, "Australia/Sydney");
+    }
+
     var format = includeTime ? "DD-MM-YYYY HH:mm" : "DD-MM-YYYY";
     return date.format(format);
 }

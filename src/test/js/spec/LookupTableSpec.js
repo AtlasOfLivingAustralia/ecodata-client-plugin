@@ -1,5 +1,5 @@
 describe("lookup table spec", function () {
-    it("Can accept a literal lookup table", function(done) {
+    it("Can accept a literal lookup table", function() {
 
         var config = {
             source:{
@@ -13,14 +13,16 @@ describe("lookup table spec", function () {
         var lookupTable = new ecodata.forms.LookupTable(context, config);
 
         // This is done to wait for the prepop to resolve.
-        setTimeout(function() {
-            expect(lookupTable.lookupValue('test1')).toEqual('value1');
-            expect(lookupTable.lookupValue('test2')).toEqual('value2');
-            done();
+        return new Promise(function(resolve) {
+            setTimeout(function() {
+                expect(lookupTable.lookupValue('test1')).toEqual('value1');
+                expect(lookupTable.lookupValue('test2')).toEqual('value2');
+                resolve();
+            });
         });
     });
 
-    it("can update the lookup table based on some other criteria", function(done) {
+    it("can update the lookup table based on some other criteria", function() {
 
         var config = {
             source: {
@@ -51,11 +53,13 @@ describe("lookup table spec", function () {
 
 
         // This is done to wait for the prepop to resolve.
-        lookupTable.initialization.done(function() {
-            expect(lookupTable.lookupValue('test1')).toEqual('value1');
-            expect(lookupTable.lookupValue('test2')).toEqual('value2');
-            expect(url).toEqual(config.prepopUrlPrefix+config.source.url);
-            done();
+        return new Promise(function(resolve) {
+            lookupTable.initialization.done(function() {
+                expect(lookupTable.lookupValue('test1')).toEqual('value1');
+                expect(lookupTable.lookupValue('test2')).toEqual('value2');
+                expect(url).toEqual(config.prepopUrlPrefix+config.source.url);
+                resolve();
+            });
         });
 
     });

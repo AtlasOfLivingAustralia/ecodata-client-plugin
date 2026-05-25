@@ -74,6 +74,19 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         actualOut.toString().trim() == "data['item1'](ecodata.forms.orDefault(data['item1'], undefined));"
     }
 
+    void "number types initialise missing data as zero by default"() {
+        setup:
+        ctx.attrs = [:]
+        ctx.propertyPath = 'data'
+        ctx.dataModel = [dataType:'number',name:'item1']
+
+        when:
+        tagLib.renderInitialiser(ctx)
+
+        then:
+        actualOut.toString().trim() == "data['item1'](ecodata.forms.orDefault(data['item1'], 0));"
+    }
+
     void "number types support a configurable number of decimal places"() {
         setup:
         ctx.attrs = [:]
@@ -95,6 +108,32 @@ class ModelJSTagLibSpec extends Specification implements TagLibUnitTest<ModelJST
         then:
         actualOut.toString().trim() == "data.item1 = ko.observable().extend({numericString:{\"decimalPlaces\":3}});"
 
+    }
+
+    void "number types can be configured to allow empty values"() {
+        setup:
+        ctx.attrs = [model:[viewModel:[[source:'item1', type:'number', displayOptions:[allowEmpty:true]]]]]
+        ctx.propertyPath = 'data'
+        ctx.dataModel = [dataType:'number',name:'item1']
+
+        when:
+        tagLib.numberViewModel(ctx)
+
+        then:
+        actualOut.toString().trim() == "data.item1 = ko.observable().extend({numericString:{\"allowEmpty\":true,\"decimalPlaces\":2}}).extend({metadata:{metadata:self.dataModel['item1'], context:self.\$context, config:config}});"
+    }
+
+    void "number types configured to allow empty values initialise missing data as null"() {
+        setup:
+        ctx.attrs = [model:[viewModel:[[source:'item1', type:'number', displayOptions:[allowEmpty:true]]]]]
+        ctx.propertyPath = 'data'
+        ctx.dataModel = [dataType:'number',name:'item1']
+
+        when:
+        tagLib.renderInitialiser(ctx)
+
+        then:
+        actualOut.toString().trim() == "data['item1'](ecodata.forms.orDefault(data['item1'], null));"
     }
 
     void "the existence of an expression based default value should result in the use of the writableComputed extender"() {

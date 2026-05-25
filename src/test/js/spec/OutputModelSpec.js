@@ -39,7 +39,7 @@ describe("OutputModel Spec", function () {
     });
 
 
-    it("should allow the output model to be populated by the pre-populate configuration if no output data is supplied", function(done) {
+    it("should allow the output model to be populated by the pre-populate configuration if no output data is supplied", function() {
 
         var context = {
             some: {
@@ -48,15 +48,17 @@ describe("OutputModel Spec", function () {
         };
         var model = new Flora_Survey_Details_ViewModel({name:"Flora Survey Details"}, {}, context, config);
 
-        model.initialise().done(function(result) {
-            expect(model.data.notes()).toEqual("test");
-            done();
+        return new Promise(function(resolve) {
+            model.initialise().done(function(result) {
+                expect(model.data.notes()).toEqual("test");
+                resolve();
+            });
         });
 
 
     });
 
-    it("should use supplied output data in preference to pre-populate data", function(done) {
+    it("should use supplied output data in preference to pre-populate data", function() {
 
         var context = {
             some: {
@@ -66,10 +68,12 @@ describe("OutputModel Spec", function () {
 
         var model = new Flora_Survey_Details_ViewModel({name:"Flora Survey Details"}, {}, context, config);
 
-        model.initialise({notes:'test 2'}).done(function(result) {
+        return new Promise(function(resolve) {
+            model.initialise({notes:'test 2'}).done(function(result) {
 
-            expect(model.data.notes()).toEqual("test 2");
-            done();
+                expect(model.data.notes()).toEqual("test 2");
+                resolve();
+            });
         });
 
     });

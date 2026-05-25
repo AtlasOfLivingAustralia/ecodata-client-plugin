@@ -208,7 +208,8 @@
     ko.extenders.numericString = function(target, options) {
         var defaults = {
             decimalPlaces: 2,
-            removeTrailingZeros: true // backwards compatibility
+            removeTrailingZeros: true, // backwards compatibility
+            allowEmpty: false
         };
         if (_.isNumber(options)) {
             options = {decimalPlaces: options};
@@ -228,6 +229,12 @@
                 var val = newValue;
                 if (typeof val === 'string') {
                     val = newValue.replace(/,|\$/g, '');
+                }
+                if (options.allowEmpty && (val === null || val === undefined || (typeof val === 'string' && val.trim() === ''))) {
+                    if (target() !== null) {
+                        target(null);
+                    }
+                    return;
                 }
                 var current = target();
                 var newValueAsNum = isNaN(val) ? 0 : parseFloat(+val);

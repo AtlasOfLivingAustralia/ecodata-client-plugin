@@ -104,7 +104,10 @@ environments:
                 appServerName: 'n/a'
             oidc:
                 enabled: true
-                discoveryUri: 'http://localhost:8080'
+                discoveryUri: 'file://${user.dir}/src/integration-test/resources/oidcDiscovery.json'
+                clientId: 'testClientId'
+                secret: 'testSecret'
+                allowUnsignedIdTokens: true
             jwt:
                 enabled: false
 
