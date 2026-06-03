@@ -770,8 +770,6 @@ function enmapify(args) {
             createPrivateSite();
     });
 
-    // make sure the lat/lng fields are cleared when the marker is removed by cancelling a new marker
-
     map.registerListener("pm:create", function (e) {
         console.log("draw created");
         var type = e.layerType,

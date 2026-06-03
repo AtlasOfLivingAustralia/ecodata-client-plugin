@@ -169,7 +169,7 @@ ko.bindingHandlers.geojson2svg = {
  * @returns {ecodata.forms.maps}
  */
 ecodata.forms.maps.featureMap = function (options) {
-
+    const PLANNING_SITES = "Planning Sites";
     var self = this;
     var DRAWN_LAYER_STYLE = {
         weight: 4,
@@ -185,7 +185,7 @@ ecodata.forms.maps.featureMap = function (options) {
 
 
     function initialise(options) {
-        self.editableSites = ko.observableArray();
+        self.editableSites = ko.observableArray().extend({deferred: true});
         var defaults = {
             mapElementId: 'map-holder',
             selectFromSitesOnly: false,
@@ -196,7 +196,7 @@ ecodata.forms.maps.featureMap = function (options) {
             baseLayersName: 'Open Layers',
             showReset: true,
             singleMarker: false,
-            zoomToObject: true,
+            zoomToObject: false,
             markerZoomToMax: true,
             singleDraw: false,
             selectedStyle: {},
@@ -309,8 +309,8 @@ ecodata.forms.maps.featureMap = function (options) {
         // leaflet geoman plugin doesn't fire layerremove event on FeatureGroup instance.
         self.registerListener('pm:remove', layerRemoveHandlerToUpdateSelectedFeatures);
 
-        self.areaHa = ko.observable(0).extend({numericString:2});
-        self.lengthKm = ko.observable(0).extend({numericString:2});
+        self.areaHa = ko.observable(0).extend({numericString:2, deferred:true});
+        self.lengthKm = ko.observable(0).extend({numericString:2, deferred:true});
 
         function updateStatistics() {
             var geoJson = self.drawnItems.toGeoJSON();
@@ -370,27 +370,43 @@ ecodata.forms.maps.featureMap = function (options) {
         }
     }
 
-    self.copyFeature = function (feature) {
-        feature = turf.clone(feature);
-        if (feature.geometry && feature.geometry.coordinates && feature.geometry.type == 'MultiPolygon') {
-            // Split to polygons as the leaflet draw plugin doesn't support MultiPolygons.
-            // This also allows the user to delete each part separately if desired.
-            for (var i=0; i<feature.geometry.coordinates.length; i++) {
-                var polygon = {
-                    type:'Feature',
-                    properties:_.clone(feature.properties),
-                    geometry: {
-                        type:'Polygon',
-                        coordinates:feature.geometry.coordinates[i]
-                    }
-                };
-                self.setGeoJSON(polygon);
+    function hideLayer(layer) {
+        if (layer.setStyle) {
+            if (!layer._originalStyle) {
+                layer._originalStyle = {};
+                for (var y in layer.options) {
+                    layer._originalStyle[y] = layer.options[y];
+                }
             }
-        }
-        else {
-            self.setGeoJSON(feature);
-        }
 
+            layer.setStyle({fillOpacity: 0, opacity: 0});
+        } else if (layer.setOpacity) {
+            if (!layer._originalOpacity) {
+                layer._originalOpacity = layer.options.opacity;
+            }
+
+            layer.setOpacity(0);
+        }
+    }
+
+    function showLayer(layer) {
+        if (layer.setStyle) {
+            if (layer._originalStyle)
+                layer.setStyle(layer._originalStyle);
+            else
+                layer.setStyle(PLANNING_LAYER_STYLE);
+        } else if (layer.setOpacity) {
+            if (layer._originalOpacity)
+                layer.setOpacity(layer._originalOpacity);
+            else
+                layer.setOpacity(1.0);
+        }
+    }
+
+    self.copyFeature = function (feature) {
+        var geoJSON = feature.toJSON();
+        // Leaflet geoman plugin can handle MultiPolygon
+        self.setGeoJSON(geoJSON);
     };
 
     self.copyEnabled = function(feature) {
@@ -398,10 +414,44 @@ ecodata.forms.maps.featureMap = function (options) {
         return type != 'Point' && type != 'MultiPoint';
     };
 
+    /**
+     * Determines whether the user can interact with the feature based on whether it is in a category that is currently visible.
+     * @param feature
+     * @returns {boolean}
+     */
+    self.canInteractWithFeature = function(feature) {
+        var catregoies = self.categories();
+        if (catregoies && catregoies.length !== 0) {
+            for (var i = 0; i < catregoies.length; i++) {
+                var category = catregoies[i];
+                if (category.showOrHideCategorySites() && category.features) {
+                    for (var j = 0; j < category.features.length; j++) {
+                        var categoryFeature  = category.features[j];
+                        if (categoryFeature.layer === feature.layer) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     self.unhighlightFeature = function (feature) {
+        // do not unhighlight if the feature is in a category that is currently hidden, as this would cause the layer to be shown again.
+        if (!self.canInteractWithFeature(feature)) {
+            return;
+        }
+
         var layer = feature.layer;
-        if (self.selectableSitesLayer && self.selectableSitesLayer.hasLayer(layer)) {
-            self.selectableSitesLayer.resetStyle(layer);
+        if (layer.setStyle) {
+            if (self.selectableSitesLayer && self.selectableSitesLayer.hasLayer(layer)) {
+                self.selectableSitesLayer.resetStyle(layer);
+            }
+            else {
+                self.unHighlightLayer(layer);
+            }
         }
         else {
             self.unHighlightLayer(layer);
@@ -409,6 +459,11 @@ ecodata.forms.maps.featureMap = function (options) {
     };
 
     self.highlightFeature = function (feature) {
+        // do not highlight if the feature is in a category that is currently hidden, as this would cause the layer to be shown.
+        if (!self.canInteractWithFeature(feature)) {
+            return;
+        }
+
         var options = feature.layer.options,
             layer = feature.layer;
         if (!options) {
@@ -441,12 +496,8 @@ ecodata.forms.maps.featureMap = function (options) {
             };
         });
         self.selectableSitesLayer.bringToBack();
-
-        // this is gross hack around the map plugin not giving access to the Draw Control
-        var event = document.createEvent('Event');
-        event.initEvent('click', true, true);
-        var cb = document.getElementsByClassName('leaflet-draw-edit-edit');
-        !cb[0].dispatchEvent(event);
+        var options = map.getMapImpl().pm.getGlobalOptions();
+        map.getMapImpl().pm.enableGlobalEditMode(options);
     };
 
     self.zoomToDrawnSites = function () {
@@ -483,12 +534,26 @@ ecodata.forms.maps.featureMap = function (options) {
     };
 
     self.configureSelectionLayer = function (selectableFeatures) {
-
         if (selectableFeatures) {
 
             _.each(selectableFeatures, function (feature) {
                 if (feature.properties && feature.properties.name) {
-                    self.categories.push({category: feature.properties.name, features: feature.features});
+                    var showOrHideCategorySites = ko.observable(true);
+                    var featuresForCategory = {category: feature.properties.name, features: feature.features, showOrHideCategorySites: showOrHideCategorySites}
+                    // make sure categoryFeature we are currently processing is in scope for the subscription callback,
+                    // otherwise the subscription will only work for the last categoryFeature due to the closure in the loop.
+                    showOrHideCategorySites.subscribe(function(categoryFeatures) {
+                        return function(newValue) {
+                                categoryFeatures.features && categoryFeatures.features.forEach(function(feature) {
+                                    if (newValue) {
+                                        showLayer(feature.layer);
+                                    } else {
+                                        hideLayer(feature.layer);
+                                    };
+                                });
+                            }
+                    }(featuresForCategory));
+                    self.categories.push(featuresForCategory);
                 }
             });
             self.selectableSitesLayer = L.geoJson(selectableFeatures,
@@ -496,12 +561,34 @@ ecodata.forms.maps.featureMap = function (options) {
                     style: PLANNING_LAYER_STYLE,
                     onEachFeature: function (f, layer) {
                         f.layer = layer;
+                        // This is needed to avoid circular references when the feature is serialized for saving.
+                        // The layer has a reference to the feature and the feature has a reference to the layer,
+                        // so we need to break the cycle by removing the layer reference when serializing the feature.
+                        f.toJSON = function() {
+                            var toSerialize = Object.assign({}, f);
+                            delete toSerialize.layer;
+                            return toSerialize;
+                        };
+                        // we do not want the user to be able to edit, delete, drag, cut or rotate features in the selectable layer.
+                        layer && layer.pm && layer.pm.setOptions({allowEditing: false, allowRemoval: false,
+                            allowRotation: false, allowCutting: false, draggable: false});
                     }
                 }
             );
             self.selectableSitesLayer.addTo(self.getMapImpl());
+            setInitialLayerVisibility();
         }
     };
+
+    /**
+     * When the map is first loaded, we want to show the planning sites layer and hide the other layers,
+     * so we set the initial visibility of the layers based on whether they are planning sites or not.
+     */
+    function setInitialLayerVisibility() {
+        self.categories().forEach(function(category) {
+            category.showOrHideCategorySites(category.category === PLANNING_SITES);
+        });
+    }
 
     var mapKey = 'featureMap';
     var $mapStorage = $('body');

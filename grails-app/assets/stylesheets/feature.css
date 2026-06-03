@@ -51,6 +51,20 @@
     top: 5px;
 }
 
+.site-label .input-container {
+    position: absolute;
+    right: 40px;
+    top: 5px;
+}
+
+.site-label .input-container .input-group-text {
+    padding: 5px 10px;
+    width: 38px;
+    height: 33px;
+    border-color: #ccc;
+    background-color: #fff;
+}
+
 .site-label .btn-container {
     position: absolute;
     right: 0;

@@ -54,8 +54,11 @@
                     </a>
 
                     <div class="site-label">
-                        <label class="site-category-heading collapsable" data-bind="text:category"></label>
-
+                        <label class="site-category-heading collapsable" data-bind="text:category"></label><div class="input-container">
+                            <div class="input-group-text">
+                                <input class="form-check-input mt-0" type="checkbox" value="" data-bind="checked: showOrHideCategorySites">
+                            </div>
+                        </div>
                         <div class="btn-container">
                             <button class="btn btn-sm" type="button" data-bind="click:$root.zoomToCategorySites"><i
                                     class="fa fa-search"></i></button>
