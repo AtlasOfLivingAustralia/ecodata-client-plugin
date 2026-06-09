@@ -6,11 +6,10 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath "org.grails:grails-gradle-plugin:$grailsGradlePluginVersion"
-        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:$assetPipelineVersion"
+        classpath "org.apache.grails:grails-gradle-plugins:$grailsVersion"
+        classpath "cloud.wondrify:asset-pipeline-gradle:$assetPipelineVersion"
         classpath 'com.bmuschko:gradle-clover-plugin:3.0.3'
-        classpath 'org.grails.plugins:quartz:2.0.13'
-        classpath "gradle.plugin.com.github.erdi.webdriver-binaries:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
+        classpath "com.github.erdi:webdriver-binaries-gradle-plugin:$webdriverBinariesVersion"
     }
 }
 plugins {
@@ -22,10 +21,11 @@ group "org.grails.plugins"
 
 apply plugin:"eclipse"
 apply plugin:"idea"
-apply plugin:"org.grails.grails-plugin"
+apply plugin:"org.apache.grails.gradle.grails-plugin"
+apply plugin:"org.apache.grails.gradle.grails-exploded"
 apply from: "${project.projectDir}/gradle/publish.gradle"
-apply plugin:"org.grails.grails-gsp"
-apply plugin:"asset-pipeline"
+apply plugin:"org.apache.grails.gradle.grails-gsp"
+apply plugin:"cloud.wondrify.asset-pipeline"
 apply plugin:"com.github.erdi.webdriver-binaries"
 if (Boolean.valueOf(enableClover)) {
     apply from: "${project.projectDir}/gradle/clover.gradle"
@@ -41,38 +41,31 @@ repositories {
     maven { url "https://nexus.ala.org.au/content/groups/public/" }
 }
 
-boolean inplace = false
-
-configurations {
-    developmentOnly
-    runtimeClasspath {
-        extendsFrom developmentOnly
-    }
-}
-sourceCompatibility = '11'
+sourceCompatibility = '17'
 targetCompatibility = '17'
 
 dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     implementation "org.springframework.boot:spring-boot-starter-logging"
     implementation "org.springframework.boot:spring-boot-autoconfigure"
-    implementation "org.grails:grails-core"
+    implementation "org.apache.grails:grails-core"
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-tomcat"
-    implementation "org.grails:grails-web-boot"
-    implementation "org.grails:grails-logging"
-    implementation "org.grails:grails-plugin-rest"
-    implementation "org.grails:grails-plugin-databinding"
-    implementation "org.grails:grails-plugin-i18n"
-    implementation "org.grails:grails-plugin-services"
-    implementation "org.grails:grails-plugin-url-mappings"
-    implementation "org.grails:grails-plugin-interceptors"
-    implementation "org.grails.plugins:cache"
-    implementation "org.grails.plugins:async"
-    implementation "org.grails.plugins:scaffolding"
-    implementation "org.grails.plugins:gsp"
+    implementation "org.apache.grails:grails-web-boot"
+    implementation "org.apache.grails:grails-logging"
+    implementation "org.apache.grails:grails-rest-transforms"
+    implementation "org.apache.grails:grails-databinding"
+    implementation "org.apache.grails:grails-services"
+    implementation "org.apache.grails:grails-url-mappings"
+    implementation "org.apache.grails:grails-interceptors"
+    implementation "org.apache.grails:grails-cache"
+    implementation "org.apache.grails:grails-async"
+    implementation "org.apache.grails:grails-gsp"
     implementation 'commons-io:commons-io:2.14.0'
     implementation "org.grails.plugins:ala-auth:$alaSecurityLibsVersion"
+    // pac4j 6 split the JEE context classes (JEEFrameworkParameters) into pac4j-jakartaee;
+    // needed directly by UserInfoService but not exposed transitively by ala-auth
+    implementation "org.pac4j:pac4j-jakartaee:6.3.3"
     implementation "org.grails.plugins:ala-ws-security-plugin:$alaSecurityLibsVersion"
     implementation "org.grails.plugins:ala-ws-plugin:$alaSecurityLibsVersion"
     implementation "au.org.ala:userdetails-service-client:$alaSecurityLibsVersion"
@@ -82,13 +75,11 @@ dependencies {
     implementation 'com.opencsv:opencsv:5.7.0'
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
-    console "org.grails:grails-console"
-    profile "org.grails.profiles:web-plugin"
-    implementation "org.grails:grails-plugin-services"
-    implementation "com.bertramlabs.plugins:asset-pipeline-grails:$assetPipelineVersion"
-    testImplementation "org.grails:grails-gorm-testing-support"
-    testImplementation "org.grails.plugins:geb"
-    testImplementation "org.grails:grails-web-testing-support"
+    console "org.apache.grails:grails-console"
+    profile "org.apache.grails.profiles:web-plugin"
+    implementation "cloud.wondrify:asset-pipeline-grails:$assetPipelineVersion"
+    testImplementation "org.apache.grails:grails-geb"
+    testImplementation "org.apache.grails:grails-testing-support-web"
     testImplementation "org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion"
     testRuntimeOnly "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
     testRuntimeOnly "org.seleniumhq.selenium:selenium-safari-driver:$seleniumSafariDriverVersion"
@@ -97,12 +88,12 @@ dependencies {
     testImplementation "org.seleniumhq.selenium:selenium-support:$seleniumVersion"
 
 
-    if (!inplace) {
-        implementation ("org.grails.plugins:ala-map-plugin:4.0.1") {
-            exclude group: 'com.bertramlabs.plugins', module: 'asset-pipeline-grails'
+    if (!Boolean.valueOf(inplace)) {
+        implementation ("org.grails.plugins:ala-map-plugin:5.0-SNAPSHOT") {
+            exclude group: 'cloud.wondrify', module: 'asset-pipeline-grails'
         }
     }
-    implementation "com.bertramlabs.plugins:asset-pipeline-core:$assetPipelineVersion"
+    implementation "cloud.wondrify:asset-pipeline-core:$assetPipelineVersion"
 }
 
 tasks.withType(Test) {
@@ -129,7 +120,7 @@ assets {
     packagePlugin = true
 }
 
-if (inplace) {
+if (Boolean.valueOf(inplace)) {
     grails {
         plugins {
             implementation (project(':ala-map-plugin'))
