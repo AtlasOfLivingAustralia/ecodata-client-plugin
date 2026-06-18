@@ -145,7 +145,7 @@ class ModelTagLib {
 
             }
             if (model.title) {
-                ctx.out << "<span>${model.title}</span>"
+                ctx.out << "<span>${labelContent(model.title)}</span>"
             }
             if (model.userAddedRows && ctx.editMode()) {
                 ctx.out << """<button class="btn btn-warning pull-right" data-bind="click:\$parent.${ctx.property}.removeRow"><i class="far fa-trash-alt"></i> ${model.removeRowText ?: "Remove Section"}</button>\n"""
