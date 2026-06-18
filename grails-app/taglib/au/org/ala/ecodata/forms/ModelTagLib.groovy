@@ -141,7 +141,7 @@ class ModelTagLib {
             ctx.out << """<div class="section-title">\n"""
 
             if (model.collapsable && ctx.editMode()) {
-                ctx.out << "<button data-bind=\"toggleVisibility:'#${model.source}-content-'+\$index\"></button>"
+                ctx.out << "<button data-bind=\"toggleVisibility:{collapsedByDefault:${model.collapsedByDefault ?: 'false'}, blockId:'#${model.source}-content-'+\$index}\"></button>"
 
             }
             if (model.title) {
