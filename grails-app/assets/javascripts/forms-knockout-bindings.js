@@ -1230,27 +1230,37 @@
             }
             $element.append($i);
 
-            $element.click(function() {
-                var selector = '';
-                if (unwrapped.collapsedByDefault != undefined && unwrapped.blockId) {
-                    selector = unwrapped.blockId;
-                } else {
-                    selector = unwrapped;
-                }
+            var selector = '';
+            if (unwrapped.collapsedByDefault != undefined && unwrapped.blockId) {
+                selector = unwrapped.blockId;
+            } else {
+                selector = unwrapped;
+            }
 
-               var $section = $(selector);
-               if ($section.is(':visible')) {
-                   $section.hide();
+
+            if (unwrapped.collapsedByDefault) {
+                // The section id in a repeating section is assigned via a data binding so won't be initialised
+                // until after this component is initialised.
+                setTimeout(function() {
+                    $(selector).hide();
+                }, 0);
+            }
+
+            $element.click(function() {
+                var $section = $(selector);
+                if ($section.is(':visible')) {
+                   $section.slideUp();
                    $i.removeClass(visibleClass);
                    $i.addClass(hiddenClass);
-               }
-               else {
-                   $section.show();
+                }
+                else {
+                   $section.slideDown();
                    $i.removeClass(hiddenClass);
                    $i.addClass(visibleClass);
-               }
-               return false;
+                }
+                return false;
             });
+
 
         }
     };
