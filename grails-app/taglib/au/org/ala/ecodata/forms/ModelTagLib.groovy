@@ -1,9 +1,12 @@
 package au.org.ala.ecodata.forms
 
 import grails.converters.JSON
+import groovy.util.logging.Slf4j
+
 /**
  * Generates web page content for metadata-driven dynamic data entry and display.
  */
+@Slf4j
 class ModelTagLib {
 
     static namespace = "md"
@@ -28,8 +31,10 @@ class ModelTagLib {
         int span
         def out
         Map model
+        Map dataModel
         Map attrs
         boolean hasTableAncestor = false
+        LayoutRenderContext parentContext
 
         boolean editMode() {
             return attrs.edit
@@ -49,7 +54,8 @@ class ModelTagLib {
                     span:span,
                     model:model,
                     attrs:attrs,
-                    hasTableAncestor:hasTableAncestor
+                    hasTableAncestor:hasTableAncestor,
+                    parentContext: this
             )
             if (data.parentView != null) {
                 child.parentView = data.parentView
@@ -93,6 +99,7 @@ class ModelTagLib {
         def attrs = ctx.attrs
         items?.eachWithIndex { mod, index ->
             ctx.model = mod
+            ctx.dataModel = findDataModelItemByName(ctx, mod.source)
             beforeItem(ctx)
             switch (mod.type) {
                 case 'table':
@@ -127,7 +134,7 @@ class ModelTagLib {
     def repeatingLayout(LayoutRenderContext ctx) {
 
         Map model = ctx.model
-        Map dataModel = getAttribute(ctx.attrs.model.dataModel, model.source)
+        Map dataModel = ctx.dataModel
         String sourceType = dataModel?.dataType
         if (sourceType != "list") {
             throw new Exception("Only model elements with a list data type can be the source for a repeating layout")
@@ -516,12 +523,10 @@ class ModelTagLib {
         def labelAttributes = new AttributeMap()
         def elementAttributes = new AttributeMap()
 
-        Map dataModel = getAttribute(attrs.model.dataModel, model.source)
-        boolean toEdit = attrs.edit && !model.noEdit
-        def renderContext = new WidgetRenderContext(model, dataModel, layoutContext.dataContext, null, elementAttributes, labelAttributes, g, attrs, toEdit)
-
         // The data model item we are rendering the view for.
-        Map source = getAttribute(attrs.model.dataModel, model.source)
+        Map source = layoutContext.dataModel
+        boolean toEdit = attrs.edit && !model.noEdit
+        def renderContext = new WidgetRenderContext(model, source, layoutContext.dataContext, null, elementAttributes, labelAttributes, g, attrs, toEdit)
 
         // The Knockout binding to apply around the label and input field, if required.
         String labelBindingValue = null
@@ -558,7 +563,7 @@ class ModelTagLib {
             renderContext.databindAttrs.add "enable", evalDependency(model.enabled)
         }
         // Computed values should be readonly.
-        if (model.readonly || model.computed || dataModel?.computed) {
+        if (model.readonly || model.computed || source?.computed) {
             renderContext.attributes.add "readonly", "readonly"
             if (source && validationHelper.isValidatable(source, model, toEdit)) {
                 renderContext.databindAttrs.add("validateOnChange", renderContext.source)
@@ -1038,6 +1043,48 @@ class ModelTagLib {
             target = dataModel.find {it.name == name}
         }
         return target ? target[attribute] : null
+    }
+
+    /**
+     * Uses the LayoutRenderContext to find the data model item with a path matching the current
+     * rendering path.  This fixes an issue where if a dataModel item has the same name in
+     * more than one nested context the incorrect data model gets applied to the view while processing.
+     * @param ctx The current LayoutRenderContext, which will be used to determine the current rendering path and find the correct data model item.
+     * @param name The name of the data model item to find.
+     * @return The data model item referenced by the supplied name in the current rendering context.
+     */
+    static Map findDataModelItemByName(LayoutRenderContext ctx, String name) {
+        Stack<String> parents = new Stack<String>()
+        List dataModel = ctx.attrs.model.dataModel
+        while (ctx) {
+            // We only want context for models that reference a data model item.
+            if (ctx.model?.source) {
+                parents.push(ctx.model.source)
+            }
+            ctx = ctx.parentContext
+        }
+
+        String dataModelItemName
+        Map dataModelItem = null
+
+        while (!parents.empty()) {
+            dataModelItemName = parents.pop()
+            dataModelItem = dataModel.find({it.name == dataModelItemName})
+            if (!dataModelItem) {
+                log.warn("Data model item ${dataModelItemName} not found in data model ${dataModel}")
+                return null
+            }
+            if (dataModelItem.dataType == 'list') {
+                dataModel = dataModelItem.columns
+            }
+            if (parents.empty()) {
+                if (dataModelItemName != name) {
+                    log.warn("Unable to find dataModel for "+name)
+                    dataModelItem = null
+                }
+            }
+        }
+        dataModelItem
     }
 
     static def getAttribute(Collection model, String name) {
