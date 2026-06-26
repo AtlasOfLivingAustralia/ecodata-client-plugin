@@ -99,7 +99,7 @@ class ModelTagLib {
         def attrs = ctx.attrs
         items?.eachWithIndex { mod, index ->
             ctx.model = mod
-            ctx.dataModel = findDataModelItemByName(ctx, mod.source)
+            ctx.dataModel = findDataModelItemForModel(ctx, mod)
             beforeItem(ctx)
             switch (mod.type) {
                 case 'table':
@@ -177,12 +177,18 @@ class ModelTagLib {
         if (model.behaviour) {
             renderTagBehaviourOpen(model, ctx)
         }
+        if (ctx.dataModel?.behaviour) {
+            renderTagBehaviourOpen(ctx.dataModel, ctx)
+        }
     }
 
-    private  void afterItem(LayoutRenderContext ctx) {
+    private void afterItem(LayoutRenderContext ctx) {
         Map model = ctx.model
         if (model.behaviour) {
             renderTagBehaviourClose(model, ctx)
+        }
+        if (ctx.dataModel?.behaviour) {
+            renderTagBehaviourClose(ctx.dataModel, ctx)
         }
     }
 
@@ -190,10 +196,23 @@ class ModelTagLib {
         model.behaviour.each {
             ConstraintType type = ConstraintType.valueOf(it.type.toUpperCase())
             if (type.appliesToContainer) {
-                // Renders a virtual node to enclose contents.  Supports "visible" / "if" bindings to hide / show
-                // whole sections.
-                String escapedExpression = computedValueRenderer.expressionAsString(it.condition)
-                ctx.out << "<!-- ko ${type.binding}:'${it.condition}' -->"
+                String bindingValue = ctx.property
+
+                if (it.condition && type.isBoolean) {
+                    String escapedExpression = computedValueRenderer.expressionAsString(it.condition)
+                    bindingValue = "ecodata.forms.expressionEvaluator.evaluateBoolean("+escapedExpression+", \$context)"
+                }
+                if (type.usesVirtualElement) {
+                    // Renders a virtual node to enclose contents.  Supports "visible" / "if" bindings to hide / show
+                    // whole sections.
+
+                    ctx.out << "<!-- ko ${type.binding}:${bindingValue} -->\n"
+                }
+                else {
+                    String expression = it.condition ?: ctx.property
+                    println "rendering binding wrapper for ${ctx.property} with expression ${expression}"
+                    ctx.out << "<div class=\"binding-wrapper\" data-bind='${type.binding}:${bindingValue}'>\n"
+                }
             }
         }
     }
@@ -202,7 +221,12 @@ class ModelTagLib {
         model.behaviour.each {
             ConstraintType type = ConstraintType.valueOf(it.type.toUpperCase())
             if (type.appliesToContainer) {
-                ctx.out << "<!-- /ko -->"
+                if (type.usesVirtualElement) {
+                    ctx.out << "<!-- /ko -->\n"
+                }
+                else {
+                    ctx.out << "</div> <!-- end binding wrapper -->\n"
+                }
             }
         }
     }
@@ -347,18 +371,18 @@ class ModelTagLib {
         return result
     }
 
-    private String renderWithLabel(Map model, AttributeMap labelAttributes, attrs, editable, String dataTag) {
+    private String renderWithLabel(LayoutRenderContext ctx, Map model, AttributeMap labelAttributes, editable, String dataTag) {
 
         String result = dataTag
         if (model.preLabel) {
             labelAttributes.addClass 'preLabel'
 
-            if (isRequired(attrs, model, editable)) {
+            if (isRequired(ctx.dataModel, model, editable)) {
                 labelAttributes.addClass 'required'
             }
 
             String labelPlainText = labelContent(model.preLabel)
-            result = "<div ${labelAttributes.toString()}><label>${labelText(attrs, model, labelPlainText)}</label></div>" + dataTag
+            result = "<div ${labelAttributes.toString()}><label>${labelText(ctx, model, labelPlainText)}</label></div>" + dataTag
         }
 
         if (model.postLabel) {
@@ -391,9 +415,9 @@ class ModelTagLib {
      * @param label text to use for the label.  Will also be used as a title for the help test.
      * @return a generated html string to use to render the label.
      */
-    def labelText(attrs, model, label) {
+    def labelText(LayoutRenderContext ctx, model, label) {
 
-        if (attrs.printable) {
+        if (ctx.attrs.printable) {
             return label
         }
 
@@ -403,7 +427,7 @@ class ModelTagLib {
 
             if (model.source) {
                 // Get the description from the data model and use that as the help text.
-                def attr = getAttribute(attrs.model.dataModel, model.source)
+                def attr = ctx.dataModel ?: findDataModelItemForModel(ctx, model)
                 if (!attr) {
                     println "Attribute ${model.source} not found"
                 }
@@ -431,8 +455,12 @@ class ModelTagLib {
     }
 
     // -------- validation declarations --------------------
-    def isRequired(attrs, model, edit) {
-        def dataModel = getAttribute(attrs.model.dataModel, model.source)
+    def isRequired(LayoutRenderContext ctx, Map model, edit) {
+        Map dataModel = ctx.dataModel
+        isRequired(dataModel, model, edit)
+    }
+
+    def isRequired(Map dataModel, Map model, edit) {
         return validationHelper.isRequired(dataModel, model, edit)
     }
 
@@ -505,7 +533,7 @@ class ModelTagLib {
                 css = model.css
             }
         }
-        // Compensate for colums added without rows to keep the JSON simpler
+        // Compensate for columns added without rows to keep the JSON simpler
         if (ctx.parentView != 'row') {
             out << """<div class="row space-after">"""
         }
@@ -539,12 +567,6 @@ class ModelTagLib {
                 //String bindingValue = type.isBoolean ? computedValueRenderer.expressionAsString(constraint.condition) : renderContext.source
                 if (!type.appliesToContainer) {
                     renderContext.databindAttrs.add type.binding, bindingValue
-                }
-                else {
-                    // Visibility bindings have to be applied not on the input field but around the label and
-                    // input field
-                    labelBindingType = type.binding
-                    labelBindingValue = bindingValue
                 }
             }
         }
@@ -607,7 +629,7 @@ class ModelTagLib {
                 out << "<div${at.toString()}>"
         }
 
-        String result = renderWithLabel(model, labelAttributes, attrs, toEdit, dataTag)
+        String result = renderWithLabel(layoutContext, model, labelAttributes, toEdit, dataTag)
 
         if (labelBindingType) {
             result = """
@@ -774,10 +796,12 @@ class ModelTagLib {
         Map table = ctx.model
 
         out << INDENT*4 << "<thead><tr>"
+        LayoutRenderContext tableCtx = ctx.createChildContext([dataContext: '', parentView: 'table', hasTableAncestor: true])
         table.columns.eachWithIndex { col, i ->
-            boolean required = isRequired(attrs, col, attrs.edit)
+            tableCtx.model = col
+            boolean required = isRequired(tableCtx, col, attrs.edit)
             String css = (required ? 'required' : "") + (col.css ?: "")
-            out << "<th class=\"${css}\">" + labelText(attrs, col, col.title) + "</th>"
+            out << "<th class=\"${css}\">" + labelText(tableCtx, col, col.title) + "</th>"
         }
         if (table.source && attrs.edit && !attrs.printable && (table.editableRows || getAllowRowDelete(attrs, table.source, null))) {
             out << "<th></th>"
@@ -1045,6 +1069,14 @@ class ModelTagLib {
         return target ? target[attribute] : null
     }
 
+    static Map findDataModelItemForModel(LayoutRenderContext ctx, Map model) {
+        Map dataModel = null
+        if (model.source && model.type != 'literal') {
+            dataModel = findDataModelItemByName(ctx, model.source)
+        }
+        return dataModel
+    }
+
     /**
      * Uses the LayoutRenderContext to find the data model item with a path matching the current
      * rendering path.  This fixes an issue where if a dataModel item has the same name in
@@ -1053,7 +1085,11 @@ class ModelTagLib {
      * @param name The name of the data model item to find.
      * @return The data model item referenced by the supplied name in the current rendering context.
      */
-    static Map findDataModelItemByName(LayoutRenderContext ctx, String name) {
+    static Map findDataModelItemByName(LayoutRenderContext ctx1, String name) {
+        if (!name) {
+            return null
+        }
+        LayoutRenderContext ctx = ctx1
         Stack<String> parents = new Stack<String>()
         List dataModel = ctx.attrs.model.dataModel
         while (ctx) {
@@ -1079,7 +1115,7 @@ class ModelTagLib {
             }
             if (parents.empty()) {
                 if (dataModelItemName != name) {
-                    log.warn("Unable to find dataModel for "+name)
+                    log.warn("Unable to find dataModel for "+name+" looking for "+dataModelItemName)
                     dataModelItem = null
                 }
             }

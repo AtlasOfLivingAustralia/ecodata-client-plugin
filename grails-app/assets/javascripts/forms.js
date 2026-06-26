@@ -809,9 +809,15 @@ function orEmptyArray(v) {
                     }
                 });
                 if (failedValidation) {
-                    return $.Deferred().resolve(source.defaultValue || null);
+                    if (source.defaultValue) {
+                        return $.Deferred().resolve(source.defaultValue);
+                    }
+                    else {
+                        return $.Deferred().reject();
+                    }
+
                 }
-                return $.ajax(url, {data:params, dataType:source.dataType || 'json'});
+                return $.ajax(url, {data:params, method:source.method || 'GET', dataType:source.dataType || 'json'});
             }
             var deferred = $.Deferred();
             var data = null;
@@ -1123,6 +1129,14 @@ function orEmptyArray(v) {
 
         self.listParent = context.parent;
         self.listName = listName;
+        /**
+         * Returns the value of the specified metadata property (e.g. validate, constraints etc)
+         * @param property the name of the proprety to get.
+         * @returns {*}
+         */
+        self.get = function (property) {
+            return dataModel[listName][property];
+        };
         self.addRow = function (data) {
             var newItem = self.newItem(data, self.rowCount());
             self.push(newItem);
@@ -1235,6 +1249,7 @@ function orEmptyArray(v) {
             }
             return initialisers;
         };
+
     };
 
     /**

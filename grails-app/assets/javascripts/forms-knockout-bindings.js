@@ -1533,17 +1533,18 @@
 
                         if (_.isFunction(propTarget.loadData)) {
                             propTarget.loadData(value);
+                        } else if (propTarget && propTarget.listParent && _.isFunction(propTarget.listParent["load" + propTarget.listName])) {
+                                propTarget.listParent["load" + propTarget.listName](value);
                         } else if (_.isFunction(propTarget.load)) {
                             propTarget.load(value);
-                        } else if (propTarget && propTarget.listParent && _.isFunction(propTarget.listParent["load" + propTarget.listName])) {
-                            propTarget.listParent["load" + propTarget.listName](value);
-                        } else if (ko.isObservable(propTarget)) {
+                        }  else if (ko.isObservable(propTarget)) {
                             propTarget(value);
                         } else {
                             console.log("Warning: target for pre-populate is invalid");
                         }
                     }
-                    dataModelItem.subscribe(function () {
+
+                    var doPrepop = function () {
 
                         // Don't fire pre-populate requests during form initialisation / data load if the
                         // config doesn't require (or want) it.
@@ -1553,6 +1554,7 @@
                                 return;
                             }
                         }
+
                         dataLoader.prepop(config).done(function (data) {
 
                             data = data || {};
@@ -1566,6 +1568,14 @@
                             }
                             if (!target) {
                                 throw "Unable to locate target for pre-population: "+target;
+                            }
+
+                            if (config.merge) {
+                                var existing = null;
+                                if (ko.isObservable(target)) {
+                                    existing = ko.mapping.toJS(target, {ignore: ['transients', '$parent', '$index', '$context', '$config', 'dataModel']});
+                                }
+                                data = dataLoader.merge(existing, data, {}, config.merge);
                             }
                             if (configTarget.type == "singleValue") {
                                 // This needs to be done to load data into the feature data type due to the awkward
@@ -1585,9 +1595,30 @@
                                     }
                                 }
                             }
-
                         });
-                    });
+                    };
+                    var trigger = config.trigger || 'change';
+
+                    if (trigger === 'visible') {
+                        const options = {
+                            root: null,
+                            rootMargin: "0px",
+                            scrollMargin: "0px",
+                            threshold: config.visiblityThreshold || 0.1,
+                            delay:config.visibilityUpdateDelay || 1000
+                        };
+
+                        const observer = new IntersectionObserver(
+                            function(e) {
+                                const targetIntersection = e.find(entry => entry.target === element);
+                                if (targetIntersection.isIntersecting) {
+                                    doPrepop();
+                                }}, options);
+                        observer.observe(element);
+                    }
+                    else { // The default is to trigger the pre-pop when the value changes.
+                        dataModelItem.subscribe(doPrepop);
+                    }
                 }
             });
         }
