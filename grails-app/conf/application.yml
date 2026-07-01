@@ -29,6 +29,13 @@ spring:
 
 disableCAS: true
 
+# ala-auth 8.x bundles the Apereo CAS client, but its default config still points
+# gatewayStorageClass at the old Jasig class name, which no longer exists on the
+# classpath. Override it with the Apereo equivalent so the gatewayResolver bean loads.
+security:
+    cas:
+        gatewayStorageClass: 'org.apereo.cas.client.authentication.DefaultGatewayResolverImpl'
+
 
 management:
     endpoints:
@@ -116,9 +123,6 @@ environments:
 
         server:
             port: "8087"
-        spring:
-            autoconfigure:
-                exclude: "au.org.ala.ws.security.AlaWsSecurityConfiguration"
 
 ---
 listsFieldMappingV2:

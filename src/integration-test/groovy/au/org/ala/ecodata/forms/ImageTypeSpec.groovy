@@ -16,8 +16,15 @@ class ImageTypeSpec extends GebReportingSpec {
         title == "Preview Images Example"
 
         when: "We hover over the photo"
+        // Hover the actual popover trigger (the image container), not the surrounding <ul>
+        // whose centre may fall on empty space. Move to a neutral element first so that
+        // moving onto the photo always produces a mouseenter transition, which is what
+        // triggers the hover popover reliably in headless browsers.
+        def photo = $('[data-bind*=images2] .projectLogo').first()
+        waitFor { photo.displayed }
         interact {
-            moveToElement($('[data-bind*=images2]'))
+            moveToElement($('h3').first())
+            moveToElement(photo)
         }
 
         then: "A popover is displayed containing the photo metadata"

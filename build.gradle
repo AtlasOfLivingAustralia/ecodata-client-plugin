@@ -79,13 +79,19 @@ dependencies {
     profile "org.apache.grails.profiles:web-plugin"
     implementation "cloud.wondrify:asset-pipeline-grails:$assetPipelineVersion"
     testImplementation "org.apache.grails:grails-geb"
+    // grails-geb only exposes the Geb library (geb-spock, geb.* classes) via its test
+    // fixtures in Grails 7; without this the integration tests fail to compile.
+    testImplementation testFixtures("org.apache.grails:grails-geb")
     testImplementation "org.apache.grails:grails-testing-support-web"
-    testImplementation "org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion"
-    testRuntimeOnly "org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion"
-    testRuntimeOnly "org.seleniumhq.selenium:selenium-safari-driver:$seleniumSafariDriverVersion"
-    testImplementation "org.seleniumhq.selenium:selenium-remote-driver:$seleniumVersion"
-    testImplementation "org.seleniumhq.selenium:selenium-api:$seleniumVersion"
-    testImplementation "org.seleniumhq.selenium:selenium-support:$seleniumVersion"
+    // Don't pin Selenium versions: spring-boot-dependencies (via grails-bom) already manages a
+    // coherent Selenium version. Pinning our own version caused mismatched modules on the
+    // classpath (e.g. chromium-driver vs remote-driver) and a runtime NoSuchMethodError.
+    testImplementation "org.seleniumhq.selenium:selenium-chrome-driver"
+    testRuntimeOnly "org.seleniumhq.selenium:selenium-firefox-driver"
+    testRuntimeOnly "org.seleniumhq.selenium:selenium-safari-driver"
+    testImplementation "org.seleniumhq.selenium:selenium-remote-driver"
+    testImplementation "org.seleniumhq.selenium:selenium-api"
+    testImplementation "org.seleniumhq.selenium:selenium-support"
 
 
     if (!Boolean.valueOf(inplace)) {
