@@ -1575,7 +1575,16 @@
                                 if (ko.isObservable(target)) {
                                     existing = ko.mapping.toJS(target, {ignore: ['transients', '$parent', '$index', '$context', '$config', 'dataModel']});
                                 }
-                                data = dataLoader.merge(existing, data, {}, config.merge);
+                                if (_.isArray(data)) {
+                                    // prepop expects a top level object type.
+                                    if (existing !== null && existing !== undefined && !_.isArray(existing)) {
+                                        throw "Attempting to merge an array with an object!"
+                                    }
+                                    data = dataLoader.mergeArrays(existing, data, config.merge);
+                                }
+                                else {
+                                    data = dataLoader.merge(existing, data, {}, config.merge);
+                                }
                             }
                             if (configTarget.type == "singleValue") {
                                 // This needs to be done to load data into the feature data type due to the awkward
