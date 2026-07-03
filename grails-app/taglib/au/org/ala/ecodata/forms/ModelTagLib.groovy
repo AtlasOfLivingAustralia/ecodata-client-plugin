@@ -209,8 +209,6 @@ class ModelTagLib {
                     ctx.out << "<!-- ko ${type.binding}:${bindingValue} -->\n"
                 }
                 else {
-                    String expression = it.condition ?: ctx.property
-                    println "rendering binding wrapper for ${ctx.property} with expression ${expression}"
                     ctx.out << "<div class=\"binding-wrapper\" data-bind='${type.binding}:${bindingValue}'>\n"
                 }
             }
