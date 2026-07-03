@@ -618,7 +618,7 @@ function orEmptyArray(v) {
                     result[key] = obj2[key];
                 }
                 else if (_.isArray(obj1[key]) && _.isArray(obj2[key])) {
-                    result[key] = mergeArrays(obj1[key], obj2[key], rules && rules[key]);
+                    result[key] = self.mergeArrays(obj1[key], obj2[key], rules && rules[key]);
                 }
                 else if (_.isObject(obj1[key]) && _.isObject(obj2[key])) {
                     result[key] = self.merge(obj1[key], obj2[key], rules && rules[key]);
@@ -647,7 +647,7 @@ function orEmptyArray(v) {
             return true;
         }
 
-        function mergeArrays(array1, array2, rules) {
+        self.mergeArrays = function(array1, array2, rules) {
             if (rules) {
                 var result = [];
 
@@ -845,7 +845,8 @@ function orEmptyArray(v) {
         return {
             getPrepopData: self.getPrepopData,
             prepop: self.prepop,
-            merge: self.merge
+            merge: self.merge,
+            mergeArrays: self.mergeArrays
         };
 
     };
