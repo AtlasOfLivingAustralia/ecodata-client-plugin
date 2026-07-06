@@ -16,7 +16,7 @@ plugins {
     id 'jacoco'
 }
 
-version "9.2-SNAPSHOT"
+version "10.0-SNAPSHOT"
 group "org.grails.plugins"
 
 apply plugin:"eclipse"
@@ -37,8 +37,8 @@ if (Boolean.valueOf(enableJacoco)) {
 
 repositories {
     mavenLocal()
-    maven { url "https://repo.grails.org/grails/core" }
     maven { url "https://nexus.ala.org.au/content/groups/public/" }
+    maven { url "https://repo.grails.org/grails/core" }
 }
 
 sourceCompatibility = '17'

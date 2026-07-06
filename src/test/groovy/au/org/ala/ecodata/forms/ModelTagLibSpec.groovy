@@ -78,7 +78,7 @@ class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLi
         ctx.attrs.model = [dataModel :dataModel]
 
         when:
-        tagLib.repeatingLayout(ctx)
+        tagLib.viewModelItems([model], ctx)
 
         then:
         expectedOut << "<!-- ko foreach:test -->"
@@ -96,7 +96,7 @@ class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLi
         ctx.attrs.model = [dataModel :dataModel]
 
         when:
-        tagLib.repeatingLayout(ctx)
+        tagLib.viewModelItems([model], ctx)
 
         then:
         thrown(Exception)
@@ -112,7 +112,7 @@ class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLi
         ctx.attrs.edit = true
 
         when:
-        tagLib.repeatingLayout(ctx)
+        tagLib.viewModelItems([model], ctx)
 
         then:
         expectedOut << "<!-- ko foreach:test -->"
@@ -139,8 +139,7 @@ class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLi
         ctx.attrs.model = [dataModel :dataModel]
 
         when:
-        tagLib.layoutDataItem(ctx.out, ctx.attrs, model, ctx)
-        println(actualOut)
+        tagLib.viewModelItems([model], ctx)
 
         then:
         TestUtils.compareHtml(actualOut, """<div class="col-sm-3"><span data-bind='score:myNumber.get("scores"),text:myNumber'></span></div>""")
