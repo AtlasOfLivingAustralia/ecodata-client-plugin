@@ -196,11 +196,15 @@ class ModelTagLib {
         model.behaviour.each {
             ConstraintType type = ConstraintType.valueOf(it.type.toUpperCase())
             if (type.appliesToContainer) {
-                String bindingValue = ctx.property
 
-                if (it.condition && type.isBoolean) {
-                    String escapedExpression = computedValueRenderer.expressionAsString(it.condition)
-                    bindingValue = "ecodata.forms.expressionEvaluator.evaluateBoolean("+escapedExpression+", \$context)"
+                if (it.condition && type.acceptsExpression) {
+                    // Escape the expression for use in the binding
+                    bindingValue = computedValueRenderer.expressionAsString(it.condition)
+                }
+                else {
+                    // The data model renders a computed variable which will evaluate the condition unless the
+                    // ConstraintType specifies it takes an expression.
+                    String bindingValue = type.isBoolean ? "${ctx.property}.${it.type}Constraint" : ctx.property
                 }
                 if (type.usesVirtualElement) {
                     // Renders a virtual node to enclose contents.  Supports "visible" / "if" bindings to hide / show
@@ -562,7 +566,6 @@ class ModelTagLib {
                 ConstraintType type = ConstraintType.valueOf(constraint.type.toUpperCase())
                 String bindingValue = type.isBoolean ? "${renderContext.source}.${constraint.type}Constraint" : renderContext.source
 
-                //String bindingValue = type.isBoolean ? computedValueRenderer.expressionAsString(constraint.condition) : renderContext.source
                 if (!type.appliesToContainer) {
                     renderContext.databindAttrs.add type.binding, bindingValue
                 }

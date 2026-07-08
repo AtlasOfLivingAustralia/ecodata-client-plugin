@@ -7,8 +7,8 @@ package au.org.ala.ecodata.forms
 enum ConstraintType {
     VISIBLE("visible", true, true, false),
     IF("if", true, true, false),
-    VISIBLE_EXPRESSION("visibleexpression", true, true, true),
-    IF_EXPRESSION("ifexpression", true, true, true),
+    VISIBLE_EXPRESSION("visibleexpression", true, true, true, true),
+    IF_EXPRESSION("ifexpression", true, true, true, true),
     ENABLE("enable", true, false, false),
     ENABLE_AND_CLEAR("enableAndClear", true, false, false),
     DISABLE("disable", true, false, false),
@@ -23,11 +23,14 @@ enum ConstraintType {
     boolean appliesToContainer
     /** True if this constraint should be implemented using a virtual element in Knockout */
     boolean usesVirtualElement
+    /** True if this constraint accepts a string to be evaluated by the expressionEvaluator */
+    boolean acceptsExpression
 
-    private ConstraintType(String binding, boolean isBoolean, boolean appliesToContainer, boolean usesVirtualElement) {
+    private ConstraintType(String binding, boolean isBoolean, boolean appliesToContainer, boolean usesVirtualElement, boolean acceptsExpression = false) {
         this.binding = binding
         this.isBoolean = isBoolean
         this.appliesToContainer = appliesToContainer
         this.usesVirtualElement = usesVirtualElement
+        this.acceptsExpression = acceptsExpression
     }
 }
