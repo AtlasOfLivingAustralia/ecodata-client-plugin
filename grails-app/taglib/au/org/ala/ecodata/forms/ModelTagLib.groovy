@@ -196,7 +196,7 @@ class ModelTagLib {
         model.behaviour.each {
             ConstraintType type = ConstraintType.valueOf(it.type.toUpperCase())
             if (type.appliesToContainer) {
-
+                String bindingValue
                 if (it.condition && type.acceptsExpression) {
                     // Escape the expression for use in the binding
                     bindingValue = computedValueRenderer.expressionAsString(it.condition)
@@ -204,7 +204,7 @@ class ModelTagLib {
                 else {
                     // The data model renders a computed variable which will evaluate the condition unless the
                     // ConstraintType specifies it takes an expression.
-                    String bindingValue = type.isBoolean ? "${ctx.property}.${it.type}Constraint" : ctx.property
+                    bindingValue = type.isBoolean ? "${ctx.property}.${it.type}Constraint" : ctx.property
                 }
                 if (type.usesVirtualElement) {
                     // Renders a virtual node to enclose contents.  Supports "visible" / "if" bindings to hide / show
