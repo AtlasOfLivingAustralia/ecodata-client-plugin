@@ -192,7 +192,7 @@ ecodata.forms.maps.featureMap = function (options) {
             allowPolygons: true,
             allowPoints: true,
             markerOrShapeNotBoth: true,
-            hideMyLocation: false,
+            useMyLocation: false,
             baseLayersName: 'Open Layers',
             showReset: true,
             singleMarker: false,
