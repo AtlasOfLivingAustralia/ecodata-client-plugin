@@ -17,7 +17,7 @@ plugins {
     id 'jacoco'
 }
 
-version "9.1"
+version "9.2"
 group "org.grails.plugins"
 
 apply plugin:"eclipse"
@@ -37,8 +37,8 @@ if (Boolean.valueOf(enableJacoco)) {
 
 repositories {
     mavenLocal()
-    maven { url "https://repo.grails.org/grails/core" }
     maven { url "https://nexus.ala.org.au/content/groups/public/" }
+    maven { url "https://repo.grails.org/grails/core" }
 }
 
 boolean inplace = false

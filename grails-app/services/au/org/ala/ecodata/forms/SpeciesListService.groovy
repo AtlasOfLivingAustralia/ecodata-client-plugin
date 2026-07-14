@@ -39,6 +39,8 @@ class SpeciesListService {
         String dataResourceUid
         String rawScientificName
         String scientificName
+        // for backward compatibility in BioCollect
+        String matchedName
         String commonName
         List kvpValues
         String lsid
@@ -550,11 +552,12 @@ class SpeciesListService {
     static SpeciesListItem mapV2API(Map speciesListItem) {
         String scientificName = speciesListItem.scientificName
         String commonName = speciesListItem.vernacularName
+        String matchedName = null
         String lsid = null
 
         // If the item successfully matched, use the matched classification
         if (speciesListItem.classification?.success) {
-            scientificName = speciesListItem.classification.scientificName
+            matchedName = scientificName = speciesListItem.classification.scientificName
             commonName = speciesListItem.classification.vernacularName
             lsid = speciesListItem.classification.taxonConceptID
         }
@@ -566,6 +569,7 @@ class SpeciesListService {
                 name:scientificName,
                 rawScientificName: speciesListItem.scientificName,
                 scientificName:scientificName,
+                matchedName:matchedName,
                 commonName:commonName,
                 kvpValues: speciesListItem.properties,
         )
@@ -577,7 +581,8 @@ class SpeciesListService {
                 dataResourceUid: speciesListItem.dataResourceUid,
                 name: speciesListItem.name,
                 rawScientificName: speciesListItem.rawScientificName ?: speciesListItem.name,
-                scientificName: speciesListItem.scientificName,
+                scientificName: speciesListItem.scientificName ?: speciesListItem.matchedName,
+                matchedName: speciesListItem.matchedName ?: speciesListItem.scientificName,
                 commonName: speciesListItem.commonName,
                 kvpValues: speciesListItem.kvpValues,
                 lsid: speciesListItem.lsid

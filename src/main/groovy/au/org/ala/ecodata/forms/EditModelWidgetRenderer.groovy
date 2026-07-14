@@ -120,7 +120,7 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
         String validation = context.validationAttr ?: ''
 
         // programmatic conversion of the old gsp (_timeDataTypeEditModelTemplate.gsp)
-        context.writer << """<div class="timefield input-append" style="position:relative"><input ${attrString} id="${context.source}TimeField" data-bind='${databindString}' ${validation} type='text' /></div>"""
+        context.writer << """<div class="timefield input-append" style="position:relative"><input ${attrString} data-source="${context.source}TimeField" data-bind='${databindString}' ${validation} type='text' /></div>"""
     }
 
     @Override
@@ -276,8 +276,10 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
     void renderImage(WidgetRenderContext context) {
         context.databindAttrs.add 'imageUpload', "{target:${context.source}, context:\$context, config:{}}"
         def showImgMetadata = (context.model.showMetadata == null ||  context.model.showMetadata == true) ? "block" :"none"
+        def showImgAttribution = context.model.showAttribution == null ||  context.model.showAttribution == true
+        def showImgNotes = context.model.showNotes == null ||  context.model.showNotes == true
         def allowImageAdd = (context.model.allowImageAdd == null ||  context.model.allowImageAdd == true) ? "block" :"none"
-        context.writer << context.g.render(template: '/output/imageDataTypeEditModelTemplate', plugin:'ecodata-client-plugin', model: [databindAttrs:context.databindAttrs.toString(), showImgMetadata: showImgMetadata, allowImageAdd: allowImageAdd, name: context.source, validationAttrs:context.validationAttr, options: context.model.displayOptions])
+        context.writer << context.g.render(template: '/output/imageDataTypeEditModelTemplate', plugin:'ecodata-client-plugin', model: [databindAttrs:context.databindAttrs.toString(), showImgMetadata: showImgMetadata, showImgAttribution: showImgAttribution, showImgNotes: showImgNotes, allowImageAdd: allowImageAdd, name: context.source, validationAttrs:context.validationAttr, options: context.model.displayOptions])
     }
 
     @Override

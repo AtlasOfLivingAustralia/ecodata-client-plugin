@@ -81,58 +81,61 @@
 ko.extenders.simpleDate = function (target, options) {
     var includeTime = false;
     var isReadOnly = false;
+    var showInUserTimeZone = false;
+
     if (_.isObject(options)) {
         includeTime = options.includeTime || false;
         isReadOnly = options.readOnly || false;
+        showInUserTimeZone = options.showInUserTimeZone || false;
     }
     else {
         includeTime = options || false;
     }
 
-        target.date = ko.computed({
-            read: function () {
-                return Date.fromISO(target());
-            },
+    target.date = ko.computed({
+        read: function () {
+            return Date.fromISO(target());
+        },
 
-            write: function (newValue) {
+        write: function (newValue) {
             if (isReadOnly) {
                 return;
             }
-                if (newValue) {
-                    var current = target(),
-                        valueToWrite = convertToIsoDate(newValue);
+            if (newValue) {
+                var current = target(),
+                    valueToWrite = convertToIsoDate(newValue);
 
-                    if (valueToWrite !== current) {
-                        target(valueToWrite);
-                    }
-                } else {
-                    // date has been cleared
-                    target("");
+                if (valueToWrite !== current) {
+                    target(valueToWrite);
                 }
+            } else {
+                target("");
             }
-        });
-        target.formattedDate = ko.computed({
-            read: function () {
-                return convertToSimpleDate(target(), includeTime);
-            },
+        }
+    });
+    target.formattedDate = ko.computed({
+        read: function () {
+            return convertToSimpleDate(target(), includeTime, showInUserTimeZone);
+        },
 
-            write: function (newValue) {
+        write: function (newValue) {
             if (isReadOnly) {
                 return;
             }
-                if (newValue) {
-                    var current = target(),
-                        valueToWrite = convertToIsoDate(newValue);
+            if (newValue) {
+                var current = target(),
+                    valueToWrite = convertToIsoDate(newValue);
 
-                    if (valueToWrite !== current) {
-                        target(valueToWrite);
-                    }
+                if (valueToWrite !== current) {
+                    target(valueToWrite);
                 }
             }
-        });
-        target.date(target());
-        target.formattedDate(target());
+        }
+    });
 
-        return target;
-    };
+    target.date(target());
+    target.formattedDate(target());
+
+    return target;
+};
 }());
