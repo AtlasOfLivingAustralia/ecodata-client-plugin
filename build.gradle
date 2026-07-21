@@ -95,7 +95,7 @@ dependencies {
 
 
     if (!Boolean.valueOf(inplace)) {
-        implementation ("org.grails.plugins:ala-map-plugin:5.0-SNAPSHOT") {
+        implementation ("org.grails.plugins:ala-map-plugin:6.0-SNAPSHOT") {
             exclude group: 'cloud.wondrify', module: 'asset-pipeline-grails'
         }
     }
