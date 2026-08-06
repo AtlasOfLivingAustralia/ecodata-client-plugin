@@ -75,6 +75,9 @@
                                         data-bind="text:properties.name || 'Unnamed site'"></span></label>
 
                                 <div class="btn-container">
+                                    <div class="btn btn-sm" type="button" title="Show or hide site on map">
+                                        <input class="form-check-input mt-0" type="checkbox" value="" data-bind="checked: properties.showOrHideSite">
+                                    </div>
                                     <button class="btn btn-sm" type="button" data-bind="click:$root.copyFeature, enable:$root.copyEnabled"
                                             title="Copy (and edit) this site"><i class="fa fa-copy"></i>
                                     </button>

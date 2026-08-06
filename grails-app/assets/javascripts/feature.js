@@ -211,6 +211,23 @@ ecodata.forms.maps.featureMap = function (options) {
                 color: '#f00',
                 fillOpacity: 0.2,
                 weight: 4
+            },
+            flattenMultiGeometries: true,
+            addAllFeaturesFromFile: false,
+            validateImportedShapes: function (geojson) {
+                return $.ajax({
+                    method: 'POST',
+                    url: config.validateShapesUrl || fcConfig.validateShapesUrl,
+                    data: JSON.stringify(geojson),
+                    contentType: 'application/json',
+                    success: function (data) {
+                        if (data.success)
+                            // do not remove the shape, it is valid
+                            return {remove: false, message: data.message};
+                        else
+                            return {remove: true, message: data.message};
+                    }
+                })
             }
         };
         var config = _.defaults(options, defaults);
@@ -221,6 +238,7 @@ ecodata.forms.maps.featureMap = function (options) {
             useMyLocation: config.userMyLocation,
             allowSearchLocationByAddress: !config.readonly,
             allowSearchRegionByAddress: false,
+            style: DRAWN_LAYER_STYLE,
             drawOptions: config.readonly ?
                 {
                     polyline: false,
@@ -287,11 +305,14 @@ ecodata.forms.maps.featureMap = function (options) {
                     layer.setStyle(DRAWN_LAYER_STYLE);
                 }
 
+                var properties = {}
                 var name = ko.observable('New works area');
                 if (layer.feature && layer.feature.properties && layer.feature.properties.name) {
+                    properties = {...layer.feature.properties}
                     name(layer.feature.properties.name);
+                    properties.name = name;
                 }
-                var feature = {properties: {name: name}, layer: layer};
+                var feature = {properties: properties, layer: layer};
                 if (!layer.feature){
                     var geoJson = layer.toGeoJSON();
                     geoJson.properties.name = name();
@@ -404,9 +425,19 @@ ecodata.forms.maps.featureMap = function (options) {
     }
 
     self.copyFeature = function (feature) {
-        var geoJSON = feature.toJSON();
+        var featureCollection = self.toFeatureCollection(feature),
+            features = featureCollection.features,
+            featureList = [];
+
+        features.forEach(function (feature) {
+            // forcefully assign new featureId
+            self.assignFeatureId(null, feature, true);
+            featureList.push(feature.toJSON())
+        });
+
+        featureCollection.features = featureList;
         // Leaflet geoman plugin can handle MultiPolygon
-        self.setGeoJSON(geoJSON);
+        self.setGeoJSON(featureCollection);
     };
 
     self.copyEnabled = function(feature) {
@@ -415,19 +446,21 @@ ecodata.forms.maps.featureMap = function (options) {
     };
 
     /**
-     * Determines whether the user can interact with the feature based on whether it is in a category that is currently visible.
+     * Determines whether the user can interact with the feature based on whether it is in a category that is currently
+     * visible, or if it is currently selected.
      * @param feature
      * @returns {boolean}
      */
     self.canInteractWithFeature = function(feature) {
-        var catregoies = self.categories();
-        if (catregoies && catregoies.length !== 0) {
-            for (var i = 0; i < catregoies.length; i++) {
-                var category = catregoies[i];
-                if (category.showOrHideCategorySites() && category.features) {
+        // is it currently visible
+        var categories = self.categories();
+        if (categories && categories.length !== 0) {
+            for (var i = 0; i < categories.length; i++) {
+                var category = categories[i];
+                if (category.features) {
                     for (var j = 0; j < category.features.length; j++) {
                         var categoryFeature  = category.features[j];
-                        if (categoryFeature.layer === feature.layer) {
+                        if (categoryFeature.showOrHideSite() && (categoryFeature.layer === feature.layer)) {
                             return true;
                         }
                     }
@@ -435,7 +468,8 @@ ecodata.forms.maps.featureMap = function (options) {
             }
         }
 
-        return false;
+        // is it currently selected
+        return self.editableSites().filter((site) => site.layer === feature.layer ).length > 0
     }
 
     self.unhighlightFeature = function (feature) {
@@ -444,18 +478,19 @@ ecodata.forms.maps.featureMap = function (options) {
             return;
         }
 
-        var layer = feature.layer;
-        if (layer.setStyle) {
-            if (self.selectableSitesLayer && self.selectableSitesLayer.hasLayer(layer)) {
-                self.selectableSitesLayer.resetStyle(layer);
-            }
-            else {
+        var features = self.toFeatureCollection(feature).features;
+        features.forEach(function(feature) {
+            var layer = feature.layer;
+            if (layer.setStyle) {
+                if (self.selectableSitesLayer && self.selectableSitesLayer.hasLayer(layer)) {
+                    self.selectableSitesLayer.resetStyle(layer);
+                } else {
+                    self.unHighlightLayer(layer);
+                }
+            } else {
                 self.unHighlightLayer(layer);
             }
-        }
-        else {
-            self.unHighlightLayer(layer);
-        }
+        });
     };
 
     self.highlightFeature = function (feature) {
@@ -464,21 +499,25 @@ ecodata.forms.maps.featureMap = function (options) {
             return;
         }
 
-        var options = feature.layer.options,
-            layer = feature.layer;
-        if (!options) {
-            return;  // TODO Known shapes don't have options
-        }
-        self.highlightLayer(layer);
+        var features = self.toFeatureCollection(feature).features;
+        features.forEach(function (feature) {
+            var options = feature.layer.options,
+                layer = feature.layer;
+            if (!options) {
+                return;  // TODO Known shapes don't have options
+            }
+            self.highlightLayer(layer);
+        });
     };
 
     self.zoomToFeature = function (feature) {
-        var layer = feature.layer;
-        var boundsContainer = layer;
-        if (!layer.getBounds) {
+        var features = self.toFeatureCollection(feature).features,
             boundsContainer = new L.FeatureGroup();
+        features.forEach(function (feature) {
+            var layer = feature.layer;
             boundsContainer.addLayer(layer);
-        }
+        });
+
         map.getMapImpl().fitBounds(boundsContainer.getBounds());
     };
     self.deleteFeature = function (feature) {
@@ -508,9 +547,12 @@ ecodata.forms.maps.featureMap = function (options) {
 
         var group = new L.featureGroup();
         _.each(category.features || [], function(feature) {
-            if (feature.layer) {
-                group.addLayer(feature.layer);
-            }
+            var features = self.toFeatureCollection(feature).features;
+            features.forEach(function (feature) {
+                if (feature.layer) {
+                    group.addLayer(feature.layer);
+                }
+            });
         });
         self.getMapImpl().fitBounds(group.getBounds());
     };
@@ -535,21 +577,45 @@ ecodata.forms.maps.featureMap = function (options) {
 
     self.configureSelectionLayer = function (selectableFeatures) {
         if (selectableFeatures) {
-
+            var ignoreUpdateToFeature = false;
             _.each(selectableFeatures, function (feature) {
                 if (feature.properties && feature.properties.name) {
-                    var showOrHideCategorySites = ko.observable(true);
-                    var featuresForCategory = {category: feature.properties.name, features: feature.features, showOrHideCategorySites: showOrHideCategorySites}
+                    var showOrHideCategorySites = ko.observable(true),
+                        isPlanningSite = feature.properties.name === PLANNING_SITES;
+                    // assign an observable to show or hide feature
+                    feature.features.forEach(function(feature){
+                        feature.properties.isPlanningSite = isPlanningSite;
+                        feature.properties.showOrHideSite = ko.observable(true);
+                        feature.properties.showOrHideSite.subscribe(function (newValue) {
+                            var features = self.toFeatureCollection(feature).features;
+                            features.forEach (function (feature) {
+                                if (newValue) {
+                                    showLayer(feature.layer);
+                                } else {
+                                    hideLayer(feature.layer);
+                                }
+                            });
+                            ignoreUpdateToFeature = true;
+                            checkIfCategoryCheckBoxNeedUpdating(featuresForCategory);
+                            ignoreUpdateToFeature = false;
+                        });
+
+                        if (feature.features) {
+                            feature.features.forEach(function (feature) {
+                                feature.properties.isPlanningSite = isPlanningSite;
+                            });
+                        }
+                    });
+                    var featuresForCategory = {category: feature.properties.name, features: feature.features, showOrHideCategorySites: showOrHideCategorySites};
                     // make sure categoryFeature we are currently processing is in scope for the subscription callback,
                     // otherwise the subscription will only work for the last categoryFeature due to the closure in the loop.
                     showOrHideCategorySites.subscribe(function(categoryFeatures) {
                         return function(newValue) {
+                                if (ignoreUpdateToFeature)
+                                    return;
+
                                 categoryFeatures.features && categoryFeatures.features.forEach(function(feature) {
-                                    if (newValue) {
-                                        showLayer(feature.layer);
-                                    } else {
-                                        hideLayer(feature.layer);
-                                    };
+                                    feature.properties.showOrHideSite(newValue);
                                 });
                             }
                     }(featuresForCategory));
@@ -559,6 +625,11 @@ ecodata.forms.maps.featureMap = function (options) {
             self.selectableSitesLayer = L.geoJson(selectableFeatures,
                 {
                     style: PLANNING_LAYER_STYLE,
+                    pointToLayer: function(feature, latlng) {
+                        var layer = self.pointToLayerCircleSupport(feature, latlng);
+                        setLayerStyleByCategory(layer);
+                        return layer;
+                    },
                     onEachFeature: function (f, layer) {
                         f.layer = layer;
                         // This is needed to avoid circular references when the feature is serialized for saving.
@@ -572,6 +643,7 @@ ecodata.forms.maps.featureMap = function (options) {
                         // we do not want the user to be able to edit, delete, drag, cut or rotate features in the selectable layer.
                         layer && layer.pm && layer.pm.setOptions({allowEditing: false, allowRemoval: false,
                             allowRotation: false, allowCutting: false, draggable: false});
+                        setLayerStyleByCategory(layer);
                     }
                 }
             );
@@ -579,6 +651,22 @@ ecodata.forms.maps.featureMap = function (options) {
             setInitialLayerVisibility();
         }
     };
+
+    function setLayerStyleByCategory (layer) {
+        if (layer && layer.feature && layer.feature.properties && layer.setStyle) {
+            if (layer.feature.properties.isPlanningSite)
+                layer.setStyle(PLANNING_LAYER_STYLE)
+            else
+                layer.setStyle(DRAWN_LAYER_STYLE)
+        }
+    }
+
+    function checkIfCategoryCheckBoxNeedUpdating (category) {
+        if (category.features.every (feature => feature.properties.showOrHideSite()))
+            category.showOrHideCategorySites(true);
+        else
+            category.showOrHideCategorySites(false);
+    }
 
     /**
      * When the map is first loaded, we want to show the planning sites layer and hide the other layers,
