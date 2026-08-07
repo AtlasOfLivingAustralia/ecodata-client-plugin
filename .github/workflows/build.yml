@@ -37,6 +37,9 @@ jobs:
         with:
           chrome-version: '151'   # pin to a specific version to test/match local
 
+      - name: Alias google-chrome to Chrome 151
+        run: sudo ln -sf ${{ steps.setup-chrome.outputs.chrome-path }} /usr/local/bin/google-chrome
+
       - name: Verify Chrome version
         run: google-chrome --version
 
