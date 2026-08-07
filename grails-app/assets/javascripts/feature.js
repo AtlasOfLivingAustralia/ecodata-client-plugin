@@ -478,7 +478,7 @@ ecodata.forms.maps.featureMap = function (options) {
             return;
         }
 
-        var features = self.toFeatureCollection(feature).features;
+        var features = feature.type === "FeatureCollection" ? feature.features : [feature];
         features.forEach(function(feature) {
             var layer = feature.layer;
             if (layer.setStyle) {
@@ -499,7 +499,7 @@ ecodata.forms.maps.featureMap = function (options) {
             return;
         }
 
-        var features = self.toFeatureCollection(feature).features;
+        var features = feature.type === "FeatureCollection" ? feature.features : [feature];
         features.forEach(function (feature) {
             var options = feature.layer.options,
                 layer = feature.layer;
@@ -511,7 +511,7 @@ ecodata.forms.maps.featureMap = function (options) {
     };
 
     self.zoomToFeature = function (feature) {
-        var features = self.toFeatureCollection(feature).features,
+        var features = feature.type === "FeatureCollection" ? feature.features : [feature],
             boundsContainer = new L.FeatureGroup();
         features.forEach(function (feature) {
             var layer = feature.layer;
@@ -547,7 +547,7 @@ ecodata.forms.maps.featureMap = function (options) {
 
         var group = new L.featureGroup();
         _.each(category.features || [], function(feature) {
-            var features = self.toFeatureCollection(feature).features;
+            var features = feature.type === "FeatureCollection" ? feature.features : [feature];
             features.forEach(function (feature) {
                 if (feature.layer) {
                     group.addLayer(feature.layer);
