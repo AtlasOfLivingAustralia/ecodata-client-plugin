@@ -170,7 +170,8 @@ ko.bindingHandlers.geojson2svg = {
  */
 ecodata.forms.maps.featureMap = function (options) {
     const PLANNING_SITES = "Planning Sites";
-    var self = this;
+    var self = this,
+        ignoreUpdateToFeature = false;
     var DRAWN_LAYER_STYLE = {
         weight: 4,
         fillOpacity: 0.2,
@@ -585,44 +586,65 @@ ecodata.forms.maps.featureMap = function (options) {
         });
     }
 
+    /**
+     * Create callback to show or hide all sites in a category with closure scope to remember which
+     * categoryFeature we are currently processing.
+     * @param featuresForCategory
+     * @returns {(function(*): void)|*}
+     */
+    function createShowHideCategorySitesCallback(featuresForCategory) {
+        return function (categoryFeatures) {
+            return function (newValue) {
+                if (ignoreUpdateToFeature)
+                    return;
+
+                categoryFeatures.features && categoryFeatures.features.forEach(function (feature) {
+                    feature.properties.showOrHideSite(newValue);
+                });
+            }
+        }(featuresForCategory);
+    }
+
+    /**
+     * Use closure scope to remember the variable applicable to the observable callback.
+     * @param feature - current feature
+     * @param featuresForCategory - category object the feature belongs
+     * @returns {(function(*): void)|*}
+     */
+    function createShowHideSiteCallback(feature, featuresForCategory) {
+        return function (newValue) {
+            var features = feature.type === "FeatureCollection" ? feature.features : [feature];
+            setFeatureLayerVisibility(features, newValue);
+            ignoreUpdateToFeature = true;
+            checkIfCategoryCheckBoxNeedUpdating(featuresForCategory);
+            ignoreUpdateToFeature = false;
+        };
+    }
+
     self.configureSelectionLayer = function (selectableFeatures) {
         if (selectableFeatures) {
-            var ignoreUpdateToFeature = false;
             _.each(selectableFeatures, function (feature) {
                 if (feature.properties && feature.properties.name) {
-                    // assign an observable to show or hide all features in a category
-                    var showOrHideCategorySites = ko.observable(true);
+                    var showOrHideCategorySites = ko.observable(true),
+                        featuresForCategory = {category: feature.properties.name, features: feature.features, showOrHideCategorySites: showOrHideCategorySites};
+
+                    self.categories.push(featuresForCategory);
+                    // use closure scope to remember which categoryFeature we are currently processing
+                    showOrHideCategorySites.subscribe(createShowHideCategorySitesCallback(featuresForCategory));
+                    // assign an observable to show or hide all features in a category;
                     feature.features.forEach(function(feature){
                         setIsPlanningSiteProperty(feature);
                         // assign an observable to show or hide feature under a category
                         feature.properties.showOrHideSite = ko.observable(true);
-                        feature.properties.showOrHideSite.subscribe(function (newValue) {
-                            var features = feature.type === "FeatureCollection" ? feature.features : [feature];
-                            setFeatureLayerVisibility(features, newValue);
-                            ignoreUpdateToFeature = true;
-                            checkIfCategoryCheckBoxNeedUpdating(featuresForCategory);
-                            ignoreUpdateToFeature = false;
-                        });
+                        feature.properties.showOrHideSite.subscribe(createShowHideSiteCallback(feature, featuresForCategory));
                     });
-                    var featuresForCategory = {category: feature.properties.name, features: feature.features, showOrHideCategorySites: showOrHideCategorySites};
-                    // make sure categoryFeature we are currently processing is in scope for the subscription callback,
-                    // otherwise the subscription will only work for the last categoryFeature due to the closure in the loop.
-                    showOrHideCategorySites.subscribe(function(categoryFeatures) {
-                        return function(newValue) {
-                                if (ignoreUpdateToFeature)
-                                    return;
-
-                                categoryFeatures.features && categoryFeatures.features.forEach(function(feature) {
-                                    feature.properties.showOrHideSite(newValue);
-                                });
-                            }
-                    }(featuresForCategory));
-                    self.categories.push(featuresForCategory);
                 }
             });
+
             self.selectableSitesLayer = L.geoJson(selectableFeatures,
                 {
                     style: PLANNING_LAYER_STYLE,
+                    // to create circle and marker layer
                     pointToLayer: function(feature, latlng) {
                         var layer = self.pointToLayerCircleSupport(feature, latlng);
                         setLayerStyleByCategory(layer);
@@ -645,11 +667,32 @@ ecodata.forms.maps.featureMap = function (options) {
                     }
                 }
             );
+
             self.selectableSitesLayer.addTo(self.getMapImpl());
             setInitialLayerVisibility();
         }
     };
 
+    /**
+     * Find out if the current feature is a planning site.
+     *
+     * @param {Object} feature
+     * @return {void} This method does not return a value. It modifies the input `feature` object directly.
+     */
+    function setIsPlanningSiteProperty (feature) {
+        var isPlanningSite = feature.properties.name === PLANNING_SITES;
+        feature.properties.isPlanningSite = isPlanningSite;
+        if (feature.features) {
+            feature.features.forEach(function (feature) {
+                feature.properties.isPlanningSite = isPlanningSite;
+            });
+        }
+    }
+
+    /**
+     * Layer style based on site category
+     * @param layer
+     */
     function setLayerStyleByCategory (layer) {
         if (layer && layer.feature && layer.feature.properties && layer.setStyle) {
             if (layer.feature.properties.isPlanningSite)
@@ -659,21 +702,15 @@ ecodata.forms.maps.featureMap = function (options) {
         }
     }
 
+    /**
+     * Check the category box only if all sites under it are checked.
+     * @param category
+     */
     function checkIfCategoryCheckBoxNeedUpdating (category) {
         if (category.features.every (feature => feature.properties.showOrHideSite()))
             category.showOrHideCategorySites(true);
         else
             category.showOrHideCategorySites(false);
-    }
-
-    function setIsPlanningSiteProperty (feature) {
-        var isPlanningSite = feature.properties.name === PLANNING_SITES;
-        feature.properties.isPlanningSite = isPlanningSite;
-        if (feature.features) {
-            feature.features.forEach(function (feature) {
-                feature.properties.isPlanningSite = isPlanningSite;
-            });
-        }
     }
 
     /**
