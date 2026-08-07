@@ -460,7 +460,7 @@ ecodata.forms.maps.featureMap = function (options) {
                 if (category.features) {
                     for (var j = 0; j < category.features.length; j++) {
                         var categoryFeature  = category.features[j];
-                        if (categoryFeature.showOrHideSite() && (categoryFeature.layer === feature.layer)) {
+                        if (categoryFeature.properties.showOrHideSite() && (categoryFeature.layer === feature.layer)) {
                             return true;
                         }
                     }
