@@ -32,6 +32,14 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: 'AtlasOfLivingAustralia'
 
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: '151'   # pin to a specific version to test/match local
+
+      - name: Verify Chrome version
+        run: google-chrome --version
+
       - name: Clear Gradle cache
         run: rm -rf ~/.gradle/caches
 

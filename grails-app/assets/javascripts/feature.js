@@ -575,36 +575,34 @@ ecodata.forms.maps.featureMap = function (options) {
         self.editableSites([]);
     };
 
+    function setFeatureLayerVisibility(features, newValue) {
+        features.forEach(function (feature) {
+            if (newValue) {
+                showLayer(feature.layer);
+            } else {
+                hideLayer(feature.layer);
+            }
+        });
+    }
+
     self.configureSelectionLayer = function (selectableFeatures) {
         if (selectableFeatures) {
             var ignoreUpdateToFeature = false;
             _.each(selectableFeatures, function (feature) {
                 if (feature.properties && feature.properties.name) {
-                    var showOrHideCategorySites = ko.observable(true),
-                        isPlanningSite = feature.properties.name === PLANNING_SITES;
-                    // assign an observable to show or hide feature
+                    // assign an observable to show or hide all features in a category
+                    var showOrHideCategorySites = ko.observable(true);
                     feature.features.forEach(function(feature){
-                        feature.properties.isPlanningSite = isPlanningSite;
+                        setIsPlanningSiteProperty(feature);
+                        // assign an observable to show or hide feature under a category
                         feature.properties.showOrHideSite = ko.observable(true);
                         feature.properties.showOrHideSite.subscribe(function (newValue) {
-                            var features = self.toFeatureCollection(feature).features;
-                            features.forEach (function (feature) {
-                                if (newValue) {
-                                    showLayer(feature.layer);
-                                } else {
-                                    hideLayer(feature.layer);
-                                }
-                            });
+                            var features = feature.type === "FeatureCollection" ? feature.features : [feature];
+                            setFeatureLayerVisibility(features, newValue);
                             ignoreUpdateToFeature = true;
                             checkIfCategoryCheckBoxNeedUpdating(featuresForCategory);
                             ignoreUpdateToFeature = false;
                         });
-
-                        if (feature.features) {
-                            feature.features.forEach(function (feature) {
-                                feature.properties.isPlanningSite = isPlanningSite;
-                            });
-                        }
                     });
                     var featuresForCategory = {category: feature.properties.name, features: feature.features, showOrHideCategorySites: showOrHideCategorySites};
                     // make sure categoryFeature we are currently processing is in scope for the subscription callback,
@@ -666,6 +664,16 @@ ecodata.forms.maps.featureMap = function (options) {
             category.showOrHideCategorySites(true);
         else
             category.showOrHideCategorySites(false);
+    }
+
+    function setIsPlanningSiteProperty (feature) {
+        var isPlanningSite = feature.properties.name === PLANNING_SITES;
+        feature.properties.isPlanningSite = isPlanningSite;
+        if (feature.features) {
+            feature.features.forEach(function (feature) {
+                feature.properties.isPlanningSite = isPlanningSite;
+            });
+        }
     }
 
     /**
