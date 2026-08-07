@@ -51,39 +51,43 @@
                 <div class="row">
                     <div class="col-sm-4 text-start">
                         <label class="control-label">Licence: <i class="fa fa-question-circle"
-                                                                data-bind="popover:{content:'Creative Commons Attribution (CC BY), Creative Commons-Noncommercial (CC BY-NC), Creative Commons Attribution-Share Alike (CC BY-SA), Creative Commons Attribution-Noncommercial-Share Alike (CC BY-NC-SA)', placement:'top'}">&nbsp;</i>
+                                                                data-bind="popover:{content:'Creative Commons Attribution (CC BY), Creative Commons-Noncommercial (CC BY-NC), Creative Commons Zero (CC0)', placement:'top'}">&nbsp;</i>
                         </label>
                     </div>
                     <div class="col-sm-8">
                         <select id="licence" data-bind="value:licence" class="form-select form-select-sm col-sm-12">
-                            <option value="CC BY 3.0">Creative Commons Attribution 3.0</option>
-                            <option value="CC BY 0">Creative Commons Attribution 0</option>
                             <option value="CC BY 4.0">Creative Commons Attribution 4.0</option>
+                            <option value="CC BY 3.0">Creative Commons Attribution 3.0</option>
                             <option value="CC BY-NC">Creative Commons Attribution-Noncommercial</option>
+                            <option value="CC BY 0">Creative Commons Zero</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-sm-4 text-start">
-                        <label class="control-label" for="attribution">
-                            Attribution: <i class="fa fa-question-circle" data-bind="popover:{content:'The name of the photographer', placement:'top'}">&nbsp;</i>
-                        </label>
+                <g:if test="${showImgAttribution}">
+                    <div class="row">
+                        <div class="col-sm-4 text-start">
+                            <label class="control-label" for="attribution">
+                                Attribution: <i class="fa fa-question-circle" data-bind="popover:{content:'The name of the photographer', placement:'top'}">&nbsp;</i>
+                            </label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input id="attribution" class="form-control form-control-sm full-width-input" type="text" data-bind="value:attribution">
+                        </div>
                     </div>
-                    <div class="col-sm-8">
-                        <input id="attribution" class="form-control form-control-sm full-width-input" type="text" data-bind="value:attribution">
-                    </div>
-                </div>
+                </g:if>
 
 
-                <div class="row">
-                    <div class="col-sm-4 text-start">
-                        <label class="control-label" for="notes">Notes: <i class="fa fa-question-circle" data-bind="popover:{content:'Additional notes you would like to supply regarding the photo point or photograph.', placement:'top'}">&nbsp;</i></label>
+                <g:if test="${showImgNotes}">
+                    <div class="row">
+                        <div class="col-sm-4 text-start">
+                            <label class="control-label" for="notes">Notes: <i class="fa fa-question-circle" data-bind="popover:{content:'Additional notes you would like to supply regarding the photo point or photograph.', placement:'top'}">&nbsp;</i></label>
+                        </div>
+                        <div class="col-sm-8">
+                            <input id="notes" class="form-control form-control-sm full-width-input" type="text" data-bind="value:notes">
+                        </div>
                     </div>
-                    <div class="col-sm-8">
-                        <input id="notes" class="form-control form-control-sm full-width-input" type="text" data-bind="value:notes">
-                    </div>
-                </div>
+                </g:if>
 
                 <div class="row readonly ">
                     <div class="col-sm-4 text-start">

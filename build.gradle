@@ -37,8 +37,8 @@ if (Boolean.valueOf(enableJacoco)) {
 
 repositories {
     mavenLocal()
-    maven { url "https://repo.grails.org/grails/core" }
     maven { url "https://nexus.ala.org.au/content/groups/public/" }
+    maven { url "https://repo.grails.org/grails/core" }
 }
 
 boolean inplace = false
@@ -98,7 +98,7 @@ dependencies {
 
 
     if (!inplace) {
-        implementation ("org.grails.plugins:ala-map-plugin:5.0-SNAPSHOT") {
+        implementation ("org.grails.plugins:ala-map-plugin:4.0.1") {
             exclude group: 'com.bertramlabs.plugins', module: 'asset-pipeline-grails'
         }
     }
