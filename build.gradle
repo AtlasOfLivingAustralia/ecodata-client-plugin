@@ -17,7 +17,7 @@ plugins {
     id 'jacoco'
 }
 
-version "9.2"
+version "9.2-MAP-SNAPSHOT"
 group "org.grails.plugins"
 
 apply plugin:"eclipse"
@@ -98,7 +98,7 @@ dependencies {
 
 
     if (!inplace) {
-        implementation ("org.grails.plugins:ala-map-plugin:4.0.1") {
+        implementation ("org.grails.plugins:ala-map-plugin:5.0-SNAPSHOT") {
             exclude group: 'com.bertramlabs.plugins', module: 'asset-pipeline-grails'
         }
     }

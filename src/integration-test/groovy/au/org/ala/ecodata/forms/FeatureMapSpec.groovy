@@ -32,7 +32,17 @@ class FeatureMapSpec extends GebReportingSpec {
         page.featureMapDialog.map.drawPolygon()
 
         then:
-        true == true // We have a polygon, needs more setup before we can verify it fully
+        Thread.sleep(1000)
+        page.featureMapDialog.map.numberOfInteractiveElementsOnMap() > 0
+
+        // Delete created polygon
+        when:
+        int numberOfElementsBeforeDelete = page.featureMapDialog.map.numberOfInteractiveElementsOnMap()
+        page.featureMapDialog.map.deletePolygon()
+        Thread.sleep(5000)
+
+        then:
+        page.featureMapDialog.map.numberOfInteractiveElementsOnMap() < numberOfElementsBeforeDelete
 
     }
 }

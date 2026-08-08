@@ -57,6 +57,7 @@
 <g:render template="/output/mapInDialogEditTemplate"/>
 </body>
 <asset:javascript src="preview.js"/>
+<asset:javascript src="leaflet-manifest.js"/>
 
 <g:render template="/output/outputJSModel"
           model="${[edit: params.mode != 'view',

@@ -18,7 +18,9 @@ class SelectOneSpec extends GebReportingSpec {
         title == "Preview SelectOne View Type Example"
 
         when:
-        def select1 = page.findFieldByModelName("textFieldWithConstraints").module(Select)
+        def text = page.findFieldByModelName("textFieldWithConstraints")
+        waitFor 30, {text.displayed}
+        def select1 = text.module(Select)
         select1.selected = "value2"
 
         def select2 = page.findFieldByModelName("textFieldWithLabelValueConstraints").module(Select)
@@ -41,6 +43,7 @@ class SelectOneSpec extends GebReportingSpec {
 
         and: "The values from the data model are displayed"
         def span = $("span[data-bind*=textFieldWithConstraints]")
+        waitFor 30, {span.displayed}
         span[1].text() == "value1" // First  match is a popover
 
         def span2 = $("span[data-bind*=textFieldWithLabelValueConstraints]")

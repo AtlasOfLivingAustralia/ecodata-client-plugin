@@ -232,7 +232,7 @@ function enmapify(args) {
 
     viewModel.transients.showMyLocationAndLocationByAddress = function () {
         if (readonly) {
-            return true;
+            return false;
         }
 
         // only show my location control if user can add point to map
@@ -770,9 +770,7 @@ function enmapify(args) {
             createPrivateSite();
     });
 
-    // make sure the lat/lng fields are cleared when the marker is removed by cancelling a new marker
-
-    map.registerListener("draw:created", function (e) {
+    map.registerListener("pm:create", function (e) {
         console.log("draw created");
         var type = e.layerType,
             layer = e.layer;
@@ -784,13 +782,18 @@ function enmapify(args) {
             createPrivateSite();
     });
     var saved = false;
-    map.registerListener("draw:edited", function (e) {
+    map.registerListener("pm:update", function (e) {
         console.log("edited", e);
         saved = true;
     });
 
-    map.registerListener("draw:editstop", function (e) {
-        console.log("editstop", e);
+    map.registerListener("pm:globaleditmodetoggled", function (e) {
+        if (e.enabled) {
+            console.log("entering edit mode");
+            return;
+        }
+
+        console.log("handling pm:globaleditmodetoggled", e);
         if (!siteIdObservable() && !saved) {
             console.log("clear geo json");
             map.clearLayers();
