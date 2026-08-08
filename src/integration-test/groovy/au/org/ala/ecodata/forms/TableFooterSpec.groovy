@@ -15,6 +15,7 @@ class TableFooterSpec extends GebReportingSpec {
 
         then:
         title == "Preview Table footer example"
+        report("Table footers can be displayed")
         waitFor 30, { page.findFieldByModelName("totalValue3").text() != null }
         page.model != null
 
@@ -45,6 +46,7 @@ class TableFooterSpec extends GebReportingSpec {
         title == "Preview Table footer example"
 
         and: "The total in the table footer has the correct value"
+        report("Table footers can be displayed in view mode")
         waitFor 30, { page.findFieldByModelName("totalValue3").text() != null }
         page.findFieldByModelName("totalValue3").text() == "3.00"
 
