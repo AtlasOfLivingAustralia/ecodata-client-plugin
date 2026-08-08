@@ -533,7 +533,7 @@ ecodata.forms.maps.featureMap = function (options) {
         map.drawnItems.eachLayer(function (layer) {
             if (layer.bringToFront) {
                 layer.bringToFront();
-            };
+            }
         });
         self.selectableSitesLayer.bringToBack();
         var options = map.getMapImpl().pm.getGlobalOptions();

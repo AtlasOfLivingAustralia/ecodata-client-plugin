@@ -15,6 +15,7 @@ class TableSpec extends GebReportingSpec {
 
         then:
         title == "Preview Table View Type Example"
+        waitFor 30, { $('.adminActions tbody td').size() > 0 }
         page.model != null
 
         and: "The first table is correct"
