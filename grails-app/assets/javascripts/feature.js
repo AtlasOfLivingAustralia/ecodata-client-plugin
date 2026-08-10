@@ -433,7 +433,7 @@ ecodata.forms.maps.featureMap = function (options) {
         features.forEach(function (feature) {
             // forcefully assign new featureId
             self.assignFeatureId(null, feature, true);
-            featureList.push(feature.toJSON())
+            featureList.push(feature)
         });
 
         featureCollection.features = featureList;
@@ -633,7 +633,7 @@ ecodata.forms.maps.featureMap = function (options) {
                     showOrHideCategorySites.subscribe(createShowHideCategorySitesCallback(featuresForCategory));
                     // assign an observable to show or hide all features in a category;
                     feature.features.forEach(function(feature){
-                        setIsPlanningSiteProperty(feature);
+                        setIsPlanningSiteProperty(feature, featuresForCategory.category);
                         // assign an observable to show or hide feature under a category
                         feature.properties.showOrHideSite = ko.observable(true);
                         feature.properties.showOrHideSite.subscribe(createShowHideSiteCallback(feature, featuresForCategory));
@@ -677,10 +677,11 @@ ecodata.forms.maps.featureMap = function (options) {
      * Find out if the current feature is a planning site.
      *
      * @param {Object} feature
+     * @param {string} categoryName -
      * @return {void} This method does not return a value. It modifies the input `feature` object directly.
      */
-    function setIsPlanningSiteProperty (feature) {
-        var isPlanningSite = feature.properties.name === PLANNING_SITES;
+    function setIsPlanningSiteProperty (feature, categoryName) {
+        var isPlanningSite = categoryName === PLANNING_SITES;
         feature.properties.isPlanningSite = isPlanningSite;
         if (feature.features) {
             feature.features.forEach(function (feature) {
