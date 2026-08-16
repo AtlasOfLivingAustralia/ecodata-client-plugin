@@ -1112,15 +1112,10 @@
      */
     function updateJQueryValidationEngineAttributes(element, validationString, messageString) {
         var $element = $(element);
-        let changed = false;
-        let currentValidationString = $element.attr('data-validation-engine');
-
-        if (validationString && currentValidationString !== validationString) {
-            changed = true;
+        if (validationString) {
             $element.attr('data-validation-engine', 'validate['+validationString+']');
         }
-        else if (currentValidationString && !validationString) {
-            changed = true;
+        else {
             $element.removeAttr('data-validation-engine');
         }
 
@@ -1133,12 +1128,14 @@
 
         // Trigger the validation after the knockout processing is complete - this prevents the validation
         // from firing before the page has been initialised on load.
-        if (changed) {
-            setTimeout(function() {
+        setTimeout(function() {
+            if (messageString) {
                 $element.validationEngine('validate');
-            }, 100);
-        }
-
+            }
+            else {
+                $element.validationEngine('hide');
+            }
+        }, 100);
     }
 
     /**
