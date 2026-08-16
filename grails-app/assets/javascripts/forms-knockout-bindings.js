@@ -1135,7 +1135,12 @@
         // from firing before the page has been initialised on load.
         if (changed) {
             setTimeout(function() {
-                $element.validationEngine('validate');
+                if (!validationString) {  // "validate" won't clear existing prompts if there is no validation attribute
+                    $element.validationEngine('hide');
+                }
+                else {
+                    $element.validationEngine('validate');
+                }
             }, 100);
         }
 
