@@ -192,6 +192,7 @@ ecodata.forms.maps.featureMap = function (options) {
             selectFromSitesOnly: false,
             allowPolygons: true,
             allowPoints: true,
+            allowCircles: true,
             markerOrShapeNotBoth: true,
             useMyLocation: false,
             baseLayersName: 'Open Layers',
@@ -255,7 +256,7 @@ ecodata.forms.maps.featureMap = function (options) {
                         allowIntersection: false,
                         shapeOptions: config.shapeOptions
                     } : false,
-                    circle: false,
+                    circle: !config.selectFromSitesOnly && config.allowCircles,
                     rectangle: !config.selectFromSitesOnly && config.allowPolygons,
                     marker: !config.selectFromSitesOnly && config.allowPoints,
                     edit: !config.selectFromSitesOnly
