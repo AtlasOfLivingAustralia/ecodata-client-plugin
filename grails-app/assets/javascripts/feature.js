@@ -237,8 +237,9 @@ ecodata.forms.maps.featureMap = function (options) {
             wmsFeatureUrl: config.proxyFeatureUrl + "?featureId=",
             wmsLayerUrl: config.spatialGeoserverUrl + "/wms/reflect?",
             drawControl: !config.readonly,
-            useMyLocation: config.userMyLocation,
-            allowSearchLocationByAddress: !config.readonly,
+            useMyLocation: config.useMyLocation,
+            showFitBoundsToggle: true,
+            allowSearchLocationByAddress: false,
             allowSearchRegionByAddress: false,
             style: DRAWN_LAYER_STYLE,
             drawOptions: config.readonly ?
