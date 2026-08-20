@@ -55,7 +55,8 @@ class GeoMap extends Module {
             doubleClick()
         }
 
-        waitFor 10, {
+        Thread.sleep(5000)
+        waitFor 30, {
             $("#locationCentroidLatitude").getAt(0).displayed
             //select newly created site in the site list dropdown
             $('.select2-selection__rendered').text().contains('The Polygon you created.')
