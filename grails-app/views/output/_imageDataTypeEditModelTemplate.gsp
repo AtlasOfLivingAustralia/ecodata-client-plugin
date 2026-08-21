@@ -51,16 +51,15 @@
                 <div class="row">
                     <div class="col-sm-4 text-start">
                         <label class="control-label">Licence: <i class="fa fa-question-circle"
-                                                                data-bind="popover:{content:'Creative Commons Attribution (CC BY), Creative Commons-Noncommercial (CC BY-NC), Creative Commons Zero (CC0)', placement:'top'}">&nbsp;</i>
+                                                                data-bind="popover:{content:'The licence tells others how they may use this image. New images default to the survey data sharing licence. CC0 places the image in the public domain. Attribution (BY) requires credit. Noncommercial (NC) does not allow commercial use. Share Alike (SA) requires adaptations to use the same licence.', placement:'top'}">&nbsp;</i>
                         </label>
                     </div>
                     <div class="col-sm-8">
-                        <select id="licence" data-bind="value:licence" class="form-select form-select-sm col-sm-12">
-                            <option value="CC BY 4.0">Creative Commons Attribution 4.0</option>
-                            <option value="CC BY 3.0">Creative Commons Attribution 3.0</option>
-                            <option value="CC BY-NC">Creative Commons Attribution-Noncommercial</option>
-                            <option value="CC BY 0">Creative Commons Zero</option>
+                        <select id="licence" data-bind="value: licence, options: ImageViewModel.IMAGE_LICENCES, optionsText: 'name', optionsValue: 'value', valueAllowUnset: true" class="form-select form-select-sm col-sm-12">
                         </select>
+                        <p class="form-text my-2">
+                            <a href="${message(code: 'project.details.creativeCommons.helpUrl', default: 'https://creativecommons.org/cc-licenses/')}" target="_blank" rel="noopener noreferrer">About CC licenses</a>
+                        </p>
                     </div>
                 </div>
 
