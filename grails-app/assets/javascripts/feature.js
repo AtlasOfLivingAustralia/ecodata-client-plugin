@@ -630,7 +630,6 @@ ecodata.forms.maps.featureMap = function (options) {
                     var showOrHideCategorySites = ko.observable(true),
                         featuresForCategory = {category: feature.properties.name, features: feature.features, showOrHideCategorySites: showOrHideCategorySites};
 
-                    self.categories.push(featuresForCategory);
                     // use closure scope to remember which categoryFeature we are currently processing
                     showOrHideCategorySites.subscribe(createShowHideCategorySitesCallback(featuresForCategory));
                     // assign an observable to show or hide all features in a category;
@@ -640,6 +639,10 @@ ecodata.forms.maps.featureMap = function (options) {
                         feature.properties.showOrHideSite = ko.observable(true);
                         feature.properties.showOrHideSite.subscribe(createShowHideSiteCallback(feature, featuresForCategory));
                     });
+                    // Make sure showOrHideCategorySites and showOrHideSite observable subscription are set before updating
+                    // categories. Initial update is used to capture dependencies, hence all interdependencies
+                    // should be created before data added to observable.
+                    self.categories.push(featuresForCategory);
                 }
             });
 
