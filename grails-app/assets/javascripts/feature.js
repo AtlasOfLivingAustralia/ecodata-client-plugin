@@ -215,7 +215,7 @@ ecodata.forms.maps.featureMap = function (options) {
                 weight: 4
             },
             flattenMultiGeometries: true,
-            addAllFeaturesFromFile: false,
+            addAllFeaturesFromFile: true,
             validateImportedShapes: function (geojson) {
                 return $.ajax({
                     method: 'POST',
