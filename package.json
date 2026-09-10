@@ -30,7 +30,7 @@
     "leaflet": "^1.4.0",
     "leaflet-draw": "^1.0.4",
     "lodash": "^4.17.23",
-    "vitest": "^4.1.9",
+    "vitest": "^4.1.11",
     "vite": "^8.0.16",
     "chromedriver": "148.0.2"
   },
