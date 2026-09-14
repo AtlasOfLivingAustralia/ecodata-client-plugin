@@ -212,7 +212,8 @@ input.input-small[type="number"] {
 This compensates for differences in JSON when laying out components in a column - if the row is not providing
 the bottom margin, add it to the input group.
  */
-.row:not(.space-after) > .col-sm-12 > .input-group input.form-control {
+.row:not(.space-after) > .col-sm-12 > .input-group input.form-control,
+.row:not(.space-after) > .col-sm-12 > .input-group .add-on {
     margin-bottom: 10px;
 }
 

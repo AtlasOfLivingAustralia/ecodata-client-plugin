@@ -618,7 +618,7 @@ function orEmptyArray(v) {
                     result[key] = obj2[key];
                 }
                 else if (_.isArray(obj1[key]) && _.isArray(obj2[key])) {
-                    result[key] = mergeArrays(obj1[key], obj2[key], rules && rules[key]);
+                    result[key] = self.mergeArrays(obj1[key], obj2[key], rules && rules[key]);
                 }
                 else if (_.isObject(obj1[key]) && _.isObject(obj2[key])) {
                     result[key] = self.merge(obj1[key], obj2[key], rules && rules[key]);
@@ -647,7 +647,7 @@ function orEmptyArray(v) {
             return true;
         }
 
-        function mergeArrays(array1, array2, rules) {
+        self.mergeArrays = function(array1, array2, rules) {
             if (rules) {
                 var result = [];
 
@@ -809,9 +809,15 @@ function orEmptyArray(v) {
                     }
                 });
                 if (failedValidation) {
-                    return $.Deferred().resolve(source.defaultValue || null);
+                    if (source.defaultValue) {
+                        return $.Deferred().resolve(source.defaultValue);
+                    }
+                    else {
+                        return $.Deferred().reject();
+                    }
+
                 }
-                return $.ajax(url, {data:params, dataType:source.dataType || 'json'});
+                return $.ajax(url, {data:params, method:source.method || 'GET', dataType:source.dataType || 'json'});
             }
             var deferred = $.Deferred();
             var data = null;
@@ -839,7 +845,8 @@ function orEmptyArray(v) {
         return {
             getPrepopData: self.getPrepopData,
             prepop: self.prepop,
-            merge: self.merge
+            merge: self.merge,
+            mergeArrays: self.mergeArrays
         };
 
     };
@@ -1123,6 +1130,14 @@ function orEmptyArray(v) {
 
         self.listParent = context.parent;
         self.listName = listName;
+        /**
+         * Returns the value of the specified metadata property (e.g. validate, constraints etc)
+         * @param property the name of the proprety to get.
+         * @returns {*}
+         */
+        self.get = function (property) {
+            return dataModel[listName][property];
+        };
         self.addRow = function (data) {
             var newItem = self.newItem(data, self.rowCount());
             self.push(newItem);
@@ -1235,6 +1250,7 @@ function orEmptyArray(v) {
             }
             return initialisers;
         };
+
     };
 
     /**
