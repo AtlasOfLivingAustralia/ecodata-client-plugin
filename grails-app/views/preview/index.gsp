@@ -12,7 +12,8 @@
         imageLeafletViewer:'/',
         imagePreviewUrl: '${createLink(action:'imagePreview')}',
         saveBookmarkLocationURL: "${createLink(controller:"preview", action:"saveBookmarkLocation")}",
-        getBookmarkLocationsURL: "${createLink(controller:"preview", action:"getBookmarkLocations")}"
+        getBookmarkLocationsURL: "${createLink(controller:"preview", action:"getBookmarkLocations")}",
+        validateShapesUrl: "${createLink(controller:"preview", action:"validateGeometry")}"
     };
     window.modelReady = true
 

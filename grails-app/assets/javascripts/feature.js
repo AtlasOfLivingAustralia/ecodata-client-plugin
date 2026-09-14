@@ -295,6 +295,11 @@ ecodata.forms.maps.featureMap = function (options) {
         self.categories = ko.observableArray();
         if (options.selectableFeatures) {
             Promise.resolve(options.selectableFeatures).then(function(features) {
+                features = features.map(feature => {
+                    var fc = ALA.MapUtils.toFeatureCollection(feature);
+                    fc.properties = feature.properties || {};
+                    return fc;
+                });
                 self.selectableFeatures = features;
                 self.configureSelectionLayer(self.selectableFeatures);
             });
@@ -428,7 +433,7 @@ ecodata.forms.maps.featureMap = function (options) {
     }
 
     self.copyFeature = function (feature) {
-        var featureCollection = self.toFeatureCollection(feature),
+        var featureCollection = ALA.MapUtils.toFeatureCollection(feature),
             features = featureCollection.features,
             featureList = [];
 

@@ -770,9 +770,9 @@ function enmapify(args) {
             createPrivateSite();
     });
 
-    map.registerListener("pm:create", function (e) {
+    map.registerListener("ala-map:create", function (e) {
         console.log("draw created");
-        var type = e.layerType,
+        var shape = e.shape,
             layer = e.layer;
 
         //Create site for all type including point
