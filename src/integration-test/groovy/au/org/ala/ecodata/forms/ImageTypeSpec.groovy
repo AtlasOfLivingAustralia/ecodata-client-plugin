@@ -39,7 +39,7 @@ class ImageTypeSpec extends GebReportingSpec {
         title == "Preview Images Example"
 
         and: "The image metadata is displayed next to the image"
-        $("ul[data-bind*=images1] span[data-bind*=name").text() == "Test image 1"
+        $("ul[data-bind*=images1] span[data-bind*=name]").text() == "Test image 1"
         $("ul[data-bind*=images1] span[data-bind*=attribution]").text() == "Test attribution 1"
         $("ul[data-bind*=images1] span[data-bind*=notes]").text() == "Test notes 1"
 
@@ -53,6 +53,7 @@ class ImageTypeSpec extends GebReportingSpec {
         title == "Preview Images Example"
 
         and: "The remove button is displayed below image"
+        waitFor 30, { $("a.remove-btn-with-image").displayed }
         $("a.remove-btn-with-image").size() == 1
 
         and: "The metadata, attribution and notes fields configured as hidden are not displayed"

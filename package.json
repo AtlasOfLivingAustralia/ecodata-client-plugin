@@ -32,12 +32,11 @@
     "lodash": "^4.17.23",
     "vitest": "^4.1.11",
     "vite": "^8.0.16",
-    "chromedriver": "148.0.2"
+    "chromedriver": "^153.0.0"
   },
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest",
-    "package-turf": "vite build --config vite.turf.config.js"
+    "test:watch": "vitest"
   },
   "author": "",
   "license": "",

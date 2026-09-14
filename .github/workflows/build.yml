@@ -32,11 +32,21 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: 'AtlasOfLivingAustralia'
 
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: '151'   # pin to a specific version to test/match local
+
+      - name: Alias google-chrome to Chrome 151
+        run: sudo ln -sf ${{ steps.setup-chrome.outputs.chrome-path }} /usr/local/bin/google-chrome
+
+      - name: Verify Chrome version
+        run: google-chrome --version
+
       - name: Clear Gradle cache
         run: rm -rf ~/.gradle/caches
 
       - run: npm install
-      - run: npm run package-turf
 
 
       - name: Update your package.json with an npm pre-release version
@@ -58,6 +68,13 @@ jobs:
 
       - name: Run tests and jacoco coverage report with Gradle
         run: ./gradlew -PenableJacoco=true -Dwebdriver.chrome.driver=$CHROMEWEBDRIVER/chromedriver check
+
+      - name: Upload Geb reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geb-reports
+          path: build/reports/geb-reports
 
       - name: Run javascript unit tests
         run: npm run test
