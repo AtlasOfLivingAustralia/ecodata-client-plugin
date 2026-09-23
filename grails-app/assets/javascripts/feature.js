@@ -170,12 +170,11 @@ ko.bindingHandlers.geojson2svg = {
  */
 ecodata.forms.maps.featureMap = function (options) {
     const PLANNING_SITES = "Planning Sites";
-    var self = this,
-        ignoreUpdateToFeature = false;
+    var self = this;
     var DRAWN_LAYER_STYLE = {
         weight: 4,
         fillOpacity: 0.2,
-        color: "#f00"
+        color: "#000"
     };
     var PLANNING_LAYER_STYLE = {
         weight: 4,
@@ -210,7 +209,7 @@ ecodata.forms.maps.featureMap = function (options) {
             },
             addMarker: true,
             shapeOptions: {
-                color: '#f00',
+                color: '#000',
                 fillOpacity: 0.2,
                 weight: 4
             },
@@ -221,14 +220,7 @@ ecodata.forms.maps.featureMap = function (options) {
                     method: 'POST',
                     url: config.validateShapesUrl || fcConfig.validateShapesUrl,
                     data: JSON.stringify(geojson),
-                    contentType: 'application/json',
-                    success: function (data) {
-                        if (data.success)
-                            // do not remove the shape, it is valid
-                            return {remove: false, message: data.message};
-                        else
-                            return {remove: true, message: data.message};
-                    }
+                    contentType: 'application/json'
                 })
             }
         };
@@ -266,7 +258,7 @@ ecodata.forms.maps.featureMap = function (options) {
 
 
         // undefined/null, Google Maps or Default should enable Google Maps view
-        if (config.baseLayersName !== 'Open Layers' && supportsGoogleMutant()) {
+        if (supportsGoogleMutant()) {
             var googleLayer = L.gridLayer.googleMutant({maxZoom: 21, nativeMaxZoom: 21, type:'roadmap'});
             var otherLayers = {
                 Roadmap: googleLayer,
@@ -296,9 +288,8 @@ ecodata.forms.maps.featureMap = function (options) {
         if (options.selectableFeatures) {
             Promise.resolve(options.selectableFeatures).then(function(features) {
                 features = features.map(feature => {
-                    var fc = ALA.MapUtils.toFeatureCollection(feature);
-                    fc.properties = feature.properties || {};
-                    return fc;
+                    feature.properties = feature.properties || {};
+                    return feature;
                 });
                 self.selectableFeatures = features;
                 self.configureSelectionLayer(self.selectableFeatures);
@@ -358,11 +349,17 @@ ecodata.forms.maps.featureMap = function (options) {
             }
             else {
                 self.editing(false);
+                updateFeatures();
                 updateStatistics();
             }
         });
 
         return self;
+    }
+
+    function updateFeatures() {
+        var features = self.getGeoJSON().features;
+        self.editableSites(features);
     }
 
     function layerRemoveHandlerToUpdateSelectedFeatures(e) {
@@ -382,7 +379,7 @@ ecodata.forms.maps.featureMap = function (options) {
                 var featureId = layer.feature && layer.feature.properties && layer.feature.properties.featureId;
                 if (featureId) {
                     self.editableSites.remove(function(feature) {
-                        if (layer.feature && feature.layer.feature && feature.layer.feature.properties &&
+                        if (feature.layer && feature.layer.feature && feature.layer.feature.properties &&
                             feature.layer.feature.properties.featureId === featureId) {
                             found = feature;
                             return true;
@@ -400,6 +397,9 @@ ecodata.forms.maps.featureMap = function (options) {
     }
 
     function hideLayer(layer) {
+        if (!layer)
+            return;
+
         if (layer.setStyle) {
             if (!layer._originalStyle) {
                 layer._originalStyle = {};
@@ -419,6 +419,9 @@ ecodata.forms.maps.featureMap = function (options) {
     }
 
     function showLayer(layer) {
+        if (!layer)
+            return;
+
         if (layer.setStyle) {
             if (layer._originalStyle)
                 layer.setStyle(layer._originalStyle);
@@ -440,12 +443,19 @@ ecodata.forms.maps.featureMap = function (options) {
         features.forEach(function (feature) {
             // forcefully assign new featureId
             self.assignFeatureId(null, feature, true);
+            delete feature.layer;
             featureList.push(feature)
         });
 
         featureCollection.features = featureList;
         // Leaflet geoman plugin can handle MultiPolygon
-        self.setGeoJSON(featureCollection);
+        var layerGroup = self.setGeoJSON(featureCollection);
+        layerGroup.eachLayer(function (layer) {
+            var feature = featureList.find(f => f.properties.featureId === layer.feature.properties.featureId);
+            if (feature) {
+                feature.layer = layer;
+            }
+        });
     };
 
     self.copyEnabled = function(feature) {
@@ -461,14 +471,16 @@ ecodata.forms.maps.featureMap = function (options) {
      */
     self.canInteractWithFeature = function(feature) {
         // is it currently visible
-        var categories = self.categories();
+        var categories = self.categories(),
+            layers = feature.layer ? [feature.layer] : feature.features ? feature.features.map(f => f.layer) : [];
         if (categories && categories.length !== 0) {
             for (var i = 0; i < categories.length; i++) {
                 var category = categories[i];
                 if (category.features) {
                     for (var j = 0; j < category.features.length; j++) {
-                        var categoryFeature  = category.features[j];
-                        if (categoryFeature.properties.showOrHideSite() && (categoryFeature.layer === feature.layer)) {
+                        let categoryFeature  = category.features[j],
+                            categoryLayers = categoryFeature.layer ? [categoryFeature.layer] : categoryFeature.features ? categoryFeature.features.map(f => f.layer) : [];
+                        if (categoryFeature.properties.showOrHideSite() && categoryLayers.some( cl => layers.indexOf(cl) !== -1 )) {
                             return true;
                         }
                     }
@@ -477,7 +489,7 @@ ecodata.forms.maps.featureMap = function (options) {
         }
 
         // is it currently selected
-        return self.editableSites().filter((site) => site.layer === feature.layer ).length > 0
+        return self.editableSites().filter((site) => layers.indexOf(site.layer) !== -1 ).length > 0;
     }
 
     self.unhighlightFeature = function (feature) {
@@ -486,7 +498,7 @@ ecodata.forms.maps.featureMap = function (options) {
             return;
         }
 
-        var features = feature.type === "FeatureCollection" ? feature.features : [feature];
+        var features = feature.features || [feature];
         features.forEach(function(feature) {
             var layer = feature.layer;
             if (layer.setStyle) {
@@ -507,7 +519,7 @@ ecodata.forms.maps.featureMap = function (options) {
             return;
         }
 
-        var features = feature.type === "FeatureCollection" ? feature.features : [feature];
+        var features = feature.features || [feature];
         features.forEach(function (feature) {
             var options = feature.layer.options,
                 layer = feature.layer;
@@ -523,7 +535,7 @@ ecodata.forms.maps.featureMap = function (options) {
             boundsContainer = new L.FeatureGroup();
         features.forEach(function (feature) {
             var layer = feature.layer;
-            boundsContainer.addLayer(layer);
+            layer && boundsContainer.addLayer(layer);
         });
 
         map.getMapImpl().fitBounds(boundsContainer.getBounds());
@@ -594,25 +606,6 @@ ecodata.forms.maps.featureMap = function (options) {
     }
 
     /**
-     * Create callback to show or hide all sites in a category with closure scope to remember which
-     * categoryFeature we are currently processing.
-     * @param featuresForCategory
-     * @returns {(function(*): void)|*}
-     */
-    function createShowHideCategorySitesCallback(featuresForCategory) {
-        return function (categoryFeatures) {
-            return function (newValue) {
-                if (ignoreUpdateToFeature)
-                    return;
-
-                categoryFeatures.features && categoryFeatures.features.forEach(function (feature) {
-                    feature.properties.showOrHideSite(newValue);
-                });
-            }
-        }(featuresForCategory);
-    }
-
-    /**
      * Use closure scope to remember the variable applicable to the observable callback.
      * @param feature - current feature
      * @param featuresForCategory - category object the feature belongs
@@ -620,11 +613,8 @@ ecodata.forms.maps.featureMap = function (options) {
      */
     function createShowHideSiteCallback(feature, featuresForCategory) {
         return function (newValue) {
-            var features = feature.type === "FeatureCollection" ? feature.features : [feature];
+            var features = feature.features || [feature];
             setFeatureLayerVisibility(features, newValue);
-            ignoreUpdateToFeature = true;
-            checkIfCategoryCheckBoxNeedUpdating(featuresForCategory);
-            ignoreUpdateToFeature = false;
         };
     }
 
@@ -632,21 +622,30 @@ ecodata.forms.maps.featureMap = function (options) {
         if (selectableFeatures) {
             _.each(selectableFeatures, function (feature) {
                 if (feature.properties && feature.properties.name) {
-                    var showOrHideCategorySites = ko.observable(true),
-                        featuresForCategory = {category: feature.properties.name, features: feature.features, showOrHideCategorySites: showOrHideCategorySites};
-
-                    // use closure scope to remember which categoryFeature we are currently processing
-                    showOrHideCategorySites.subscribe(createShowHideCategorySitesCallback(featuresForCategory));
+                    var name = feature.properties.name,
+                        featuresForCategory = {category: name, features: feature.features, showOrHideCategorySites: undefined};
                     // assign an observable to show or hide all features in a category;
                     feature.features.forEach(function(feature){
-                        setIsPlanningSiteProperty(feature, featuresForCategory.category);
+                        setIsPlanningSiteProperty(feature, name);
                         // assign an observable to show or hide feature under a category
                         feature.properties.showOrHideSite = ko.observable(true);
                         feature.properties.showOrHideSite.subscribe(createShowHideSiteCallback(feature, featuresForCategory));
                     });
-                    // Make sure showOrHideCategorySites and showOrHideSite observable subscription are set before updating
+
+                    featuresForCategory.showOrHideCategorySites = ko.pureComputed({
+                        read: function () {
+                            return feature.features && feature.features.every(f => f.properties.showOrHideSite())
+                        },
+                        write: function (newValue) {
+                            return feature.features && feature.features.forEach(function (feature) {
+                                feature.properties.showOrHideSite(newValue);
+                            });
+                        }
+                    });
+
+                    // Make sure showOrHideSite observable subscription is set before updating
                     // categories. Initial update is used to capture dependencies, hence all interdependencies
-                    // should be created before data added to observable.
+                    // should be created before data is added to observable.
                     self.categories.push(featuresForCategory);
                 }
             });
@@ -666,7 +665,7 @@ ecodata.forms.maps.featureMap = function (options) {
                         // The layer has a reference to the feature and the feature has a reference to the layer,
                         // so we need to break the cycle by removing the layer reference when serializing the feature.
                         f.toJSON = function() {
-                            var toSerialize = Object.assign({}, f);
+                            var toSerialize = Object.assign({}, this);
                             delete toSerialize.layer;
                             return toSerialize;
                         };
@@ -711,17 +710,6 @@ ecodata.forms.maps.featureMap = function (options) {
             else
                 layer.setStyle(DRAWN_LAYER_STYLE)
         }
-    }
-
-    /**
-     * Check the category box only if all sites under it are checked.
-     * @param category
-     */
-    function checkIfCategoryCheckBoxNeedUpdating (category) {
-        if (category.features.every (feature => feature.properties.showOrHideSite()))
-            category.showOrHideCategorySites(true);
-        else
-            category.showOrHideCategorySites(false);
     }
 
     /**
@@ -832,6 +820,14 @@ ecodata.forms.maps.showMapInModal = function(options) {
                 options.shownCallback(self.featureMapInstance);
             }
             self.featureMapInstance.defaultZoom();
+            // This is a workaround for a bug where Google tiles are not showing when modal is first shown.
+            setTimeout(() => {
+                self.getMapImpl().eachLayer(function (layer) {
+                    if (layer instanceof L.GridLayer.GoogleMutant) {
+                        layer._checkZoomLevels && layer._checkZoomLevels();
+                    }
+                });
+            }, 0);
         }
 
     })
