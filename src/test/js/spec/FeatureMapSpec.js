@@ -19,7 +19,12 @@ describe("Feature Map Spec", function () {
         };
 
         window.L = {
-            Google: function(){}
+            Google: function(){},
+            gridLayer: {
+                googleMutant: function () {
+                    return {}
+                }
+            }
         }
     });
     it("can initialise with a mock map", function() {
