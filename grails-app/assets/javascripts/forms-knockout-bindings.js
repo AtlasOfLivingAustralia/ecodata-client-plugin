@@ -1130,6 +1130,31 @@
         else {
             $element.removeAttr('data-errormessage');
         }
+
+        // Trigger the validation after the knockout processing is complete - this prevents the validation
+        // from firing before the page has been initialised on load.
+        if (changed) {
+            setTimeout(function() {
+
+                let elementId = $element.attr('id');
+                if (elementId) { // If there is no id, it's because jqueryValidationEngine hasn't assigne one yet so there will be no prompt
+                    let promptClass = elementId+'formError';
+
+                    let promptVisible = $('.'+promptClass).is(':visible');
+
+                    if (!validationString && promptVisible) {  // "validate" won't clear existing prompts if there is no validation attribute
+                        console.log("Firing hide");
+                        $element.validationEngine('hide');
+                    }
+                    else if (promptVisible) { // Revalidate to update for the new validation rules.  This will also hide the prompt if the validation passes.
+                        console.log("Firing validate");
+                        $element.validationEngine('validate');
+                    }
+                }
+
+            }, 100);
+        }
+
     }
 
     /**
