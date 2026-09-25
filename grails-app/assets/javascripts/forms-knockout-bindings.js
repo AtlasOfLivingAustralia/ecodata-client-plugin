@@ -1130,20 +1130,6 @@
         else {
             $element.removeAttr('data-errormessage');
         }
-
-        // Trigger the validation after the knockout processing is complete - this prevents the validation
-        // from firing before the page has been initialised on load.
-        if (changed) {
-            setTimeout(function() {
-                if (!validationString) {  // "validate" won't clear existing prompts if there is no validation attribute
-                    $element.validationEngine('hide');
-                }
-                else {
-                    $element.validationEngine('validate');
-                }
-            }, 100);
-        }
-
     }
 
     /**
