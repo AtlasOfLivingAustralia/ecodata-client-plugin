@@ -13,11 +13,18 @@ describe("Feature Map Spec", function () {
                 self.drawnItems = {
                     on : function() {return{}}
                 }
+
+                self.registerListener = function() {};
             }
         };
 
         window.L = {
-            Google: function(){}
+            Google: function(){},
+            gridLayer: {
+                googleMutant: function () {
+                    return {}
+                }
+            }
         }
     });
     it("can initialise with a mock map", function() {

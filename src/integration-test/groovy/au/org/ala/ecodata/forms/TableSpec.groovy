@@ -15,6 +15,8 @@ class TableSpec extends GebReportingSpec {
 
         then:
         title == "Preview Table View Type Example"
+        waitFor 30, { $('.adminActions tbody td').size() > 0 }
+        report("Tables can be displayed correctly in edit mode")
         page.model != null
 
         and: "The first table is correct"
@@ -64,6 +66,7 @@ class TableSpec extends GebReportingSpec {
         then:
         title == "Preview Table View Type Example"
         page.model != null
+        report("Tables can be displayed correctly in view mode")
 
         and: "The first table is correct"
         $('.adminActions thead th').size() == 5

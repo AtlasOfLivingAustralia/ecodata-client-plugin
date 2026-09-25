@@ -32,7 +32,7 @@ class MultiInputSpec extends GebReportingSpec{
         title == "Preview MultiInput View Type Example"
 
         when:
-        waitFor{ page.multiInput.displayed }
+        waitFor{ page.multiInput.addItem.displayed }
         page.multiInput.addItem.click()
 
         then:
