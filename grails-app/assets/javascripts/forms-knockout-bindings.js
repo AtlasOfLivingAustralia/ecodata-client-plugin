@@ -1135,12 +1135,21 @@
         // from firing before the page has been initialised on load.
         if (changed) {
             setTimeout(function() {
-                if (!validationString) {  // "validate" won't clear existing prompts if there is no validation attribute
-                    $element.validationEngine('hide');
+
+                let elementId = $element.attr('id');
+                if (elementId) { // If there is no id, it's because jqueryValidationEngine hasn't assigne one yet so there will be no prompt
+                    let promptClass = elementId+'formError';
+
+                    let promptVisible = $('.'+promptClass).is(':visible');
+
+                    if (!validationString && promptVisible) {  // "validate" won't clear existing prompts if there is no validation attribute
+                        $element.validationEngine('hide');
+                    }
+                    else if (promptVisible) { // Revalidate to update for the new validation rules.  This will also hide the prompt if the validation passes.
+                        $element.validationEngine('validate');
+                    }
                 }
-                else {
-                    $element.validationEngine('validate');
-                }
+
             }, 100);
         }
 
