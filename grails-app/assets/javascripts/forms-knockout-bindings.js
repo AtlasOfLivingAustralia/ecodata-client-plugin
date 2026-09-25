@@ -1143,11 +1143,9 @@
                     let promptVisible = $('.'+promptClass).is(':visible');
 
                     if (!validationString && promptVisible) {  // "validate" won't clear existing prompts if there is no validation attribute
-                        console.log("Firing hide");
                         $element.validationEngine('hide');
                     }
                     else if (promptVisible) { // Revalidate to update for the new validation rules.  This will also hide the prompt if the validation passes.
-                        console.log("Firing validate");
                         $element.validationEngine('validate');
                     }
                 }
