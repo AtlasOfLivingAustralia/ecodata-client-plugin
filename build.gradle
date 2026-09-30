@@ -61,6 +61,8 @@ dependencies {
     implementation "org.apache.grails:grails-cache"
     implementation "org.apache.grails:grails-async"
     implementation "org.apache.grails:grails-gsp"
+    // Explicit for GSP layouts (meta name="layout"); also arrives transitively via ala-auth.
+    implementation "org.apache.grails:grails-layout"
     implementation 'commons-io:commons-io:2.14.0'
     implementation "org.grails.plugins:ala-auth:$alaSecurityLibsVersion"
     // pac4j 6 split the JEE context classes (JEEFrameworkParameters) into pac4j-jakartaee;
@@ -102,10 +104,15 @@ dependencies {
     implementation "cloud.wondrify:asset-pipeline-core:$assetPipelineVersion"
 }
 
-tasks.withType(Test) {
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
     systemProperty 'geb.env', System.getProperty('geb.env') ?: 'chromeHeadless'
     systemProperty "geb.build.reportsDir", reporting.file("geb/integrationTest")
-    systemProperty "webdriver.chrome.driver", System.getProperty('webdriver.chrome.driver')
+    // Only forward an explicit driver path; otherwise GebConfig / Selenium Manager resolve it.
+    def chromeDriver = System.getProperty('webdriver.chrome.driver')
+    if (chromeDriver) {
+        systemProperty "webdriver.chrome.driver", chromeDriver
+    }
 
     testLogging {
         events "passed", "skipped", "failed"
@@ -142,14 +149,8 @@ task _Events {
     }
 }
 
-tasks.withType(GroovyCompile) {
-    configure(groovyOptions) {
-        forkOptions.jvmArgs = ['-Xmx1024m']
-    }
-}
-
-tasks.withType(Test) {
-    useJUnitPlatform()
+tasks.withType(GroovyCompile).configureEach {
+    groovyOptions.forkOptions.jvmArgs = ['-Xmx1024m']
 }
 
 

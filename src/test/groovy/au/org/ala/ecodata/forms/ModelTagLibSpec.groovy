@@ -1,8 +1,6 @@
 package au.org.ala.ecodata.forms
 
 import grails.testing.web.taglib.TagLibUnitTest
-
-//import grails.test.mixin.TestFor
 import groovy.xml.slurpersupport.NodeChild
 import groovy.xml.MarkupBuilder
 import spock.lang.Specification
