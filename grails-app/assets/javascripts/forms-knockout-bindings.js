@@ -1135,12 +1135,21 @@
         // from firing before the page has been initialised on load.
         if (changed) {
             setTimeout(function() {
-                if (!validationString) {  // "validate" won't clear existing prompts if there is no validation attribute
-                    $element.validationEngine('hide');
+
+                let elementId = $element.attr('id');
+                if (elementId) { // If there is no id, it's because jqueryValidationEngine hasn't assigne one yet so there will be no prompt
+                    let promptClass = elementId+'formError';
+
+                    let promptVisible = $('.'+promptClass).is(':visible');
+
+                    if (!validationString && promptVisible) {  // "validate" won't clear existing prompts if there is no validation attribute
+                        $element.validationEngine('hide');
+                    }
+                    else if (promptVisible) { // Revalidate to update for the new validation rules.  This will also hide the prompt if the validation passes.
+                        $element.validationEngine('validate');
+                    }
                 }
-                else {
-                    $element.validationEngine('validate');
-                }
+
             }, 100);
         }
 
@@ -1238,27 +1247,37 @@
             }
             $element.append($i);
 
-            $element.click(function() {
-                var selector = '';
-                if (unwrapped.collapsedByDefault != undefined && unwrapped.blockId) {
-                    selector = unwrapped.blockId;
-                } else {
-                    selector = unwrapped;
-                }
+            var selector = '';
+            if (unwrapped.collapsedByDefault != undefined && unwrapped.blockId) {
+                selector = unwrapped.blockId;
+            } else {
+                selector = unwrapped;
+            }
 
-               var $section = $(selector);
-               if ($section.is(':visible')) {
-                   $section.hide();
+
+            if (unwrapped.collapsedByDefault) {
+                // The section id in a repeating section is assigned via a data binding so won't be initialised
+                // until after this component is initialised.
+                setTimeout(function() {
+                    $(selector).hide();
+                }, 0);
+            }
+
+            $element.click(function() {
+                var $section = $(selector);
+                if ($section.is(':visible')) {
+                   $section.slideUp();
                    $i.removeClass(visibleClass);
                    $i.addClass(hiddenClass);
-               }
-               else {
-                   $section.show();
+                }
+                else {
+                   $section.slideDown();
                    $i.removeClass(hiddenClass);
                    $i.addClass(visibleClass);
-               }
-               return false;
+                }
+                return false;
             });
+
 
         }
     };
@@ -1531,17 +1550,18 @@
 
                         if (_.isFunction(propTarget.loadData)) {
                             propTarget.loadData(value);
+                        } else if (propTarget && propTarget.listParent && _.isFunction(propTarget.listParent["load" + propTarget.listName])) {
+                                propTarget.listParent["load" + propTarget.listName](value);
                         } else if (_.isFunction(propTarget.load)) {
                             propTarget.load(value);
-                        } else if (propTarget && propTarget.listParent && _.isFunction(propTarget.listParent["load" + propTarget.listName])) {
-                            propTarget.listParent["load" + propTarget.listName](value);
-                        } else if (ko.isObservable(propTarget)) {
+                        }  else if (ko.isObservable(propTarget)) {
                             propTarget(value);
                         } else {
                             console.log("Warning: target for pre-populate is invalid");
                         }
                     }
-                    dataModelItem.subscribe(function () {
+
+                    var doPrepop = function () {
 
                         // Don't fire pre-populate requests during form initialisation / data load if the
                         // config doesn't require (or want) it.
@@ -1551,6 +1571,7 @@
                                 return;
                             }
                         }
+
                         dataLoader.prepop(config).done(function (data) {
 
                             data = data || {};
@@ -1564,6 +1585,23 @@
                             }
                             if (!target) {
                                 throw "Unable to locate target for pre-population: "+target;
+                            }
+
+                            if (config.merge) {
+                                var existing = null;
+                                if (ko.isObservable(target)) {
+                                    existing = ko.mapping.toJS(target, {ignore: ['transients', '$parent', '$index', '$context', '$config', 'dataModel']});
+                                }
+                                if (_.isArray(data)) {
+                                    // prepop expects a top level object type.
+                                    if (existing !== null && existing !== undefined && !_.isArray(existing)) {
+                                        throw "Attempting to merge an array with an object!"
+                                    }
+                                    data = dataLoader.mergeArrays(existing, data, config.merge);
+                                }
+                                else {
+                                    data = dataLoader.merge(existing, data, {}, config.merge);
+                                }
                             }
                             if (configTarget.type == "singleValue") {
                                 // This needs to be done to load data into the feature data type due to the awkward
@@ -1583,9 +1621,30 @@
                                     }
                                 }
                             }
-
                         });
-                    });
+                    };
+                    var trigger = config.trigger || 'change';
+
+                    if (trigger === 'visible') {
+                        const options = {
+                            root: null,
+                            rootMargin: "0px",
+                            scrollMargin: "0px",
+                            threshold: config.visiblityThreshold || 0.1,
+                            delay:config.visibilityUpdateDelay || 1000
+                        };
+
+                        const observer = new IntersectionObserver(
+                            function(e) {
+                                const targetIntersection = e.find(entry => entry.target === element);
+                                if (targetIntersection.isIntersecting) {
+                                    doPrepop();
+                                }}, options);
+                        observer.observe(element);
+                    }
+                    else { // The default is to trigger the pre-pop when the value changes.
+                        dataModelItem.subscribe(doPrepop);
+                    }
                 }
             });
         }
