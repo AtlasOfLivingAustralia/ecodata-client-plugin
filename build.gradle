@@ -77,6 +77,13 @@ dependencies {
     implementation 'com.opencsv:opencsv:5.7.0'
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
+    // Apache POI dependencies for reading/writing Excel files
+    implementation "org.apache.poi:poi:$apachePoiVersion"
+    implementation "org.apache.poi:poi-ooxml:$apachePoiVersion"
+    implementation "org.apache.poi:poi-ooxml-full:$apachePoiVersion"
+
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.15.2"
+
     console "org.apache.grails:grails-console"
     profile "org.apache.grails.profiles:web-plugin"
     implementation "cloud.wondrify:asset-pipeline-grails:$assetPipelineVersion"
@@ -133,6 +140,7 @@ assets {
     packagePlugin = true
 }
 
+inplace =false
 if (Boolean.valueOf(inplace)) {
     grails {
         plugins {
