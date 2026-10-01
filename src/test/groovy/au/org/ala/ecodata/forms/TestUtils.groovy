@@ -1,12 +1,13 @@
 package au.org.ala.ecodata.forms
 
+import groovy.xml.XmlSlurper
 import groovy.xml.XmlUtil
 
 //import org.cyberneko.html.parsers.SAXParser
 //import javax.xml.parsers.SAXParser
 import javax.xml.parsers.SAXParser
 
-import groovy.util.slurpersupport.NodeChild
+import groovy.xml.slurpersupport.NodeChild
 
 import javax.xml.parsers.SAXParserFactory
 

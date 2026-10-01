@@ -2,9 +2,23 @@ import org.openqa.selenium.chrome.ChromeDriver
 import org.openqa.selenium.chrome.ChromeOptions
 import org.openqa.selenium.firefox.FirefoxDriver
 
-if (!System.getProperty("webdriver.chrome.driver")) {
-    System.setProperty("webdriver.chrome.driver", "node_modules/chromedriver/bin/chromedriver")
+/**
+ * Prefer an explicit -Dwebdriver.chrome.driver (CI supplies one).
+ * Otherwise use the native binary shipped by the npm chromedriver package.
+ * If neither is available, leave the property unset so Selenium Manager can resolve a driver.
+ */
+def configureChromeDriverProperty = {
+    if (System.getProperty("webdriver.chrome.driver")) {
+        return
+    }
+    File nativeDriver = new File("node_modules/chromedriver/lib/chromedriver/chromedriver")
+    if (nativeDriver.exists() && nativeDriver.canExecute()) {
+        System.setProperty("webdriver.chrome.driver", nativeDriver.absolutePath)
+    }
 }
+
+configureChromeDriverProperty()
+
 driver = { new ChromeDriver() }
 baseUrl = 'http://localhost:8087/'
 atCheckWaiting = true
@@ -17,7 +31,7 @@ environments {
 
     reportsDir = 'build/reports/geb-reports'
 
-    // run as grails -Dgeb.env=chrome test-app
+    // run as: ./gradlew -Dgeb.env=chrome integrationTest
     chrome {
 
         driver = {
@@ -32,9 +46,7 @@ environments {
     }
 
     chromeHeadless {
-        if (!System.getProperty("webdriver.chrome.driver")) {
-            System.setProperty("webdriver.chrome.driver", "node_modules/chromedriver/bin/chromedriver")
-        }
+        configureChromeDriverProperty()
         driver = {
             ChromeOptions o = new ChromeOptions()
             o.addArguments('headless')

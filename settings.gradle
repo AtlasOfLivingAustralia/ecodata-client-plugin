@@ -1,8 +1,6 @@
 rootProject.name='ecodata-client-plugin'
 
-boolean inplace = false
-
-if (inplace) {
+if (settings.hasProperty('inplace') && Boolean.valueOf(settings.inplace)) {
     include ':ala-map-plugin'
     project(':ala-map-plugin').projectDir = new File(settingsDir,'../ala-map-plugin')
 }
