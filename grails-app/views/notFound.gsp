@@ -3,7 +3,7 @@
     <head>
         <title>Page Not Found</title>
         <meta name="layout" content="main">
-        <g:if env="development"><asset:stylesheet src="errors.css"/></g:if>
+        <g:development><asset:stylesheet src="errors.css"/></g:development>
     </head>
     <body>
         <ul class="errors">
