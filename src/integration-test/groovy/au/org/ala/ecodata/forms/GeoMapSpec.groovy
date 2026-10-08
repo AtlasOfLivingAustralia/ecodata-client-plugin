@@ -40,6 +40,7 @@ class GeoMapSpec extends GebReportingSpec {
         page.findById("siteLocation").size() == 1
 
         when:
+        report("GeoMap smoke test")
         //site location select2 drop down
         $('.select2').click()
 

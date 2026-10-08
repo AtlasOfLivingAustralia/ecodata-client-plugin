@@ -12,7 +12,8 @@
         imageLeafletViewer:'/',
         imagePreviewUrl: '${createLink(action:'imagePreview')}',
         saveBookmarkLocationURL: "${createLink(controller:"preview", action:"saveBookmarkLocation")}",
-        getBookmarkLocationsURL: "${createLink(controller:"preview", action:"getBookmarkLocations")}"
+        getBookmarkLocationsURL: "${createLink(controller:"preview", action:"getBookmarkLocations")}",
+        validateShapesUrl: "${createLink(controller:"preview", action:"validateGeometry")}"
     };
     window.modelReady = true
 
@@ -57,6 +58,7 @@
 <g:render template="/output/mapInDialogEditTemplate"/>
 </body>
 <asset:javascript src="preview.js"/>
+<asset:javascript src="leaflet-manifest.js"/>
 
 <g:render template="/output/outputJSModel"
           model="${[edit: params.mode != 'view',

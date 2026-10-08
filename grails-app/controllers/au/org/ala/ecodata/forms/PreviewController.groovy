@@ -221,4 +221,8 @@ class PreviewController {
     def checkPoint() {
         render text: '{ "isPointInsideProjectArea": true, "address": null }', contentType: 'application/json'
     }
+
+    def validateGeometry() {
+        render text: '{ "success": true, "message": null }', contentType: 'application/json'
+    }
 }
