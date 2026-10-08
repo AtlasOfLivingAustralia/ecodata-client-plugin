@@ -103,7 +103,8 @@ dependencies {
     testImplementation "org.seleniumhq.selenium:selenium-support"
 
 
-    if (!Boolean.valueOf(inplace)) {
+    // Use the published ala-map-plugin unless it has been included as a local project (see settings.gradle)
+    if (!findProject(':ala-map-plugin')) {
         implementation ("org.grails.plugins:ala-map-plugin:6.0-SNAPSHOT") {
             exclude group: 'cloud.wondrify', module: 'asset-pipeline-grails'
         }
@@ -140,8 +141,7 @@ assets {
     packagePlugin = true
 }
 
-inplace =false
-if (Boolean.valueOf(inplace)) {
+if (findProject(':ala-map-plugin')) {
     grails {
         plugins {
             implementation (project(':ala-map-plugin'))
