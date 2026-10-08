@@ -1,15 +1,9 @@
 package au.org.ala.ecodata.forms
 
 import grails.testing.web.GrailsWebUnitTest
-
-//import grails.test.mixin.TestMixin
-//import grails.test.mixin.support.GrailsUnitTestMixin
-import org.grails.plugins.codecs.HTMLCodec
-import org.grails.testing.GrailsUnitTest
 import spock.lang.Specification
 import org.grails.web.json.JSONObject
 
-//@TestMixin(GrailsUnitTestMixin)
 class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTest {
 
     EditModelWidgetRenderer editModelWidgetRenderer
@@ -17,7 +11,6 @@ class EditModelWidgetRenderSpec extends Specification implements GrailsWebUnitTe
 
     def setup() {
         editModelWidgetRenderer = new EditModelWidgetRenderer()
-       // mockCodec(HTMLCodec)
     }
 
     def "the feature view model type should be rendered as a feature tag"() {
