@@ -44,6 +44,33 @@ class ViewModelWidgetRendererSpec extends Specification implements GrailsWebUnit
         1 * ctx.g.methodMissing("render", {it[0].template == '/output/imageDataTypeViewModelTemplate' && it[0].model.name == 'myImage'})
     }
 
+    def "the link view type builds the link from the properties entry of the view model"() {
+        setup:
+        ctx = ctxBuilder().model([source:'Project home', type:'link', properties:[controller:'project', action:'index']]).build()
+        ctx.g = Mock(NamespacedTagDispatcher)
+
+        when:
+        viewModelWidgetRenderer.renderLink(ctx)
+
+        then:
+        1 * ctx.g.methodMissing("createLink", {it[0] == ctx.specialProperties([controller:'project', action:'index'])}) >> '/project/index'
+        ctx.writer.toString() == '<a href="/project/index">Project home</a>'
+    }
+
+    def "the link edit type builds the link from the properties entry of the view model"() {
+        setup:
+        EditModelWidgetRenderer editModelWidgetRenderer = new EditModelWidgetRenderer()
+        ctx = ctxBuilder().model([source:'Project home', type:'link', properties:[controller:'project', action:'index']]).build()
+        ctx.g = Mock(NamespacedTagDispatcher)
+
+        when:
+        editModelWidgetRenderer.renderLink(ctx)
+
+        then:
+        1 * ctx.g.methodMissing("createLink", {it[0] == ctx.specialProperties([controller:'project', action:'index'])}) >> '/project/index'
+        ctx.writer.toString() == '<a href="/project/index">Project home</a>'
+    }
+
     WidgetRenderContextBuilder ctxBuilder() {
         new WidgetRenderContextBuilder()
     }

@@ -348,7 +348,8 @@ public class EditModelWidgetRenderer implements ModelWidgetRenderer {
 
     @Override
     void renderLink(WidgetRenderContext context) {
-        context.writer << "<a href=\"" + context.g.createLink(context.specialProperties(context.model.properties)) + "\">${context.model.source}</a>"
+        // Groovy 5 resolves model.properties to the map's bean properties, not this entry.
+        context.writer << "<a href=\"" + context.g.createLink(context.specialProperties(context.model.get('properties'))) + "\">${context.model.source}</a>"
     }
 
     @Override

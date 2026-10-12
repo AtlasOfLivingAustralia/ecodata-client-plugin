@@ -571,7 +571,8 @@ class SpeciesListService {
                 scientificName:scientificName,
                 matchedName:matchedName,
                 commonName:commonName,
-                kvpValues: speciesListItem.properties,
+                // Groovy 5 resolves map.properties to the map's bean properties, not this entry.
+                kvpValues: speciesListItem.get('properties'),
         )
     }
 

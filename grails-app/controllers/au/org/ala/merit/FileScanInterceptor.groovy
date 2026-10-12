@@ -3,6 +3,7 @@ package au.org.ala.merit
 import au.org.ala.ecodata.forms.ScanService
 import grails.converters.JSON
 import org.apache.http.HttpStatus
+import org.springframework.web.multipart.support.MultipartResolutionDelegate
 
 class FileScanInterceptor {
     ScanService scanService
@@ -13,7 +14,7 @@ class FileScanInterceptor {
     }
 
     boolean before() {
-        if (request.respondsTo('getFile')) {
+        if (MultipartResolutionDelegate.isMultipartRequest(request)) {
             List statusCodes = []
             def files = request.getFileNames()
             while(files.hasNext()) {

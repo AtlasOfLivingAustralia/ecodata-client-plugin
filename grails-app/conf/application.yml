@@ -39,7 +39,8 @@ security:
 
 management:
     endpoints:
-        enabled-by-default: false
+        access:
+            default: none
 
 lists.baseURL : https://lists-ws.test.ala.org.au/
 
