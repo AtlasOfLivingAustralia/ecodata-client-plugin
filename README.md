@@ -21,11 +21,6 @@ The ecodata client plugin is a grails plugin used to generate data entry forms f
 ```
 npm install
 ```
-* Run the npm script to package the turf geojson libraries and copy them to the grails-app/assets/javascripts folder.
-```
-npm run package-turf
-```
-
 ## Testing
 * Grails unit, integration and functional (Geb) tests run through the Gradle wrapper:
 ```
