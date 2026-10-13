@@ -8,7 +8,7 @@ The ecodata client plugin is a grails plugin used to generate data entry forms f
 
 ### Technologies
 * Grails framework 8.0.0
-* Java 21
+* Java 25
 * Groovy 5
 * Knockout JS
 * Bootstrap 5
