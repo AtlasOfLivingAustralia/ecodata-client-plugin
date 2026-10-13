@@ -458,7 +458,7 @@ class ModelTagLib {
 
     // -------- validation declarations --------------------
     def isRequired(LayoutRenderContext ctx, Map model, edit) {
-        Map dataModel = ctx.dataModel
+        Map dataModel = ctx.dataModel ?: findDataModelItemForModel(ctx, model)
         isRequired(dataModel, model, edit)
     }
 
