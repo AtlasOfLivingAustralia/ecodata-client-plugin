@@ -298,30 +298,13 @@ ecodata.forms.maps.featureMap = function (options) {
 
         self.drawnItems.on({
             'layeradd': function (e) {
-
                 var layer = e.layer;
                 if (layer.setStyle) {
                     layer.setStyle(DRAWN_LAYER_STYLE);
                 }
 
-                var properties = {}
-                var name = ko.observable('New works area');
-                if (layer.feature && layer.feature.properties && layer.feature.properties.name) {
-                    properties = {...layer.feature.properties}
-                    name(layer.feature.properties.name);
-                    properties.name = name;
-                }
-                var feature = {properties: properties, layer: layer};
-                if (!layer.feature){
-                    var geoJson = layer.toGeoJSON();
-                    geoJson.properties.name = name();
-                    layer.feature = geoJson;
-                }
-                name.subscribe(function(){
-                    layer.feature.properties.name = name();
-                });
+                var feature = createEditableSiteModel(layer);
                 self.editableSites.push(feature);
-
             },
             'layerremove': layerRemoveHandlerToUpdateSelectedFeatures
         });
@@ -332,15 +315,32 @@ ecodata.forms.maps.featureMap = function (options) {
         self.areaHa = ko.observable(0).extend({numericString:2, deferred:true});
         self.lengthKm = ko.observable(0).extend({numericString:2, deferred:true});
 
+        function createEditableSiteModel (layer) {
+            if (!layer.feature) {
+                layer.feature = layer.toGeoJSON();
+            }
+
+            var defaultName = layer.feature.properties && layer.feature.properties.name || 'New works area',
+                defaultProperties = layer.feature.properties || {},
+                properties = {...defaultProperties}, // properties used by editableSites and layer.feature.properties are not the same object. properties has the name observable, layer.feature.properties has the name string.
+                name = ko.observable(defaultName),
+                feature = {properties: properties, layer: layer};
+
+            properties.name = name;
+            name.subscribe(function(newName){
+                layer.feature.properties.name = newName;
+            });
+
+            return feature;
+        }
+
         function updateStatistics() {
             var geoJson = self.drawnItems.toGeoJSON();
             self.areaHa(ecodata.forms.utils.areaHa(geoJson));
             self.lengthKm(ecodata.forms.utils.lengthKm(geoJson, true));
         }
 
-        self.editableSites.subscribe(function() {
-            updateStatistics();
-        });
+        self.editableSites.subscribe(updateStatistics);
 
         self.editing = ko.observable(false);
         self.getMapImpl().on("pm:globaleditmodetoggled", function(e) {
@@ -349,17 +349,11 @@ ecodata.forms.maps.featureMap = function (options) {
             }
             else {
                 self.editing(false);
-                updateFeatures();
                 updateStatistics();
             }
         });
 
         return self;
-    }
-
-    function updateFeatures() {
-        var features = self.getGeoJSON().features;
-        self.editableSites(features);
     }
 
     function layerRemoveHandlerToUpdateSelectedFeatures(e) {
@@ -436,7 +430,7 @@ ecodata.forms.maps.featureMap = function (options) {
     }
 
     self.copyFeature = function (feature) {
-        var featureCollection = ALA.MapUtils.toFeatureCollection(feature),
+        var featureCollection = ALA.MapUtils.toFeatureCollection(turf.clone(feature)),
             features = featureCollection.features,
             featureList = [];
 
@@ -449,13 +443,7 @@ ecodata.forms.maps.featureMap = function (options) {
 
         featureCollection.features = featureList;
         // Leaflet geoman plugin can handle MultiPolygon
-        var layerGroup = self.setGeoJSON(featureCollection);
-        layerGroup.eachLayer(function (layer) {
-            var feature = featureList.find(f => f.properties.featureId === layer.feature.properties.featureId);
-            if (feature) {
-                feature.layer = layer;
-            }
-        });
+        self.setGeoJSON(featureCollection);
     };
 
     self.copyEnabled = function(feature) {
