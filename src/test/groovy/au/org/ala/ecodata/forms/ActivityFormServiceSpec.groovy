@@ -1,19 +1,15 @@
 package au.org.ala.ecodata.forms
 
 import grails.testing.services.ServiceUnitTest
-
-//import grails.test.mixin.TestFor
 import spock.lang.Specification
 
 /**
  * Tests the ActivityFormService
  */
-//@TestFor(ActivityFormService)
 class ActivityFormServiceSpec extends Specification implements ServiceUnitTest<ActivityFormService> {
 
     EcpWebService webService = Mock(EcpWebService)
-   // def grailsApplication = [config:[ecodata:[service:[url:'']]]]
-    //def grailsApplicaton =
+
     def setup() {
         grailsApplication.config.ecodata = [service:[url:'']]
         service.ecpWebService = webService

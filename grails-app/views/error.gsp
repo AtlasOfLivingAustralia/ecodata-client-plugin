@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title><g:if env="development">Grails Runtime Exception</g:if><g:else>Error</g:else></title>
+		<title><g:if env="development">Grails Runtime Exception</g:if><g:unless env="development">Error</g:unless></title>
 		<meta name="layout" content="main">
 		<g:if env="development"><asset:stylesheet src="errors.css"/></g:if>
 	</head>
@@ -9,10 +9,10 @@
 		<g:if env="development">
 			<g:renderException exception="${exception}" />
 		</g:if>
-		<g:else>
+		<g:unless env="development">
 			<ul class="errors">
 				<li>An error has occurred</li>
 			</ul>
-		</g:else>
+		</g:unless>
 	</body>
 </html>

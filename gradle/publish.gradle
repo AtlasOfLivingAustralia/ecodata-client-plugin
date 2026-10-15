@@ -14,7 +14,11 @@ publishing {
         mavenJar(MavenPublication) {
             pom.withXml {
                 def pomNode = asNode()
-                pomNode.dependencyManagement.replaceNode {}
+
+                // Only remove dependencyManagement if it exists
+                if (pomNode.dependencyManagement) {
+                    pomNode.dependencyManagement.replaceNode {}
+                }
 
                 // simply remove dependencies without a version
                 // version-less dependencies are handled with dependencyManagement
