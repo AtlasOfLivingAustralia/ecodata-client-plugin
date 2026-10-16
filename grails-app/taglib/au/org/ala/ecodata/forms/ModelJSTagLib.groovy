@@ -516,7 +516,7 @@ class ModelJSTagLib {
         Map attrs = ctx.attrs
         Map model = ctx.dataModel
 
-        def edit = !!attrs.edit
+        def edit = attrs.edit as Boolean
         def editableRows = viewModelFor(attrs, model.name)?.editableRows
         if (edit && editableRows) {
 
