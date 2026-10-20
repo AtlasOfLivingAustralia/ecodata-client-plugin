@@ -36,7 +36,6 @@ jobs:
         run: rm -rf ~/.gradle/caches
 
       - run: npm install
-      - run: npm run package-turf
 
 
       - name: Update your package.json with an npm pre-release version
@@ -61,6 +60,13 @@ jobs:
 
       - name: Run tests and jacoco coverage report with Gradle
         run: ./gradlew -PenableJacoco=true -Dwebdriver.chrome.driver=$CHROMEWEBDRIVER/chromedriver check
+
+      - name: Upload Geb reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geb-reports
+          path: build/reports/geb-reports
 
       - name: Run javascript unit tests
         run: npm run test
