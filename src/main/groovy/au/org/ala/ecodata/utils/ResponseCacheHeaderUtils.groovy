@@ -1,9 +1,10 @@
 package au.org.ala.ecodata.utils
 
+import groovy.transform.CompileStatic
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpHeaders
 
-
+@CompileStatic
 class ResponseCacheHeaderUtils {
 
     static int ONE_DAY_IN_SECONDS = 60*60*24
