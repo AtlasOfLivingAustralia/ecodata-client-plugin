@@ -4,6 +4,7 @@
 <g:set var="latValidation" value="data-validation-engine='validate[min[-90],max[90]]'"/>
 <g:set var="lngValidation" value="data-validation-engine='validate[min[-180],max[180]]'"/>
 <g:set var="orientationMainClass" value="${isHorizontal ? 'row mx-1' : ''}"/>
+<g:set var="mapHeight" value="${mapHeight ?: '600px'}"/>
 
 <h4 data-validation-engine="validate[funcCall[validator_site_check]" data-prompt-position="inline" data-position-type="inline" data-prompt-target="error-info">
     <g:message code="geomap.heading" default="Location"/>
@@ -17,7 +18,7 @@
             <!-- ko template: 'site-selector-dropdown-template' -->
             <!-- /ko -->
             <span id="error-info" class="mb-2"></span>
-            <m:map id="${source}Map" width="100%"/>
+            <m:map id="${source}Map" width="100%" height="${mapHeight}"/>
         </div>
     </g:if>
 
@@ -27,7 +28,7 @@
 
         <div class="row mb-2 mx-1">
             <span id="error-info" class="mb-2"></span>
-            <m:map id="${source}Map" width="100%"/>
+            <m:map id="${source}Map" width="100%" height="${mapHeight}"/>
         </div>
     </g:if>
 
