@@ -28,7 +28,7 @@
                 <li class="clearfix site-label"
                     data-bind="event:{mouseover:$root.highlightFeature, mouseout:$root.unhighlightFeature}">
                     <label>
-                        <input type="text" class="form-control form-control-sm" data-bind="value:properties.name || 'Unnamed site'">
+                        <input type="text" class="form-control form-control-sm" data-bind="value:properties.name">
                     </label>
                     <div class="btn-container">
                         <button class="btn btn-sm" type="button" data-bind="click:$root.deleteFeature"><i
@@ -54,8 +54,11 @@
                     </a>
 
                     <div class="site-label">
-                        <label class="site-category-heading collapsable" data-bind="text:category"></label>
-
+                        <label class="site-category-heading collapsable" data-bind="text:category"></label><div class="input-container">
+                            <div class="input-group-text">
+                                <input class="form-check-input mt-0" type="checkbox" value="" data-bind="checked: showOrHideCategorySites, attr: {'aria-label': 'Show or hide sites in ' + category}">
+                            </div>
+                        </div>
                         <div class="btn-container">
                             <button class="btn btn-sm" type="button" data-bind="click:$root.zoomToCategorySites"><i
                                     class="fa fa-search"></i></button>
@@ -72,6 +75,9 @@
                                         data-bind="text:properties.name || 'Unnamed site'"></span></label>
 
                                 <div class="btn-container">
+                                    <div class="btn btn-sm" type="button" title="Show or hide site on map">
+                                        <input class="form-check-input mt-0" type="checkbox" value="" data-bind="checked: properties.showOrHideSite" aria-label="Show or hide site on map">
+                                    </div>
                                     <button class="btn btn-sm" type="button" data-bind="click:$root.copyFeature, enable:$root.copyEnabled"
                                             title="Copy (and edit) this site"><i class="fa fa-copy"></i>
                                     </button>
