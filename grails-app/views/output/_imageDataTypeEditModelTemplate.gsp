@@ -1,3 +1,4 @@
+<md:licences/>
 <div id="" class="fileupload-buttonbar">
     <!-- ko foreach: ${name} -->
     <!-- Images -->
@@ -55,7 +56,7 @@
                         </label>
                     </div>
                     <div class="col-sm-8">
-                        <select id="licence" data-bind="value: licence, options: ImageViewModel.IMAGE_LICENCES, optionsText: 'name', optionsValue: 'value', valueAllowUnset: true" class="form-select form-select-sm col-sm-12">
+                        <select id="licence" data-bind="value: licence, options: licenceOptions, optionsText: 'name', optionsValue: 'value', valueAllowUnset: true" class="form-select form-select-sm col-sm-12">
                         </select>
                         <p class="form-text my-2">
                             <a href="${message(code: 'project.details.creativeCommons.helpUrl', default: 'https://creativecommons.org/cc-licenses/')}" target="_blank" rel="noopener noreferrer">About CC licenses</a>
