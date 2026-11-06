@@ -49,20 +49,22 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-sm-4 text-start">
-                        <label class="control-label">Licence: <i class="fa fa-question-circle"
-                                                                data-bind="popover:{content:'The licence tells others how they may use this image. New images default to the survey data sharing licence. CC0 places the image in the public domain. Attribution (BY) requires credit. Noncommercial (NC) does not allow commercial use. Share Alike (SA) requires adaptations to use the same licence.', placement:'top'}">&nbsp;</i>
-                        </label>
+                <g:if test="${showImgLicence}">
+                    <div class="row">
+                        <div class="col-sm-4 text-start">
+                            <label class="control-label">Licence: <i class="fa fa-question-circle"
+                                                                    data-bind="popover:{content:'The licence tells others how they may use this image. New images default to the survey data sharing licence. CC0 places the image in the public domain. Attribution (BY) requires credit. Noncommercial (NC) does not allow commercial use. Share Alike (SA) requires adaptations to use the same licence.', placement:'top'}">&nbsp;</i>
+                            </label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select id="licence" data-bind="value: licence, options: licenceOptions, optionsText: 'name', optionsValue: 'value', valueAllowUnset: true" class="form-select form-select-sm col-sm-12">
+                            </select>
+                            <p class="form-text my-2">
+                                <a href="${message(code: 'project.details.creativeCommons.helpUrl', default: 'https://creativecommons.org/cc-licenses/')}" target="_blank" rel="noopener noreferrer">About CC licenses</a>
+                            </p>
+                        </div>
                     </div>
-                    <div class="col-sm-8">
-                        <select id="licence" data-bind="value: licence, options: licenceOptions, optionsText: 'name', optionsValue: 'value', valueAllowUnset: true" class="form-select form-select-sm col-sm-12">
-                        </select>
-                        <p class="form-text my-2">
-                            <a href="${message(code: 'project.details.creativeCommons.helpUrl', default: 'https://creativecommons.org/cc-licenses/')}" target="_blank" rel="noopener noreferrer">About CC licenses</a>
-                        </p>
-                    </div>
-                </div>
+                </g:if>
 
                 <g:if test="${showImgAttribution}">
                     <div class="row">

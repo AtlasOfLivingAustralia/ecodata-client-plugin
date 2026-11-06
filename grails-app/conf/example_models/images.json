@@ -36,10 +36,11 @@
               "type": "image"
             },
             {
-              "preLabel": "Hide metadata, attribution, notes and show remove button with image behaviour:",
+              "preLabel": "Hide metadata, licence, attribution, notes and show remove button with image behaviour:",
               "source": "images3",
               "type": "image",
               "showMetadata": false,
+              "showLicence": false,
               "showAttribution": false,
               "showNotes": false,
               "displayOptions": {
