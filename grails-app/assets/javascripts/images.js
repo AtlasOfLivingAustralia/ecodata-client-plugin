@@ -37,6 +37,14 @@ function ImageViewModel(prop, skipFindingDocument, context){
     self.licence.subscribe(function(code) {
         self.licenceDescription = ImageViewModel.descriptionFor(code);
     });
+    self.licenceOptions = ko.computed(function() {
+        var options = ImageViewModel.IMAGE_LICENCES().slice();
+        var licence = self.licence();
+        if (licence && !options.some(function(option) { return option.value === licence; })) {
+            options.push({value: licence, name: ImageViewModel.descriptionFor(licence)});
+        }
+        return options;
+    });
     self.notes = ko.observable(prop.notes || '');
     self.name = ko.observable(prop.name);
     self.formattedSize = formatBytes(prop.filesize);
@@ -201,46 +209,23 @@ ImageViewModel.createObjectURL = function addObjectURL(document){
     }
 };
 
-/**
- * Current Creative Commons licences offered for images, most to least permissive.
- * Stored option values are kept stable so existing images still match.
- * Survey dataSharingLicense URLs and photo-point codes are accepted as aliases.
- */
-ImageViewModel.DEFAULT_LICENCE = 'CC BY 4.0';
-ImageViewModel.IMAGE_LICENCES = [
-    {
-        value: 'CC BY 0',
-        name: 'Creative Commons Zero 1.0',
-        aliases: ['CC0', 'https://creativecommons.org/publicdomain/zero/1.0/']
-    },
-    {
-        value: 'CC BY 4.0',
-        name: 'Creative Commons Attribution 4.0 International',
-        aliases: ['CC BY', 'https://creativecommons.org/licenses/by/4.0/']
-    },
-    {
-        value: 'CC BY-SA 4.0',
-        name: 'Creative Commons Attribution-Share Alike 4.0 International',
-        aliases: ['CC BY-SA', 'https://creativecommons.org/licenses/by-sa/4.0/']
-    },
-    {
-        value: 'CC BY-NC',
-        name: 'Creative Commons Attribution-Noncommercial 4.0 International',
-        aliases: ['https://creativecommons.org/licenses/by-nc/4.0/', 'https://creativecommons.org/licenses/by-nc/3.0/au/', 'https://creativecommons.org/licenses/by-nc/2.5/']
-    },
-    {
-        value: 'CC BY-NC-SA',
-        name: 'Creative Commons Attribution-Noncommercial-Share Alike 4.0 International',
-        aliases: ['https://creativecommons.org/licenses/by-nc-sa/4.0/']
-    }
-];
+ImageViewModel.IMAGE_LICENCES = ko.observableArray(window.ecodataLicences || []);
+window.addEventListener('ecodata:licences-loaded', function(event) {
+    ImageViewModel.IMAGE_LICENCES(event.detail || []);
+});
+ImageViewModel.defaultLicence = function() {
+    var match = ImageViewModel.IMAGE_LICENCES().find(function(licence) {
+        return licence.default;
+    });
+    return match && match.value;
+};
 
 ImageViewModel.findLicence = function(value) {
     if (!value) {
         return null;
     }
-    return ImageViewModel.IMAGE_LICENCES.find(function(licence) {
-        return licence.value === value || licence.aliases.indexOf(value) !== -1;
+    return ImageViewModel.IMAGE_LICENCES().find(function(licence) {
+        return licence.value === value || (licence.aliases || []).indexOf(value) !== -1;
     }) || null;
 };
 
@@ -255,5 +240,5 @@ ImageViewModel.licenceFromSurvey = function(context) {
         || (context && context.$data && context.$data.$context && context.$data.$context.pActivity)
         || (window.activityLevelData && activityLevelData.pActivity);
     var match = ImageViewModel.findLicence(pActivity && pActivity.dataSharingLicense);
-    return match ? match.value : ImageViewModel.DEFAULT_LICENCE;
+    return match ? match.value : ImageViewModel.defaultLicence();
 };
