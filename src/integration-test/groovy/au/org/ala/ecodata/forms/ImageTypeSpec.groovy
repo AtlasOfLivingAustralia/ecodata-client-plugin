@@ -57,7 +57,7 @@ class ImageTypeSpec extends GebReportingSpec {
         $("a.remove-btn-with-image").size() == 1
 
         and: "The metadata, attribution and notes fields configured as hidden are not displayed"
-        $(".fileupload-buttonbar:nth-child(2) select#licence").size() == 1
+        $(".fileupload-buttonbar select#licence").size() == 2
         $(".fileupload-buttonbar:nth-child(3) .image-title-input").displayed == false
         $(".fileupload-buttonbar:nth-child(3) select#licence").size() == 0
         $(".fileupload-buttonbar:nth-child(3) input[data-bind='value:attribution']").size() == 0
