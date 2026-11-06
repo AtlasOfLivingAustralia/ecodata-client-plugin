@@ -12,11 +12,11 @@ Licence options are configured with `licences.options` in `application.yml`. App
 ```yaml
 licences:
   options:
-		- value: 'CC BY 4.0'
-			name: 'Creative Commons Attribution 4.0 International'
-			default: true
-			aliases:
-				- 'https://creativecommons.org/licenses/by/4.0/'
+    - value: 'CC BY 4.0'
+      name: 'Creative Commons Attribution 4.0 International'
+      default: true
+      aliases:
+        - 'https://creativecommons.org/licenses/by/4.0/'
 ```
 Use `<md:licences/>` in a GSP page to emit the configured options as `window.ecodataLicences` and dispatch the generic `ecodata:licences-loaded` event. Image forms consume the event to update their dropdown.
 
