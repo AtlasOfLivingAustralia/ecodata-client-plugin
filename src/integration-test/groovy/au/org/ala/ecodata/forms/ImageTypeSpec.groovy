@@ -72,7 +72,7 @@ class ImageTypeSpec extends GebReportingSpec {
         waitFor {
             $(".selected-licence-link").first().displayed
         }
-        $(".selected-licence-link").first().text().trim() == 'About CC BY 4.0'
+        $(".selected-licence-link").first().text() == 'CC BY 4.0'
         $(".selected-licence-link").first().getAttribute('href') == 'https://creativecommons.org/licenses/by/4.0/'
     }
 }
