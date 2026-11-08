@@ -1,7 +1,9 @@
+//= require licences.js
+
 function ImageViewModel(prop, skipFindingDocument, context){
     var self = this, document;
     var documents;
-    ImageViewModel.loadLicences();
+    ecodataLicences.load();
 
     // used by image gallery plugin. document is passed to the function.
     if(!skipFindingDocument){
@@ -34,15 +36,18 @@ function ImageViewModel(prop, skipFindingDocument, context){
     self.filename = prop.filename;
     self.attribution = ko.observable(prop.attribution);
     self.licence = ko.observable(prop.licence || ImageViewModel.licenceFromSurvey(context));
-    self.licenceDescription = prop.licenceDescription || ImageViewModel.descriptionFor(self.licence());
+    self.licenceDescription = prop.licenceDescription || ecodataLicences.descriptionFor(self.licence());
     self.licence.subscribe(function(code) {
-        self.licenceDescription = ImageViewModel.descriptionFor(code);
+        self.licenceDescription = ecodataLicences.descriptionFor(code);
+    });
+    self.licenceUrl = ko.computed(function() {
+        return ecodataLicences.urlFor(self.licence());
     });
     self.licenceOptions = ko.computed(function() {
-        var options = ImageViewModel.IMAGE_LICENCES().slice();
+        var options = ecodataLicences.options().slice();
         var licence = self.licence();
         if (licence && !options.some(function(option) { return option.value === licence; })) {
-            options.push({value: licence, name: ImageViewModel.descriptionFor(licence)});
+            options.push({value: licence, name: ecodataLicences.descriptionFor(licence)});
         }
         return options;
     });
@@ -210,38 +215,11 @@ ImageViewModel.createObjectURL = function addObjectURL(document){
     }
 };
 
-ImageViewModel.IMAGE_LICENCES = ko.observableArray([]);
-ImageViewModel.licencesJson = null;
-ImageViewModel.loadLicences = function() {
-    var config = window.document.querySelector('[data-ecodata-licences]');
-    if (config) {
-        var json = config.getAttribute('data-ecodata-licences');
-        if (ImageViewModel.licencesJson !== json) {
-            ImageViewModel.licencesJson = json;
-            ImageViewModel.IMAGE_LICENCES(JSON.parse(json));
-        }
-    }
-};
-
-ImageViewModel.findLicence = function(value) {
-    if (!value) {
-        return null;
-    }
-    return ImageViewModel.IMAGE_LICENCES().find(function(licence) {
-        return licence.value === value || (licence.aliases || []).indexOf(value) !== -1;
-    }) || null;
-};
-
-ImageViewModel.descriptionFor = function(value) {
-    var match = ImageViewModel.findLicence(value);
-    return match ? match.name : (value || '');
-};
-
 /** Map the survey data sharing licence (from form context / pActivity) to a stored image licence value. */
 ImageViewModel.licenceFromSurvey = function(context) {
     var pActivity = (context && context.pActivity)
         || (context && context.$data && context.$data.$context && context.$data.$context.pActivity)
         || (window.activityLevelData && activityLevelData.pActivity);
-    var match = ImageViewModel.findLicence(pActivity && pActivity.dataSharingLicense);
+    var match = ecodataLicences.find(pActivity && pActivity.dataSharingLicense);
     return match ? match.value : undefined;
 };

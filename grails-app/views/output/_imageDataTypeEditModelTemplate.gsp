@@ -57,10 +57,11 @@
                             </label>
                         </div>
                         <div class="col-sm-8">
-                            <select id="licence" data-bind="value: licence, options: licenceOptions, optionsText: 'name', optionsValue: 'value', valueAllowUnset: true" class="form-select form-select-sm col-sm-12">
+                            <select id="licence" data-bind="value: licence, options: licenceOptions, optionsText: ecodataLicences.shortNameFor, optionsValue: 'value', valueAllowUnset: true" class="form-select form-select-sm col-sm-12">
                             </select>
                             <p class="form-text my-2">
-                                <a href="${message(code: 'project.details.creativeCommons.helpUrl', default: 'https://creativecommons.org/cc-licenses/')}" target="_blank" rel="noopener noreferrer">About CC licenses</a>
+                                <a data-bind="visible: licenceUrl, attr: {href: licenceUrl}, text: ecodataLicences.shortNameFor({value: licence()})" class="selected-licence-link me-2" target="_blank" rel="noopener noreferrer"></a>
+                                <a href="${message(code: 'project.details.creativeCommons.helpUrl', default: 'https://creativecommons.org/cc-licenses/')}" target="_blank" rel="noopener noreferrer">About CC licences</a>
                             </p>
                         </div>
                     </div>
