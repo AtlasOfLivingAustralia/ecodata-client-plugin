@@ -1,0 +1,27 @@
+[
+  {
+    "value": "CC BY 0",
+    "name": "Creative Commons Zero 1.0",
+    "aliases": ["CC0", "https://creativecommons.org/publicdomain/zero/1.0/"]
+  },
+  {
+    "value": "CC BY 4.0",
+    "name": "Creative Commons Attribution 4.0 International",
+    "aliases": ["CC BY", "https://creativecommons.org/licenses/by/4.0/"]
+  },
+  {
+    "value": "CC BY-SA 4.0",
+    "name": "Creative Commons Attribution-Share Alike 4.0 International",
+    "aliases": ["CC BY-SA", "https://creativecommons.org/licenses/by-sa/4.0/"]
+  },
+  {
+    "value": "CC BY-NC",
+    "name": "Creative Commons Attribution-Noncommercial 4.0 International",
+    "aliases": ["https://creativecommons.org/licenses/by-nc/4.0/", "https://creativecommons.org/licenses/by-nc/3.0/au/", "https://creativecommons.org/licenses/by-nc/2.5/"]
+  },
+  {
+    "value": "CC BY-NC-SA",
+    "name": "Creative Commons Attribution-Noncommercial-Share Alike 4.0 International",
+    "aliases": ["https://creativecommons.org/licenses/by-nc-sa/4.0/"]
+  }
+]

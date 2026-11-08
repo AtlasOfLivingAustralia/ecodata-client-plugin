@@ -32,6 +32,27 @@ class HelperTagLibSpec extends Specification implements TagLibUnitTest<HelperTag
         output.contains('</div>')
     }
 
+    void "licences tag supplies packaged defaults without host configuration"() {
+        given:
+        def originalOptions = grailsApplication.config.getProperty('licences.options', List, null)
+        def originalFile = grailsApplication.config.getProperty('licences.file', String, null)
+        grailsApplication.config.licences.options = null
+        grailsApplication.config.licences.file = null
+
+        when:
+        def output = applyTemplate('<md:licences/>')
+
+        then:
+        output.contains('Creative Commons Zero 1.0')
+        output.contains('Creative Commons Attribution 4.0 International')
+        output.contains('Creative Commons Attribution-Noncommercial-Share Alike 4.0 International')
+        output.contains('</div>')
+
+        cleanup:
+        grailsApplication.config.licences.options = originalOptions
+        grailsApplication.config.licences.file = originalFile
+    }
+
     void "licences tag prefers a valid external file"() {
         given:
         def originalFile = grailsApplication.config.getProperty('licences.file', String, null)
