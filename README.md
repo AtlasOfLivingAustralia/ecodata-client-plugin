@@ -24,6 +24,8 @@ The element is explicitly closed and contains no executable script, so it does n
 
 Other models and apps can include the `licences.js` asset alongside Knockout and call `ecodataLicences.load()` after rendering `<md:licences/>`. The shared helper exposes `options()` (an observable list), `find(value)`, `descriptionFor(value)`, `shortNameFor(option)`, and `urlFor(value)`. Image dropdowns use the short name (or stored value when absent) and link to the selected licence when a URL is configured.
 
+Only new uploads inherit the survey licence when none is supplied. Saved images retain their existing licence, including an unset value. Each licence version has its own option and URL; aliases should not map different versions to the same option.
+
 To override the packaged list without rebuilding the plugin, point `licences.file` at a mounted JSON file. The file must contain the same array of licence objects. It is read when the tag renders; if it is missing or invalid, the plugin uses `licences.options` when configured, otherwise the packaged defaults.
 
 ```yaml

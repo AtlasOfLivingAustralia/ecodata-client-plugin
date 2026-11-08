@@ -35,15 +35,16 @@ function ImageViewModel(prop, skipFindingDocument, context){
     self.thumbnailUrl = ko.observable(prop.thumbnailUrl || prop.url);
     self.filename = prop.filename;
     self.attribution = ko.observable(prop.attribution);
-    self.licence = ko.observable(prop.licence || ImageViewModel.licenceFromSurvey(context));
+    self.licence = ko.observable(prop.licence);
     self.licenceDescription = prop.licenceDescription || ecodataLicences.descriptionFor(self.licence());
     self.licence.subscribe(function(code) {
         self.licenceDescription = ecodataLicences.descriptionFor(code);
     });
-    self.licenceUrl = ko.computed(function() {
+    self.transients = {};
+    self.transients.licenceUrl = ko.pureComputed(function() {
         return ecodataLicences.urlFor(self.licence());
     });
-    self.licenceOptions = ko.computed(function() {
+    self.transients.licenceOptions = ko.pureComputed(function() {
         var options = ecodataLicences.options().slice();
         var licence = self.licence();
         if (licence && !options.some(function(option) { return option.value === licence; })) {
