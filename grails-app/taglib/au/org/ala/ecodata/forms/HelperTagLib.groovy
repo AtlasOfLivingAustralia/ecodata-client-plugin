@@ -61,19 +61,14 @@ class HelperTagLib {
     }
 
     def licences = { attrs ->
-        def json = JsonOutput.toJson(resolveLicences())
-                .replace('&', '\\u0026')
-                .replace('<', '\\u003c')
-                .replace('>', '\\u003e')
-        out << "<script>window.ecodataLicences = ${json};"
-        out << "window.dispatchEvent(new CustomEvent('ecodata:licences-loaded', {detail: window.ecodataLicences}));</script>"
+        MarkupBuilder mb = new MarkupBuilder(out)
+        mb.div(hidden: 'hidden', 'data-ecodata-licences': JsonOutput.toJson(resolveLicences())) {
+            mkp.yield(' ')
+        }
     }
 
     private List resolveLicences() {
         String path = grailsApplication.config.getProperty('licences.file', String, null)
-        if (!path) {
-            path = grailsApplication.config.getProperty('images.licencesFile', String, null)
-        }
         if (path) {
             try {
                 def licences = new JsonSlurper().parse(new File(path))
@@ -86,8 +81,7 @@ class HelperTagLib {
             }
         }
 
-        def legacyLicences = grailsApplication.config.getProperty('images.licences', List, null)
-        legacyLicences != null ? legacyLicences : grailsApplication.config.getProperty('licences.options', List, [])
+        grailsApplication.config.getProperty('licences.options', List, [])
     }
 
     private boolean validLicences(def licences) {
@@ -97,7 +91,6 @@ class HelperTagLib {
                             licence.value instanceof String && licence.value &&
                             licence.name instanceof String && licence.name &&
                             (!licence.containsKey('aliases') || licence.aliases instanceof List)
-                } &&
-                licences.count { it.default == true } == 1
+                        }
     }
 }

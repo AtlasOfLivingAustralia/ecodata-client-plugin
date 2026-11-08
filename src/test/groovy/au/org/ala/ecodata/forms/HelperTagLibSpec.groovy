@@ -27,23 +27,24 @@ class HelperTagLibSpec extends Specification implements TagLibUnitTest<HelperTag
         def output = applyTemplate('<md:licences/>')
 
         then:
-        output.contains('window.ecodataLicences = [{"value":"Custom","name":"Custom licence"}]')
-        output.contains("ecodata:licences-loaded")
-        !output.contains('ImageViewModel')
+        output.contains('data-ecodata-licences=')
+        output.contains('Custom licence')
+        output.contains('</div>')
     }
 
     void "licences tag prefers a valid external file"() {
         given:
         def originalFile = grailsApplication.config.getProperty('licences.file', String, null)
         def licencesFile = File.createTempFile('image-licences', '.json')
-        licencesFile.text = '[{"value":"External","name":"External licence","default":true}]'
+        licencesFile.text = '[{"value":"External","name":"External licence"}]'
         grailsApplication.config.licences.file = licencesFile.absolutePath
 
         when:
         def output = applyTemplate('<md:licences/>')
 
         then:
-        output.contains('window.ecodataLicences = [{"value":"External","name":"External licence","default":true}]')
+        output.contains('data-ecodata-licences=')
+        output.contains('External licence')
         !output.contains('Creative Commons Zero 1.0')
 
         cleanup:

@@ -17,6 +17,7 @@ class ImageTypeSpec extends GebReportingSpec {
 
         when: "We hover over the photo"
         interact {
+            moveToElement($('h3').first())
             moveToElement($('[data-bind*=images2]'))
         }
 

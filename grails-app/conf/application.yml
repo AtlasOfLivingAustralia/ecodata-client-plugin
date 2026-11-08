@@ -43,7 +43,6 @@ licences:
               - 'https://creativecommons.org/publicdomain/zero/1.0/'
         - value: 'CC BY 4.0'
           name: 'Creative Commons Attribution 4.0 International'
-          default: true
           aliases:
               - 'CC BY'
               - 'https://creativecommons.org/licenses/by/4.0/'
