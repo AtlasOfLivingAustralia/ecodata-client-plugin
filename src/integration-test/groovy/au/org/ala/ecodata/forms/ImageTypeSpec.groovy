@@ -63,5 +63,16 @@ class ImageTypeSpec extends GebReportingSpec {
         $(".fileupload-buttonbar:nth-child(3) select#licence").size() == 0
         $(".fileupload-buttonbar:nth-child(3) input[data-bind='value:attribution']").size() == 0
         $(".fileupload-buttonbar:nth-child(3) input[data-bind='value:notes']").size() == 0
+
+        when: "A licence is selected"
+        $(".fileupload-buttonbar select#licence").first().value('CC BY 4.0')
+
+        then: "Short labels and the selected licence link are displayed"
+        $(".fileupload-buttonbar select#licence").first().find('option', value: 'CC BY 4.0').text() == 'CC BY 4.0'
+        waitFor {
+            $(".selected-licence-link").first().displayed
+        }
+        $(".selected-licence-link").first().text() == 'CC BY 4.0'
+        $(".selected-licence-link").first().getAttribute('href') == 'https://creativecommons.org/licenses/by/4.0/'
     }
 }
