@@ -2,11 +2,24 @@ package au.org.ala.ecodata.forms
 
 import geb.spock.GebReportingSpec
 import grails.testing.mixin.integration.Integration
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.ApplicationContext
 import pages.PreviewPage
 @Integration
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 class ImageTypeSpec extends GebReportingSpec {
+    @Autowired
+    ApplicationContext applicationContext
+
+    def "image dialogs show licence selection unless explicitly disabled"() {
+        given:
+        def renderer = applicationContext.getBean('groovyPageRenderer')
+
+        expect:
+        renderer.render(template: '/output/imageDataTypeEditModelTemplate', model: [name: 'images']).contains('id="licence"')
+        !renderer.render(template: '/output/imageDataTypeEditModelTemplate', model: [name: 'images', showImgLicence: false]).contains('id="licence"')
+    }
 
     def "The default behaviour of the view mode of the image view type is to show metadata on hover"() {
         when:
