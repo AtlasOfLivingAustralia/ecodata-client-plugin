@@ -1,6 +1,7 @@
 function ImageViewModel(prop, skipFindingDocument, context){
     var self = this, document;
     var documents;
+    ImageViewModel.loadLicences();
 
     // used by image gallery plugin. document is passed to the function.
     if(!skipFindingDocument){
@@ -209,15 +210,17 @@ ImageViewModel.createObjectURL = function addObjectURL(document){
     }
 };
 
-ImageViewModel.IMAGE_LICENCES = ko.observableArray(window.ecodataLicences || []);
-window.addEventListener('ecodata:licences-loaded', function(event) {
-    ImageViewModel.IMAGE_LICENCES(event.detail || []);
-});
-ImageViewModel.defaultLicence = function() {
-    var match = ImageViewModel.IMAGE_LICENCES().find(function(licence) {
-        return licence.default;
-    });
-    return match && match.value;
+ImageViewModel.IMAGE_LICENCES = ko.observableArray([]);
+ImageViewModel.licencesJson = null;
+ImageViewModel.loadLicences = function() {
+    var config = window.document.querySelector('[data-ecodata-licences]');
+    if (config) {
+        var json = config.getAttribute('data-ecodata-licences');
+        if (ImageViewModel.licencesJson !== json) {
+            ImageViewModel.licencesJson = json;
+            ImageViewModel.IMAGE_LICENCES(JSON.parse(json));
+        }
+    }
 };
 
 ImageViewModel.findLicence = function(value) {
@@ -240,5 +243,5 @@ ImageViewModel.licenceFromSurvey = function(context) {
         || (context && context.$data && context.$data.$context && context.$data.$context.pActivity)
         || (window.activityLevelData && activityLevelData.pActivity);
     var match = ImageViewModel.findLicence(pActivity && pActivity.dataSharingLicense);
-    return match ? match.value : ImageViewModel.defaultLicence();
+    return match ? match.value : undefined;
 };
