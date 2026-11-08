@@ -81,7 +81,13 @@ class HelperTagLib {
             }
         }
 
-        grailsApplication.config.getProperty('licences.options', List, [])
+        List options = grailsApplication.config.getProperty('licences.options', List, null)
+        if (options != null) {
+            return options
+        }
+        getClass().getResourceAsStream('/ecodata-client-plugin/licences.json').withCloseable { stream ->
+            new JsonSlurper().parse(stream, 'UTF-8')
+        }
     }
 
     private boolean validLicences(def licences) {
