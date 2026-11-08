@@ -60,7 +60,7 @@
                             <select id="licence" data-bind="value: licence, options: licenceOptions, optionsText: ecodataLicences.shortNameFor, optionsValue: 'value', valueAllowUnset: true" class="form-select form-select-sm col-sm-12">
                             </select>
                             <p class="form-text my-2">
-                                <a data-bind="visible: licenceUrl, attr: {href: licenceUrl}" class="selected-licence-link me-2" target="_blank" rel="noopener noreferrer">About <span data-bind="text: ecodataLicences.shortNameFor({value: licence()})"></span> <i class="fas fa-external-link-alt fa-sm" aria-hidden="true"></i></a>
+                                <a data-bind="visible: licenceUrl, attr: {href: licenceUrl}" class="selected-licence-link me-2" target="_blank" rel="noopener noreferrer"><span data-bind="text: ecodataLicences.shortNameFor({value: licence()})"></span> <i class="fas fa-external-link-alt fa-sm" aria-hidden="true"></i></a>
                                 <a href="${message(code: 'project.details.creativeCommons.helpUrl', default: 'https://creativecommons.org/cc-licenses/')}" target="_blank" rel="noopener noreferrer">About CC licences <i class="fas fa-external-link-alt fa-sm" aria-hidden="true"></i></a>
                             </p>
                         </div>
