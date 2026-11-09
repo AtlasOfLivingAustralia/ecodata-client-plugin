@@ -218,6 +218,7 @@ ImageViewModel.createObjectURL = function addObjectURL(document){
 
 /** Map the survey data sharing licence (from form context / pActivity) to a stored image licence value. */
 ImageViewModel.licenceFromSurvey = function(context) {
+    ecodataLicences.load();
     var pActivity = (context && context.pActivity)
         || (context && context.$data && context.$data.$context && context.$data.$context.pActivity)
         || (window.activityLevelData && activityLevelData.pActivity);
