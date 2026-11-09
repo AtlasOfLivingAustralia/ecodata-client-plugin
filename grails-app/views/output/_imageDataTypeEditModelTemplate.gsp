@@ -23,7 +23,7 @@
                 </g:if>
             </div>
             <div class="col-sm-8"  style="display:${showImgMetadata};">
-                <div class="row">
+                <div class="row mb-2">
                     <div class="col-sm-4 text-start control-group required">
                         <label class="control-label">Title: <g:if test="${options?.titleHelpText}"><i class="fa fa-question-circle" data-bind="popover:{container:'body', content:'${options.titleHelpText}', placement:'top'}"></i></g:if> </label>
                     </div>
@@ -33,7 +33,7 @@
                     </div>
                 </div>
 
-                <div class="row">
+                <div class="row mb-2">
                     <div class="col-sm-4 text-start control-group required">
                         <label class="control-label" >Date Taken: <i class="fa fa-question-circle" data-bind="popover:{container:'body', content:'Please ensure that this information is accurate and the date that the photograph was taken, not the date it was uploaded (unless they are the same date).', placement:'top'}">&nbsp;</i></label>
                     </div>
@@ -48,24 +48,26 @@
                     </div>
                 </div>
 
-                <div class="row">
-                    <div class="col-sm-4 text-start">
-                        <label class="control-label">Licence: <i class="fa fa-question-circle"
-                                                                data-bind="popover:{content:'Creative Commons Attribution (CC BY), Creative Commons-Noncommercial (CC BY-NC), Creative Commons Zero (CC0)', placement:'top'}">&nbsp;</i>
-                        </label>
+                <g:if test="${showImgLicence == null || showImgLicence}">
+                    <div class="row mb-2">
+                        <div class="col-sm-4 text-start">
+                            <label class="control-label">Licence: <i class="fa fa-question-circle"
+                                                                    data-bind="popover:{content:'The licence tells others how they may use this image. New images default to the survey data sharing licence. CC0 places the image in the public domain. Attribution (BY) requires credit. Noncommercial (NC) does not allow commercial use. Share Alike (SA) requires adaptations to use the same licence.', placement:'top'}">&nbsp;</i>
+                            </label>
+                        </div>
+                        <div class="col-sm-8">
+                            <select id="licence" data-bind="value: licence, options: transients.licenceOptions, optionsText: ecodataLicences.shortNameFor, optionsValue: 'value', valueAllowUnset: true" class="form-select form-select-sm col-sm-12">
+                            </select>
+                            <p class="form-text my-2">
+                                <a data-bind="visible: transients.licenceUrl, attr: {href: transients.licenceUrl}" class="selected-licence-link me-2" target="_blank" rel="noopener noreferrer"><span data-bind="text: ecodataLicences.shortNameFor({value: licence()})"></span> <i class="fas fa-external-link-alt fa-sm" aria-hidden="true"></i></a>
+                                <a href="${message(code: 'project.details.creativeCommons.helpUrl', default: 'https://creativecommons.org/cc-licenses/')}" target="_blank" rel="noopener noreferrer">About CC licences <i class="fas fa-external-link-alt fa-sm" aria-hidden="true"></i></a>
+                            </p>
+                        </div>
                     </div>
-                    <div class="col-sm-8">
-                        <select id="licence" data-bind="value:licence" class="form-select form-select-sm col-sm-12">
-                            <option value="CC BY 4.0">Creative Commons Attribution 4.0</option>
-                            <option value="CC BY 3.0">Creative Commons Attribution 3.0</option>
-                            <option value="CC BY-NC">Creative Commons Attribution-Noncommercial</option>
-                            <option value="CC BY 0">Creative Commons Zero</option>
-                        </select>
-                    </div>
-                </div>
+                </g:if>
 
                 <g:if test="${showImgAttribution}">
-                    <div class="row">
+                    <div class="row mb-2">
                         <div class="col-sm-4 text-start">
                             <label class="control-label" for="attribution">
                                 Attribution: <i class="fa fa-question-circle" data-bind="popover:{content:'The name of the photographer', placement:'top'}">&nbsp;</i>
@@ -79,7 +81,7 @@
 
 
                 <g:if test="${showImgNotes}">
-                    <div class="row">
+                    <div class="row mb-2">
                         <div class="col-sm-4 text-start">
                             <label class="control-label" for="notes">Notes: <i class="fa fa-question-circle" data-bind="popover:{content:'Additional notes you would like to supply regarding the photo point or photograph.', placement:'top'}">&nbsp;</i></label>
                         </div>
@@ -89,7 +91,7 @@
                     </div>
                 </g:if>
 
-                <div class="row readonly ">
+                <div class="row readonly mb-2">
                     <div class="col-sm-4 text-start">
                         <label class="control-label">File Name:</label>
                     </div>

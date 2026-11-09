@@ -15,7 +15,7 @@
         getBookmarkLocationsURL: "${createLink(controller:"preview", action:"getBookmarkLocations")}",
         validateShapesUrl: "${createLink(controller:"preview", action:"validateGeometry")}"
     };
-    window.modelReady = true
+    window.modelReady = false
 
 </script>
 </head>

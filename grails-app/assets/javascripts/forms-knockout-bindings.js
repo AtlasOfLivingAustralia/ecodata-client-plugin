@@ -200,7 +200,7 @@
                             dateTaken: f.isoDate,
                             staged: true,
                             attribution: f.attribution,
-                            licence: f.licence
+                            licence: f.licence || ImageViewModel.licenceFromSurvey(context)
                         };
 
                         target.push(new ImageViewModel(data, true, context));
