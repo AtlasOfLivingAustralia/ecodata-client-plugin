@@ -17,6 +17,18 @@ var ecodataLicences = {
             return licence.value === value || (licence.aliases || []).indexOf(value) !== -1;
         }) || null;
     },
+    valueFor: function(value) {
+        ecodataLicences.load();
+        var match = ecodataLicences.find(value);
+        return match ? match.value : undefined;
+    },
+    optionsFor: function(value) {
+        var options = ecodataLicences.options().slice();
+        if (value && !options.some(function(option) { return option.value === value; })) {
+            options.push({value: value, name: ecodataLicences.descriptionFor(value)});
+        }
+        return options;
+    },
     descriptionFor: function(value) {
         var match = ecodataLicences.find(value);
         return match ? match.name : (value || '');

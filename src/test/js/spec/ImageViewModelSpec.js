@@ -104,6 +104,9 @@ describe("ImageViewModel Spec", function () {
             expect(image.licence()).toBe(licence);
             expect(image.transients.licenceOptions()).toEqual(choices.concat([{value: licence, name: ecodataLicences.descriptionFor(licence)}]));
         });
+        expect(ecodataLicences.optionsFor("CC BY 4.0")).toEqual(choices);
+        expect(ecodataLicences.optionsFor(undefined)).toEqual(choices);
+        expect(ecodataLicences.options()).toEqual(choices);
     });
 
     it("does not assign a survey licence to saved images", function () {
@@ -119,6 +122,7 @@ describe("ImageViewModel Spec", function () {
     it("loads configured licences from replacement helper markup", function () {
         var options = [{value: "Custom", name: "Custom licence"}];
         renderConfig(options);
+        expect(ecodataLicences.valueFor("Custom")).toBe("Custom");
         var image = new ImageViewModel({url: "/image", filesize: 1, licence: "Custom"}, true);
         expect(image.transients.licenceOptions()).toEqual(options);
         expect(ecodataLicences.options()).toEqual(options);
