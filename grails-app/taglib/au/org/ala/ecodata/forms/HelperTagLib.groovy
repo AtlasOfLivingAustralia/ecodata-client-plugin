@@ -77,14 +77,10 @@ class HelperTagLib {
                 }
                 log.warn("Ignoring invalid licences file '${path}'.")
             } catch (Exception e) {
-                log.warn("Unable to read licences file '${path}', using configured licences instead.", e)
+                log.warn("Unable to read licences file '${path}', using packaged defaults instead.", e)
             }
         }
 
-        List options = grailsApplication.config.getProperty('licences.options', List, null)
-        if (options != null) {
-            return options
-        }
         getClass().getResourceAsStream('/ecodata-client-plugin/licences.json').withCloseable { stream ->
             new JsonSlurper().parse(stream, 'UTF-8')
         }

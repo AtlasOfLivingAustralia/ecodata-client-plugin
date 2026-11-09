@@ -23,6 +23,19 @@ class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLi
     }
 
 
+    def "licence catalogue is emitted before the bound form content"() {
+        given:
+        mockTagLib(HelperTagLib)
+
+        when:
+        String html = applyTemplate('<md:modelView model="${model}"/>', [model: [viewModel: [], dataModel: []]])
+
+        then:
+        html.contains('Creative Commons Attribution 4.0 International')
+        html.indexOf('data-ecodata-licences') < html.indexOf('class="model-form"')
+        html.substring(html.indexOf('class="model-form"')).count('data-ecodata-licences') == 0
+    }
+
     def "the view model type section renders correctly without a title"() {
         setup:
         Map model = [type:'section', items:[]]

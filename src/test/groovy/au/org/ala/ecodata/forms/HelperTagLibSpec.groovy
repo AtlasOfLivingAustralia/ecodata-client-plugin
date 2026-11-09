@@ -19,25 +19,35 @@ class HelperTagLibSpec extends Specification implements TagLibUnitTest<HelperTag
         applyTemplate('<md:toSingleWord name="Output Name"/>') == 'Output_Name'
     }
 
-    void "licences tag outputs configured options as JSON"() {
+    void "licences tag supplies packaged defaults without host configuration"() {
         given:
-        grailsApplication.config.licences.options = [[value: 'Custom', name: 'Custom licence']]
+        def originalFile = grailsApplication.config.getProperty('licences.file', String, null)
+        grailsApplication.config.licences.file = null
 
         when:
         def output = applyTemplate('<md:licences/>')
 
         then:
         output.contains('data-ecodata-licences=')
-        output.contains('Custom licence')
+        output.contains('Creative Commons Zero 1.0')
+        output.contains('Creative Commons Attribution 4.0 International')
+        output.contains('Creative Commons Attribution-Noncommercial-Share Alike 4.0 International')
         output.contains('</div>')
+
+        cleanup:
+        grailsApplication.config.licences.file = originalFile
     }
 
-    void "licences tag supplies packaged defaults without host configuration"() {
+    void "licences tag uses packaged defaults for an unusable file"() {
         given:
-        def originalOptions = grailsApplication.config.getProperty('licences.options', List, null)
         def originalFile = grailsApplication.config.getProperty('licences.file', String, null)
-        grailsApplication.config.licences.options = null
-        grailsApplication.config.licences.file = null
+        def licencesFile = File.createTempFile('licences', '.json')
+        if (contents == null) {
+            licencesFile.delete()
+        } else {
+            licencesFile.text = contents
+        }
+        grailsApplication.config.licences.file = licencesFile.absolutePath
 
         when:
         def output = applyTemplate('<md:licences/>')
@@ -45,12 +55,13 @@ class HelperTagLibSpec extends Specification implements TagLibUnitTest<HelperTag
         then:
         output.contains('Creative Commons Zero 1.0')
         output.contains('Creative Commons Attribution 4.0 International')
-        output.contains('Creative Commons Attribution-Noncommercial-Share Alike 4.0 International')
-        output.contains('</div>')
 
         cleanup:
-        grailsApplication.config.licences.options = originalOptions
         grailsApplication.config.licences.file = originalFile
+        licencesFile.delete()
+
+        where:
+        contents << [null, 'not JSON', '[]', '[{"value":"Invalid"}]']
     }
 
     void "licences tag prefers a valid external file"() {

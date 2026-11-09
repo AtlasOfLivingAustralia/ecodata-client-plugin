@@ -6,32 +6,6 @@
 ### About
 The ecodata client plugin is a grails plugin used to generate data entry forms from a metadata definition. It is used by the [MERIT](https://github.com/AtlasOfLivingAustralia/fieldcapture) and [BioCollect](https://github.com/AtlasOfLivingAustralia/fieldcapture) applications.
 
-### Licences
-Default licence options are packaged in `src/main/resources/ecodata-client-plugin/licences.json` and work without host configuration. Applications using the plugin, including BioCollect, can override the list with `licences.options` in `application.yml`; each entry needs a `value` and `name`, and may include `aliases`, `shortName`, and an HTTP(S) `url`:
-
-```yaml
-licences:
-  options:
-    - value: 'CC BY 4.0'
-      name: 'Creative Commons Attribution 4.0 International'
-      shortName: 'CC BY 4.0'
-      url: 'https://creativecommons.org/licenses/by/4.0/'
-      aliases:
-        - 'https://creativecommons.org/licenses/by/4.0/'
-```
-Use `<md:licences/>` in a GSP page to emit the configured options as JSON in a hidden `data-ecodata-licences` element. Image forms read the options from that element when creating image view models.
-The element is explicitly closed and contains no executable script, so it does not disrupt Knockout bindings.
-
-Other models and apps can include the `licences.js` asset alongside Knockout and call `ecodataLicences.load()` after rendering `<md:licences/>`. The shared helper exposes `options()` (an observable list), `find(value)`, `descriptionFor(value)`, `shortNameFor(option)`, and `urlFor(value)`. Image dropdowns use the short name (or stored value when absent) and link to the selected licence when a URL is configured.
-
-Only new uploads inherit the survey licence when none is supplied. Saved images retain their existing licence, including an unset value. Each licence version has its own option and URL; aliases should not map different versions to the same option.
-
-To override the packaged list without rebuilding the plugin, point `licences.file` at a mounted JSON file. The file must contain the same array of licence objects. It is read when the tag renders; if it is missing or invalid, the plugin uses `licences.options` when configured, otherwise the packaged defaults.
-
-```yaml
-licences:
-  file: /etc/biocollect/licences.json
-```
 
 ### Technologies
 * Grails framework 
@@ -73,3 +47,25 @@ The ecodata client plugin application includes a simple servlet that reads a dat
 grails run-app
 ```
 
+### Licences
+Defaults are packaged in `src/main/resources/ecodata-client-plugin/licences.json`. To override them, set `licences.file` to a mounted JSON file. The file is read on each render; missing or invalid files fall back to packaged defaults.
+
+Entries require `value` and `name`; `shortName`, HTTP(S) `url`, and `aliases` are optional. Aliases must refer to the same licence version.
+
+```yaml
+licences:
+  file: /etc/biocollect/licences.json
+```
+
+The file contains a non-empty JSON array. See [src/main/resources/ecodata-client-plugin/licences.json](src/main/resources/ecodata-client-plugin/licences.json) for a reference on how to format the JSON.
+
+`<md:modelView/>` emits the catalogue automatically, outside conditional and deferred content. Standalone pages should render `<md:licences/>` there instead. Its closed, hidden JSON element avoids executable scripts interfering with Knockout bindings.
+
+Include `licences.js` alongside Knockout and call `ecodataLicences.load()` to read the catalogue. The helper provides:
+- `options()` and `optionsFor(value)`: the observable catalogue, or a copy including an unlisted current value.
+- `find(value)` and `valueFor(value)`: lookup by code/alias; `valueFor` also loads the catalogue and returns the stored code.
+- `descriptionFor(value)`, `shortNameFor(option)`, and `urlFor(value)`: display text and safe links.
+
+Use `optionsText: ecodataLicences.shortNameFor` with `optionsValue: 'value'` for images or `'url'` for BioCollect survey settings. Keep derived UI fields under `transients` as `ko.pureComputed` values to exclude them from saves.
+
+Only new uploads without a supplied licence inherit a matching survey licence. Saved images retain their licence, including an unset value; unlisted values remain selectable.

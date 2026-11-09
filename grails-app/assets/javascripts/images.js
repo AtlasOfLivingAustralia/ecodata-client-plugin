@@ -45,12 +45,7 @@ function ImageViewModel(prop, skipFindingDocument, context){
         return ecodataLicences.urlFor(self.licence());
     });
     self.transients.licenceOptions = ko.pureComputed(function() {
-        var options = ecodataLicences.options().slice();
-        var licence = self.licence();
-        if (licence && !options.some(function(option) { return option.value === licence; })) {
-            options.push({value: licence, name: ecodataLicences.descriptionFor(licence)});
-        }
-        return options;
+        return ecodataLicences.optionsFor(self.licence());
     });
     self.notes = ko.observable(prop.notes || '');
     self.name = ko.observable(prop.name);
@@ -218,10 +213,8 @@ ImageViewModel.createObjectURL = function addObjectURL(document){
 
 /** Map the survey data sharing licence (from form context / pActivity) to a stored image licence value. */
 ImageViewModel.licenceFromSurvey = function(context) {
-    ecodataLicences.load();
     var pActivity = (context && context.pActivity)
         || (context && context.$data && context.$data.$context && context.$data.$context.pActivity)
         || (window.activityLevelData && activityLevelData.pActivity);
-    var match = ecodataLicences.find(pActivity && pActivity.dataSharingLicense);
-    return match ? match.value : undefined;
+    return ecodataLicences.valueFor(pActivity && pActivity.dataSharingLicense);
 };
