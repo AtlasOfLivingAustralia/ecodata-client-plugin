@@ -1,13 +1,18 @@
 import catalogue from '../../../main/resources/ecodata-client-plugin/licences.json';
 
 describe("ImageViewModel Spec", function () {
-    it("defaults only newly uploaded images and preserves upload licences", function () {
+    it("loads licences for the first upload and preserves supplied upload licences", function () {
         var originalLicences = ecodataLicences.options();
+        var originalJson = ecodataLicences.json;
         var originalUpload = $.fn.fileupload;
         var element = document.createElement('table');
         var target = ko.observableArray([]);
         var context = {pActivity: {dataSharingLicense: 'survey-url'}};
-        ecodataLicences.options([{value: 'Survey licence', name: 'Survey licence', aliases: ['survey-url']}]);
+        var config = document.createElement('div');
+        config.setAttribute('data-ecodata-licences', JSON.stringify([{value: 'Survey licence', name: 'Survey licence', aliases: ['survey-url']}]));
+        document.body.appendChild(config);
+        ecodataLicences.options([]);
+        ecodataLicences.json = null;
         $.fn.fileupload = function() { return this; };
         try {
             ko.bindingHandlers.imageUpload.init(element, function() {
@@ -22,8 +27,10 @@ describe("ImageViewModel Spec", function () {
         } finally {
             $(element).off();
             ko.cleanNode(element);
+            config.remove();
             $.fn.fileupload = originalUpload;
             ecodataLicences.options(originalLicences);
+            ecodataLicences.json = originalJson;
         }
     });
 
