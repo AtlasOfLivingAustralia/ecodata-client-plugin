@@ -14,7 +14,7 @@ var ecodataLicences = {
     },
     find: function(value) {
         return ecodataLicences.options().find(function(licence) {
-            return licence.value === value || (licence.aliases || []).indexOf(value) !== -1;
+            return licence.value === value || (licence.url && licence.url === value) || (licence.aliases || []).indexOf(value) !== -1;
         }) || null;
     },
     valueFor: function(value) {

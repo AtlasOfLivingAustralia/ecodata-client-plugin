@@ -79,6 +79,14 @@ describe("ImageViewModel Spec", function () {
         });
     });
 
+    it("matches custom survey licences by URL without aliases", function () {
+        var licence = {value: 'Custom', name: 'Custom licence', url: 'https://example.org/licence'};
+        ecodataLicences.options([licence]);
+
+        expect(ecodataLicences.find(licence.url)).toBe(licence);
+        expect(ImageViewModel.licenceFromSurvey({pActivity: {dataSharingLicense: licence.url}})).toBe(licence.value);
+    });
+
     it("uses short labels and updates the selected licence link", function () {
         var choices = [
             {value: "CC BY 0", name: "Creative Commons Zero", shortName: "CC0", url: "https://creativecommons.org/publicdomain/zero/1.0/"},
