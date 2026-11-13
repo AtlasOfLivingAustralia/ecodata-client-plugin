@@ -1,6 +1,9 @@
+//= require licences.js
+
 function ImageViewModel(prop, skipFindingDocument, context){
     var self = this, document;
     var documents;
+    ecodataLicences.load();
 
     // used by image gallery plugin. document is passed to the function.
     if(!skipFindingDocument){
@@ -33,7 +36,17 @@ function ImageViewModel(prop, skipFindingDocument, context){
     self.filename = prop.filename;
     self.attribution = ko.observable(prop.attribution);
     self.licence = ko.observable(prop.licence);
-    self.licenceDescription = prop.licenceDescription;
+    self.licenceDescription = prop.licenceDescription || ecodataLicences.descriptionFor(self.licence());
+    self.licence.subscribe(function(code) {
+        self.licenceDescription = ecodataLicences.descriptionFor(code);
+    });
+    self.transients = {};
+    self.transients.licenceUrl = ko.pureComputed(function() {
+        return ecodataLicences.urlFor(self.licence());
+    });
+    self.transients.licenceOptions = ko.pureComputed(function() {
+        return ecodataLicences.optionsFor(self.licence());
+    });
     self.notes = ko.observable(prop.notes || '');
     self.name = ko.observable(prop.name);
     self.formattedSize = formatBytes(prop.filesize);
@@ -107,14 +120,17 @@ function ImageViewModel(prop, skipFindingDocument, context){
 
         self.filename = prop.filename;
         prop.attribution && self.attribution(prop.attribution);
-        prop.licence && self.licence(prop.licence);
+        if (prop.licence) {
+            self.licence(prop.licence);
+        }
+        if (prop.licenceDescription) {
+            self.licenceDescription = prop.licenceDescription;
+        }
         prop.notes && self.notes(prop.notes || '');
         prop.name && self.name(prop.name);
         prop.status && self.status(prop.status || 'active');
         if(prop.filesize)
             self.filesize = prop.filesize
-        if(prop.licenceDescription)
-            self.licenceDescription = prop.licenceDescription;
         if(prop.filesize)
             self.formattedSize = formatBytes(prop.filesize);
         if(prop.staged !== undefined)
@@ -193,4 +209,12 @@ ImageViewModel.createObjectURL = function addObjectURL(document){
         var url = URL.createObjectURL(blob);
         return url;
     }
-}
+};
+
+/** Map the survey data sharing licence (from form context / pActivity) to a stored image licence value. */
+ImageViewModel.licenceFromSurvey = function(context) {
+    var pActivity = (context && context.pActivity)
+        || (context && context.$data && context.$data.$context && context.$data.$context.pActivity)
+        || (window.activityLevelData && activityLevelData.pActivity);
+    return ecodataLicences.valueFor(pActivity && pActivity.dataSharingLicense);
+};
