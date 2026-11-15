@@ -204,6 +204,7 @@ ecodata.forms.maps.featureMap = function (options) {
             displayScale: true,
             addGeometryFromLocalFile: true,
             simplifyImportedShapes: true,
+            draggableMarkers: false,
             simplifyOptions: {
                 tolerance: 0.0001
             },

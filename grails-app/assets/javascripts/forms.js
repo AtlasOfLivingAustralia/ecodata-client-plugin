@@ -163,7 +163,7 @@ function orEmptyArray(v) {
             function m2ToHa(areaM2) {
                 return areaM2 / SQUARE_METERS_IN_HECTARE;
             }
-            return m2ToHa(turf.area(geoJSON))
+            return window.ALA && window.ALA.MapUtils && window.ALA.MapUtils.calculateAreaKmSq ? ALA.MapUtils.calculateAreaKmSq(geoJSON) * 100 : m2ToHa(turf.area(geoJSON));
         },
         getInstanceForOutputName: function (outputName) {
             var instanceNames = ecodata.forms.utils.getViewModelInstanceNames();
