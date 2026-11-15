@@ -110,7 +110,7 @@ dependencies {
 
     // Use the published ala-map-plugin unless it has been included as a local project (see settings.gradle)
     if (!findProject(':ala-map-plugin')) {
-        implementation ("org.grails.plugins:ala-map-plugin:6.0-SNAPSHOT") {
+        implementation ("org.grails.plugins:ala-map-plugin:7.0-SNAPSHOT") {
             exclude group: 'cloud.wondrify', module: 'asset-pipeline-grails'
         }
     }
