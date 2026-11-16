@@ -180,7 +180,7 @@ ecodata.forms.maps.featureMap = function (options) {
         weight: 4,
         fillOpacity: 0.2,
         color: "#0f0"
-    };
+    }, PRECISION = 8;
 
 
 
@@ -318,7 +318,7 @@ ecodata.forms.maps.featureMap = function (options) {
 
         function createEditableSiteModel (layer) {
             if (!layer.feature) {
-                layer.feature = layer.toGeoJSON();
+                layer.feature = layer.toGeoJSON(PRECISION);
             }
 
             var defaultName = layer.feature.properties && layer.feature.properties.name || 'New works area',
@@ -336,7 +336,7 @@ ecodata.forms.maps.featureMap = function (options) {
         }
 
         function updateStatistics() {
-            var geoJson = self.drawnItems.toGeoJSON();
+            var geoJson = self.drawnItems.toGeoJSON(PRECISION);
             self.areaHa(ecodata.forms.utils.areaHa(geoJson));
             self.lengthKm(ecodata.forms.utils.lengthKm(geoJson, true));
         }
