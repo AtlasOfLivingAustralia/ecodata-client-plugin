@@ -44,7 +44,20 @@ var ecodataLicences = {
         'CC BY-NC-SA': 'https://creativecommons.org/licenses/by-nc-sa/4.0/'
     },
     normaliseUrl: function(value) {
-        return typeof value === 'string' ? value.replace(/^https?:\/\//i, 'https://').replace(/\/+$/, '') : '';
+        if (typeof value !== 'string') {
+            return '';
+        }
+        try {
+            var url = new URL(value);
+            if (url.protocol === 'http:' || url.protocol === 'https:') {
+                url.protocol = 'https:';
+                url.hostname = url.hostname.toLowerCase();
+                return url.href.replace(/\/+$/, '');
+            }
+        } catch (e) {
+            // Preserve unrecognised values without treating them as catalogue URLs.
+        }
+        return value.replace(/^https?:\/\//i, 'https://').replace(/\/+$/, '');
     },
     find: function(value) {
         var url = ecodataLicences.normaliseUrl(ecodataLicences.legacyUrls[value] || value);

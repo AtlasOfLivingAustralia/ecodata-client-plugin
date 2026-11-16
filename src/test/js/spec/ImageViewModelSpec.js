@@ -77,7 +77,7 @@ describe("ImageViewModel Spec", function () {
             expect(ecodataLicences.descriptionFor(pair[0])).toContain(pair[1]);
         });
         expect(ecodataLicences.find('https://creativecommons.org/licenses/by-nc/3.0/nz/')).toBeNull();
-        expect(ecodataLicences.find('HTTPS://creativecommons.org/licenses/by/4.0')).toEqual(catalogue[0]);
+        expect(ecodataLicences.find('HTTPS://CreativeCommons.org/licenses/by/4.0')).toEqual(catalogue[0]);
     });
 
     it("preserves unknown and unavailable historical survey values instead of applying the default", function () {

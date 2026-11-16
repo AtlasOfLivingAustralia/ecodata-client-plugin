@@ -96,6 +96,21 @@ class LicenceService {
     }
 
     private static String normaliseUrl(String value) {
-        value.replaceFirst('(?i)^https?://', 'https://').replaceAll('/+$', '')
+        String normalised = value.replaceFirst('(?i)^https?://', 'https://')
+        try {
+            URI uri = new URI(normalised)
+            if (uri.host) {
+                String authority = uri.rawAuthority
+                int hostIndex = authority.lastIndexOf(uri.host)
+                int authorityStart = normalised.indexOf('://') + 3
+                String normalisedAuthority = authority.substring(0, hostIndex) +
+                        uri.host.toLowerCase(Locale.ROOT) + authority.substring(hostIndex + uri.host.length())
+                normalised = normalised.substring(0, authorityStart) + normalisedAuthority +
+                        normalised.substring(authorityStart + authority.length())
+            }
+        } catch (URISyntaxException ignored) {
+            // Non-URL configured defaults are preserved as-is.
+        }
+        normalised.replaceAll('/+$', '')
     }
 }

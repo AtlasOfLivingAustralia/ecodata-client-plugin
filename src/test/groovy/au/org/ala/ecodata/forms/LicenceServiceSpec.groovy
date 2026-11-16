@@ -180,9 +180,9 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         service.licences*.url as Set == expected
 
         where:
-        yaml                                                                              | expected
-        'licences:\n  allowlist:\n    - HTTPS://creativecommons.org/licenses/by-nc/3.0/au' | ['https://creativecommons.org/licenses/by-nc/3.0/au/'] as Set
-        'licences:\n  allowlist: []'                                                      | [] as Set
+        yaml                                                                                   | expected
+        'licences:\n  allowlist:\n    - HTTPS://CreativeCommons.org/licenses/by-nc/3.0/au' | ['https://creativecommons.org/licenses/by-nc/3.0/au/'] as Set
+        'licences:\n  allowlist: []'                                                           | [] as Set
     }
 
     void "rejects invalid allowlist entries"() {
