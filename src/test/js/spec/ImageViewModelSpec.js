@@ -68,6 +68,28 @@ describe("ImageViewModel Spec", function () {
         }
     });
 
+    it("inherits the survey licence from the binding context when upload config omits it", function () {
+        var originalUpload = $.fn.fileupload;
+        var element = document.createElement('table');
+        var target = ko.observableArray([]);
+        renderConfig(catalogue);
+        $.fn.fileupload = function() { return this; };
+        try {
+            ko.applyBindings({$context: {pActivity: {dataSharingLicense: catalogue[1].url}}}, element);
+            ko.bindingHandlers.imageUpload.init(element, function() {
+                return {target: target};
+            }, null, {}, ko.contextFor(element));
+            $(element).trigger('fileuploaddone', {result: {files: [
+                {url: '/image', name: 'survey.jpg', size: 1}
+            ]}});
+            expect(target()[0].licence()).toBe('CC0');
+        } finally {
+            $(element).off();
+            ko.cleanNode(element);
+            $.fn.fileupload = originalUpload;
+        }
+    });
+
     it("inherits historical licences without upgrading versions or jurisdictions", function () {
         [
             ['https://creativecommons.org/licenses/by-nc/3.0/au/', 'CC-BY-NC 3.0 (Aus)'],

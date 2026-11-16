@@ -10,6 +10,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.core.io.ByteArrayResource
 import spock.lang.Specification
 
+import java.net.UnknownHostException
+
 class LicenceServiceSpec extends Specification implements GrailsUnitTest {
     LicenceService service
     EcpWebService webService = Mock()
@@ -73,6 +75,16 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
                 url: LicenceService.DEFAULT_LICENCE, imageUrl: '', version: '4.0']]],
             [error: 'timeout']
         ]
+    }
+
+    void "uses cached defaults if Collectory lookup throws during startup"() {
+        when:
+        service.init()
+        List licences = service.licences
+
+        then:
+        1 * webService.getJson2(_, 5000) >> { throw new UnknownHostException('DNS lookup failed') }
+        licences*.url as Set == defaultUrls
     }
 
     void "allows all seven current licences while retaining historical API metadata"() {

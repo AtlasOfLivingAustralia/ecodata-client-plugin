@@ -55,7 +55,13 @@ class LicenceService {
         String baseUrl = grailsApplication.config.getProperty('collectory.service.url', String, 'https://collections.ala.org.au')
         String url = baseUrl.replaceAll('/+$', '') + '/ws/licence'
         cacheService.get("licences:${url}", {
-            Map result = ecpWebService.getJson2(url, 5000)
+            Map result
+            try {
+                result = ecpWebService.getJson2(url, 5000)
+            } catch (Exception e) {
+                log.warn("Unable to load licences from '${url}'. Using built-in defaults.", e)
+                return DEFAULT_LICENCES
+            }
             if (!result?.error && result?.statusCode == 200 && validLicences(result.resp)) {
                 return uniqueLicences(result.resp + DEFAULT_LICENCES)
             }
