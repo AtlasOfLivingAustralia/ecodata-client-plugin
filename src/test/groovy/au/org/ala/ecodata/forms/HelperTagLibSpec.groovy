@@ -1,6 +1,7 @@
 package au.org.ala.ecodata.forms
 
 import grails.testing.web.taglib.TagLibUnitTest
+import groovy.json.JsonSlurper
 
 //import grails.test.mixin.TestFor
 import spock.lang.Specification
@@ -9,6 +10,7 @@ import spock.lang.Specification
 class HelperTagLibSpec extends Specification implements TagLibUnitTest<HelperTagLib> {
 
     def setup() {
+        tagLib.licenceService = Mock(LicenceService)
     }
 
     def cleanup() {
@@ -19,72 +21,29 @@ class HelperTagLibSpec extends Specification implements TagLibUnitTest<HelperTag
         applyTemplate('<md:toSingleWord name="Output Name"/>') == 'Output_Name'
     }
 
-    void "licences tag supplies packaged defaults without host configuration"() {
+    void "licences tag supplies allowed choices and the full catalogue as escaped non-executable markup"() {
         given:
-        def originalFile = grailsApplication.config.getProperty('licences.file', String, null)
-        grailsApplication.config.licences.file = null
+        def allowed = [name: 'Attribution <script>', acronym: 'CC-BY 4.0 (Int)',
+                       url: LicenceService.DEFAULT_LICENCE, imageUrl: '', version: '4.0']
+        def historical = [name: 'Historical', acronym: 'CC-BY-NC 3.0 (Aus)',
+                          url: 'https://creativecommons.org/licenses/by-nc/3.0/au/', imageUrl: '', version: '3.0']
+        tagLib.licenceService.getLicences() >> [allowed]
+        tagLib.licenceService.getAllLicences() >> [allowed, historical]
+        tagLib.licenceService.getDefaultLicence() >> LicenceService.DEFAULT_LICENCE
 
         when:
         def output = applyTemplate('<md:licences/>')
+        def element = new XmlSlurper().parseText(output)
+        def options = new JsonSlurper().parseText(element.@'data-ecodata-licences'.text())
+        def catalogue = new JsonSlurper().parseText(element.@'data-ecodata-licence-catalogue'.text())
 
         then:
         output.contains('data-ecodata-licences=')
-        output.contains('Creative Commons Zero 1.0')
-        output.contains('Creative Commons Attribution 4.0 International')
-        output.contains('Creative Commons Attribution-Noncommercial-Share Alike 4.0 International')
+        output.contains('CC-BY 4.0 (Int)')
+        options == [allowed]
+        catalogue == [allowed, historical]
+        output.contains("data-ecodata-default-licence='https://creativecommons.org/licenses/by/4.0/'")
+        !output.contains('<script>')
         output.contains('</div>')
-
-        cleanup:
-        grailsApplication.config.licences.file = originalFile
-    }
-
-    void "licences tag uses packaged defaults for an unusable file"() {
-        given:
-        def originalFile = grailsApplication.config.getProperty('licences.file', String, null)
-        def licencesFile = File.createTempFile('licences', '.json')
-        if (contents == null) {
-            licencesFile.delete()
-        } else {
-            licencesFile.text = contents
-        }
-        grailsApplication.config.licences.file = licencesFile.absolutePath
-
-        when:
-        def output = applyTemplate('<md:licences/>')
-
-        then:
-        output.contains('Creative Commons Zero 1.0')
-        output.contains('Creative Commons Attribution 4.0 International')
-
-        cleanup:
-        grailsApplication.config.licences.file = originalFile
-        licencesFile.delete()
-
-        where:
-        contents << [null, 'not JSON', '[]', '[{"value":"Invalid"}]']
-    }
-
-    void "licences tag prefers a valid external file"() {
-        given:
-        def originalFile = grailsApplication.config.getProperty('licences.file', String, null)
-        def licencesFile = File.createTempFile('image-licences', '.json')
-        licencesFile.text = '[{"value":"External","name":"External licence"}]'
-        grailsApplication.config.licences.file = licencesFile.absolutePath
-
-        when:
-        def output = applyTemplate('<md:licences/>')
-
-        then:
-        output.contains('data-ecodata-licences=')
-        output.contains('External licence')
-        !output.contains('Creative Commons Zero 1.0')
-
-        cleanup:
-        if (originalFile) {
-            grailsApplication.config.licences.file = originalFile
-        } else {
-            grailsApplication.config.licences.remove('file')
-        }
-        licencesFile.delete()
     }
 }

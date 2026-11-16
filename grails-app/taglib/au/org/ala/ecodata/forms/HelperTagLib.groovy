@@ -1,7 +1,6 @@
 package au.org.ala.ecodata.forms
 
 import groovy.json.JsonOutput
-import groovy.json.JsonSlurper
 import groovy.xml.MarkupBuilder
 import groovy.util.logging.Slf4j
 
@@ -12,6 +11,7 @@ import groovy.util.logging.Slf4j
 class HelperTagLib {
     static defaultEncodeAs = [taglib: 'none']
     static namespace = "md"
+    LicenceService licenceService
 
     /**
      * @attr title
@@ -62,37 +62,10 @@ class HelperTagLib {
 
     def licences = { attrs ->
         MarkupBuilder mb = new MarkupBuilder(out)
-        mb.div(hidden: 'hidden', 'data-ecodata-licences': JsonOutput.toJson(resolveLicences())) {
+        mb.div(hidden: 'hidden', 'data-ecodata-licences': JsonOutput.toJson(licenceService.licences),
+                'data-ecodata-licence-catalogue': JsonOutput.toJson(licenceService.allLicences),
+                'data-ecodata-default-licence': licenceService.defaultLicence) {
             mkp.yield(' ')
         }
-    }
-
-    private List resolveLicences() {
-        String path = grailsApplication.config.getProperty('licences.file', String, null)
-        if (path) {
-            try {
-                def licences = new JsonSlurper().parse(new File(path))
-                if (validLicences(licences)) {
-                    return licences
-                }
-                log.warn("Ignoring invalid licences file '${path}'.")
-            } catch (Exception e) {
-                log.warn("Unable to read licences file '${path}', using packaged defaults instead.", e)
-            }
-        }
-
-        getClass().getResourceAsStream('/ecodata-client-plugin/licences.json').withCloseable { stream ->
-            new JsonSlurper().parse(stream, 'UTF-8')
-        }
-    }
-
-    private boolean validLicences(def licences) {
-        licences instanceof List && !licences.isEmpty() &&
-                licences.every { licence ->
-                    licence instanceof Map &&
-                            licence.value instanceof String && licence.value &&
-                            licence.name instanceof String && licence.name &&
-                            (!licence.containsKey('aliases') || licence.aliases instanceof List)
-                        }
     }
 }

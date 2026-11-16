@@ -48,24 +48,38 @@ grails run-app
 ```
 
 ### Licences
-Defaults are packaged in `src/main/resources/ecodata-client-plugin/licences.json`. To override them, set `licences.file` to a mounted JSON file. The file is read on each render; missing or invalid files fall back to packaged defaults.
+Licences are fetched server-side from `${collectory.service.url}/ws/licence` and cached for one day, including fallback responses. The service warms the cache automatically after Spring injects its dependencies; later lookups refresh expired entries. The Collectory base URL defaults to `https://collections.ala.org.au`. Configure it for test deployments:
 
-Entries require `value` and `name`; `shortName`, HTTP(S) `url`, and `aliases` are optional. Aliases must refer to the same licence version.
+```yaml
+collectory:
+  service:
+    url: https://collections.test.ala.org.au
+licences:
+  default: https://creativecommons.org/licenses/by/4.0/
+```
+
+The default may be a catalogue URL or acronym. It applies to new surveys and new uploads without a survey licence, not to saved records. A default outside the allowlist is logged and retained with a visible warning; CC-BY 4.0 is used only when no default is configured.
+
+By default, the allowlist permits CC0 and all six CC 4.0 licences: CC-BY, CC-BY-SA, CC-BY-ND, CC-BY-NC, CC-BY-NC-SA and CC-BY-NC-ND. Override `licences.allowlist` with a list of licence URLs to replace these choices, for example:
 
 ```yaml
 licences:
-  file: /etc/biocollect/licences.json
+  allowlist:
+    - https://creativecommons.org/licenses/by/4.0/
+    - https://creativecommons.org/licenses/by-nc/3.0/au/
 ```
 
-The file contains a non-empty JSON array. See [src/main/resources/ecodata-client-plugin/licences.json](src/main/resources/ecodata-client-plugin/licences.json) for a reference on how to format the JSON.
+Entries use the API shape: `name`, `acronym`, `url`, `imageUrl`, and `version`. Duplicate licence URLs are collapsed; HTTP/HTTPS and trailing-slash variants identify the same licence, but different versions and jurisdictions never do. Missing standard choices are supplemented from built-in definitions; failed or invalid API responses are logged and use those definitions as the fallback. Override URLs must exist in the catalogue or built-in definitions; missing entries are logged. An empty allowlist offers no general choices, though an excluded default is still retained with a warning. Previously selected licences remain available, with their catalogue descriptions where known, even if excluded by the allowlist.
 
 `<md:modelView/>` emits the catalogue automatically, outside conditional and deferred content. Standalone pages should render `<md:licences/>` there instead. Its closed, hidden JSON element avoids executable scripts interfering with Knockout bindings.
 
 Include `licences.js` alongside Knockout and call `ecodataLicences.load()` to read the catalogue. The helper provides:
-- `options()` and `optionsFor(value)`: the observable catalogue, or a copy including an unlisted current value.
-- `find(value)` and `valueFor(value)`: lookup by code/alias; `valueFor` also loads the catalogue and returns the stored code.
+- `options()` and `optionsFor(value)`: allowed choices, or choices including the current value when it is excluded or unrecognised.
+- `catalogue()`: the full catalogue used to recognise historical values.
+- `find(value)` and `valueFor(value)`: lookup by acronym, URL or previously supported image code; `valueFor` loads the catalogue and returns the acronym.
+- `defaultValue(field)`: the configured default's acronym, or URL with `field: 'url'`; unrecognised defaults retain their configured value.
 - `descriptionFor(value)`, `shortNameFor(option)`, and `urlFor(value)`: display text and safe links.
 
-Use `optionsText: ecodataLicences.shortNameFor` with `optionsValue: 'value'` for images or `'url'` for BioCollect survey settings. Keep derived UI fields under `transients` as `ko.pureComputed` values to exclude them from saves.
+Use `new LicenceViewModel(licenceObservable)` for images, or `new LicenceViewModel(licenceObservable, 'url')` for survey URLs. It exposes `selection`, `options`, `description`, `url`, and `warning` as pure computeds. Bind `value: transients.licence.selection`, `optionsText: 'acronym'` with `optionsValue: 'acronym'` for images or `'url'` for surveys. The selection adapter displays recognised historical codes/URLs without rewriting the saved value until a different licence is chosen. Keep the view model under `transients` to exclude UI fields from saves.
 
-Only new uploads without a supplied licence inherit a matching survey licence. Saved images retain their licence, including an unset value; unlisted values remain selectable.
+Only new uploads without a supplied licence inherit the same survey licence; recognised values are stored as catalogue acronyms. Unknown survey values are retained with a visible warning instead of being replaced by the default. Saved images retain their licence, including an unset value.
