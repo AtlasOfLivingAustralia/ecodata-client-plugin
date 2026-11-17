@@ -1,5 +1,7 @@
 package au.org.ala.ecodata.forms
 
+import au.org.ala.ws.tokens.TokenService
+import com.sun.net.httpserver.HttpServer
 import grails.testing.services.ServiceUnitTest
 import okhttp3.Request
 import spock.lang.Specification
@@ -52,5 +54,30 @@ class EcpWebServiceSpec extends Specification implements ServiceUnitTest<EcpWebS
         'ecodata.ala.org' | false
         'invalid.com'  | false
         'example.org'  | false
+    }
+
+    def "getJson2 can skip auth headers for public APIs called outside a request"() {
+        given:
+        service.grailsApplication = grailsApplication
+        service.tokenService = Mock(TokenService)
+        Map<String, List<String>> headers = [:]
+        HttpServer server = HttpServer.create(new InetSocketAddress('localhost', 0), 0)
+        server.createContext('/ws/licence') { exchange ->
+            headers.putAll(exchange.requestHeaders)
+            exchange.sendResponseHeaders(200, 2)
+            exchange.responseBody.withStream { it.write('[]'.bytes) }
+        }
+        server.start()
+
+        when:
+        Map result = service.getJson2("http://localhost:${server.address.port}/ws/licence", 1000, false)
+
+        then:
+        result == [statusCode: 200, resp: []]
+        !headers.containsKey('Authorization')
+        0 * service.tokenService._
+
+        cleanup:
+        server.stop(0)
     }
 }
