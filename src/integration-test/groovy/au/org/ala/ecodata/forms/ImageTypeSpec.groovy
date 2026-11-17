@@ -79,8 +79,8 @@ class ImageTypeSpec extends GebReportingSpec {
         when: "A licence is selected"
         $(".fileupload-buttonbar select#licence").first().value('CC-BY 4.0 (Int)')
 
-        then: "Short labels and the selected licence link are displayed"
-        $(".fileupload-buttonbar select#licence").first().find('option', value: 'CC-BY 4.0 (Int)').text() == 'CC-BY 4.0 (Int)'
+        then: "Full licence names and the selected licence link are displayed"
+        $(".fileupload-buttonbar select#licence").first().find('option', value: 'CC-BY 4.0 (Int)').text() == 'Creative Commons Attribution (International)'
         waitFor {
             $(".selected-licence-link").first().displayed
         }

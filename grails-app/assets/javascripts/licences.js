@@ -124,6 +124,10 @@ function LicenceViewModel(value, field) {
     self.description = ko.pureComputed(function() {
         return ecodataLicences.descriptionFor(value());
     });
+    self.acronym = ko.pureComputed(function() {
+        var match = ecodataLicences.find(value());
+        return match ? match.acronym : (value() || '');
+    });
     self.url = ko.pureComputed(function() {
         return ecodataLicences.urlFor(value());
     });
@@ -133,7 +137,7 @@ function LicenceViewModel(value, field) {
             return 'Unrecognised licence. The existing value has been retained; select an allowed licence to change it.';
         }
         if (value() && !ecodataLicences.isAllowed(match)) {
-            return 'This licence is not in the allowlist. The existing value has been retained; select an allowed licence to change it.';
+            return 'This licence is no longer supported. The existing value has been retained; select an allowed licence to change it.';
         }
         return !value() && !ecodataLicences.find(ecodataLicences.defaultLicence()) ?
             'The configured default licence is unavailable. Select a licence.' : '';

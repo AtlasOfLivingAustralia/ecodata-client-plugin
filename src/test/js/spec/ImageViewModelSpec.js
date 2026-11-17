@@ -171,13 +171,18 @@ describe("ImageViewModel Spec", function () {
         var inherited = ImageViewModel.licenceFromSurvey({pActivity: {dataSharingLicense: historical.url}});
         var image = new ImageViewModel({url: '/image', filesize: 1, licence: inherited}, true);
         var select = document.createElement('select');
-        select.setAttribute('data-bind', "options: transients.licence.options, optionsText: 'acronym', optionsValue: 'acronym', value: transients.licence.selection, valueAllowUnset: true");
+        select.setAttribute('data-bind', "options: transients.licence.options, optionsText: 'name', optionsValue: 'acronym', value: transients.licence.selection, valueAllowUnset: true");
         fixture.appendChild(select);
         try {
             ko.applyBindings(image, select);
             expect(inherited).toBe(historical.acronym);
-            expect(select.selectedOptions[0].text).toBe(historical.acronym);
+            expect(select.options[0].text).toBe(catalogue[0].name);
+            expect(select.selectedOptions[0].text).toBe(historical.name);
             expect(image.transients.licence.description()).toContain(historical.name);
+            expect(image.transients.licence.acronym()).toBe(historical.acronym);
+            image.licence('Custom terms');
+            expect(image.transients.licence.acronym()).toBe('Custom terms');
+            image.licence(historical.acronym);
             expect(image.transients.licence.warning()).toContain('not in the allowlist');
             expect(ecodataLicences.options().length).toBe(1);
             select.value = catalogue[0].acronym;
@@ -200,7 +205,7 @@ describe("ImageViewModel Spec", function () {
         expect(ecodataLicences.defaultValue('url')).toBe('Missing default');
         var image = new ImageViewModel({url: '/image', filesize: 1, licence: inherited}, true);
         var select = document.createElement('select');
-        select.setAttribute('data-bind', "options: transients.licence.options, optionsText: 'acronym', optionsValue: 'acronym', value: transients.licence.selection, valueAllowUnset: true");
+        select.setAttribute('data-bind', "options: transients.licence.options, optionsText: 'name', optionsValue: 'acronym', value: transients.licence.selection, valueAllowUnset: true");
         fixture.appendChild(select);
         try {
             ko.applyBindings(image, select);
