@@ -411,6 +411,10 @@ ecodata.forms.maps.featureMap = function (options) {
 
             layer.setOpacity(0);
         }
+
+        layer.eachLayer && layer.eachLayer(function (l) {
+            hideLayer(l);
+        });
     }
 
     function showLayer(layer) {
@@ -428,6 +432,10 @@ ecodata.forms.maps.featureMap = function (options) {
             else
                 layer.setOpacity(1.0);
         }
+
+        layer.eachLayer && layer.eachLayer(function (l) {
+            showLayer(l);
+        });
     }
 
     self.copyFeature = function (feature) {
