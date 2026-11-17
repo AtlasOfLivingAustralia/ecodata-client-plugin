@@ -353,13 +353,14 @@ class EcpWebService {
      *
      * @param url the URL to call.
      * @param timeout optional timeout on the call.
+     * @param includeAuth false to send no token or user id, e.g. for public APIs called outside a request.
      * @return Map containing the status code (statusCode), optionally a response (resp) or an error (error).
      */
-    Map getJson2(String url, Integer timeout = null) {
+    Map getJson2(String url, Integer timeout = null, boolean includeAuth = true) {
         HttpURLConnection conn = null
         Map result = null
         try {
-            conn = configureConnection(url, true, timeout)
+            conn = includeAuth ? configureConnection(url, true, timeout) : configureConnection(url, AUTHORIZATION_HEADER_TYPE_NONE, timeout)
 
             String responseCharset = getCharset(conn)
             JsonSlurper parser = new JsonSlurper()

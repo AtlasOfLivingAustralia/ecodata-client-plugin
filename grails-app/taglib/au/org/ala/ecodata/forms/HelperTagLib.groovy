@@ -1,13 +1,17 @@
 package au.org.ala.ecodata.forms
 
+import groovy.json.JsonOutput
 import groovy.xml.MarkupBuilder
+import groovy.util.logging.Slf4j
 
 /**
  * Provides utility tags used by the plugin.
  */
+@Slf4j
 class HelperTagLib {
     static defaultEncodeAs = [taglib: 'none']
     static namespace = "md"
+    LicenceService licenceService
 
     /**
      * @attr title
@@ -54,5 +58,14 @@ class HelperTagLib {
     def toSingleWord = { attrs, body ->
         def name = attrs.name ?: body()
         out << name.replaceAll(' ','_')
+    }
+
+    def licences = { attrs ->
+        MarkupBuilder mb = new MarkupBuilder(out)
+        mb.div(hidden: 'hidden', 'data-ecodata-licences': JsonOutput.toJson(licenceService.licences),
+                'data-ecodata-licence-catalogue': JsonOutput.toJson(licenceService.allLicences),
+                'data-ecodata-default-licence': licenceService.defaultLicence) {
+            mkp.yield(' ')
+        }
     }
 }

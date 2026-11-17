@@ -82,6 +82,8 @@ runScript('grails-app/assets/javascripts/knockout-utils.js');
 runScript('grails-app/assets/javascripts/speciesModel.js');
 runScript('grails-app/assets/javascripts/uuid.js');
 runScript('grails-app/assets/javascripts/viewModels.js');
+runScript('grails-app/assets/javascripts/licences.js');
+runScript('grails-app/assets/javascripts/images.js');
 
 // ---------- components ----------
 runScript('grails-app/assets/components/ecodata-components.js');

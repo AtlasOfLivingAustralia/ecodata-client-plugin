@@ -9,6 +9,7 @@
     <div data-bind="if:outputNotCompleted">
         <label class="checkbox" ><input type="checkbox" disabled="disabled" data-bind="checked:outputNotCompleted"> <span data-bind="text:transients.questionText"></span> </label>
     </div>
+    <g:if test="${output.outputNotCompleted}"><md:licences/></g:if>
     <g:if test="${!output.outputNotCompleted}">
         <!-- add the dynamic components -->
         <md:modelView model="${outputModel}" site="${site}" printable="${printable}"/>
