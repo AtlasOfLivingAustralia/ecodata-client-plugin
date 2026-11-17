@@ -8,22 +8,6 @@ import javax.annotation.PostConstruct
 @Slf4j
 class LicenceService {
     static final String DEFAULT_LICENCE = 'https://creativecommons.org/licenses/by/4.0/'
-    private static final List<Map> DEFAULT_LICENCES = [
-        [name: 'Creative Commons Zero', acronym: 'CC0',
-         url: 'https://creativecommons.org/publicdomain/zero/1.0/', imageUrl: '', version: '1.0'],
-        [name: 'Creative Commons Attribution (International)', acronym: 'CC-BY 4.0 (Int)',
-         url: DEFAULT_LICENCE, imageUrl: '', version: '4.0'],
-        [name: 'Creative Commons Attribution-Share Alike (International)', acronym: 'CC-BY-SA 4.0 (Int)',
-         url: 'https://creativecommons.org/licenses/by-sa/4.0/', imageUrl: '', version: '4.0'],
-        [name: 'Creative Commons Attribution-NoDerivatives (International)', acronym: 'CC-BY-ND 4.0 (Int)',
-         url: 'https://creativecommons.org/licenses/by-nd/4.0/', imageUrl: '', version: '4.0'],
-        [name: 'Creative Commons Attribution-Noncommercial (International)', acronym: 'CC-BY-NC 4.0 (Int)',
-         url: 'https://creativecommons.org/licenses/by-nc/4.0/', imageUrl: '', version: '4.0'],
-        [name: 'Creative Commons Attribution-Noncommercial-Share Alike (International)', acronym: 'CC-BY-NC-SA 4.0 (Int)',
-         url: 'https://creativecommons.org/licenses/by-nc-sa/4.0/', imageUrl: '', version: '4.0'],
-        [name: 'Creative Commons Attribution-Noncommercial-NoDerivatives (International)', acronym: 'CC-BY-NC-ND 4.0 (Int)',
-         url: 'https://creativecommons.org/licenses/by-nc-nd/4.0/', imageUrl: '', version: '4.0']
-    ]
 
     GrailsApplication grailsApplication
     EcpWebService ecpWebService
@@ -37,7 +21,7 @@ class LicenceService {
     List getLicences() {
         List allowlist = grailsApplication.config.getProperty('licences.allowlist', List)
         if (allowlist == null) {
-            allowlist = DEFAULT_LICENCES*.url
+            allowlist = fallbackLicences*.url
         }
         if (!allowlist.every { it instanceof String && httpUrl(it) }) {
             throw new IllegalArgumentException('licences.allowlist must contain HTTP(S) licence URLs')
@@ -54,20 +38,29 @@ class LicenceService {
     List getAllLicences() {
         String baseUrl = grailsApplication.config.getProperty('collectory.service.url', String, 'https://collections.ala.org.au')
         String url = baseUrl.replaceAll('/+$', '') + '/ws/licence'
+        List fallback = fallbackLicences
         cacheService.get("licences:${url}", {
             Map result
             try {
                 result = ecpWebService.getJson2(url, 5000)
             } catch (Exception e) {
-                log.warn("Unable to load licences from '${url}'. Using built-in defaults.", e)
-                return DEFAULT_LICENCES
+                log.warn("Unable to load licences from '${url}'. Using fallback licences.", e)
+                return fallback
             }
             if (!result?.error && result?.statusCode == 200 && validLicences(result.resp)) {
-                return uniqueLicences(result.resp + DEFAULT_LICENCES)
+                return uniqueLicences(result.resp + fallback)
             }
-            log.warn("Unable to load valid licences from '${url}' (status ${result?.statusCode}): ${result?.error ?: 'invalid catalogue'}. Using built-in defaults.")
-            return DEFAULT_LICENCES
+            log.warn("Unable to load valid licences from '${url}' (status ${result?.statusCode}): ${result?.error ?: 'invalid catalogue'}. Using fallback licences.")
+            return fallback
         })
+    }
+
+    List<Map> getFallbackLicences() {
+        List fallback = grailsApplication.config.getProperty('licences.fallback', List, [])
+        if (fallback && !validLicences(fallback)) {
+            throw new IllegalArgumentException('licences.fallback must contain licences with a name, acronym, version and HTTP(S) url')
+        }
+        fallback
     }
 
     String getDefaultLicence() {

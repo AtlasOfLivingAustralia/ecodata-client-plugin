@@ -8,6 +8,7 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.ClassPathResource
 import spock.lang.Specification
 
 import java.net.UnknownHostException
@@ -36,6 +37,11 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         grailsApplication.config.licences.allowlist = null
         grailsApplication.config.licences.default = null
         grailsApplication.config.collectory.service.url = null
+        grailsApplication.config.licences.fallback = pluginConfig.getProperty('licences.fallback', List)
+    }
+
+    private static PropertySourcesConfig getPluginConfig() {
+        new PropertySourcesConfig(new YamlPropertySourceLoader().load('plugin', new ClassPathResource('plugin.yml')).first())
     }
 
     def cleanup() {
@@ -239,5 +245,35 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         expect:
         service.defaultLicence == LicenceService.DEFAULT_LICENCE
         service.licences == [historical]
+    }
+
+    void "plugin.yml configures CC BY 4.0 as the default licence"() {
+        expect:
+        pluginConfig.getProperty('licences.default', String) == LicenceService.DEFAULT_LICENCE
+    }
+
+    void "configured fallback licences replace the plugin defaults"() {
+        given:
+        grailsApplication.config.licences.fallback = [historical]
+
+        when:
+        List all = service.allLicences
+
+        then:
+        1 * webService.getJson2(_, 5000) >> [error: 'timeout']
+        all == [historical]
+        service.licences == [historical]
+    }
+
+    void "rejects invalid fallback licences"() {
+        given:
+        grailsApplication.config.licences.fallback = [[name: 'Unsafe', acronym: 'Unsafe', url: 'javascript:alert(1)', version: '1']]
+
+        when:
+        service.allLicences
+
+        then:
+        thrown(IllegalArgumentException)
+        0 * webService._
     }
 }

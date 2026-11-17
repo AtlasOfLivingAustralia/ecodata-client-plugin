@@ -61,6 +61,6 @@ licences:
     - https://creativecommons.org/licenses/by-nc/3.0/au/
 ```
 
-The default is CC-BY 4.0 and may be a URL or acronym. The allowlist defaults to CC0 and all six CC 4.0 licences (BY, BY-SA, BY-ND, BY-NC, BY-NC-SA, BY-NC-ND); the configured list replaces it. Failed catalogue fetches use these seven built-in licences. Existing values outside the list are retained and warned about; known historical values use their catalogue name.
+The default is CC-BY 4.0 and may be a URL or acronym. The default and `licences.fallback` (CC0 and all six CC 4.0 licences: BY, BY-SA, BY-ND, BY-NC, BY-NC-SA, BY-NC-ND) ship in the plugin's `plugin.yml`; host apps can override either. Failed catalogue fetches use the fallback licences, and the allowlist defaults to their URLs; a configured allowlist replaces it. Existing values outside the list are retained and warned about; known historical values use their catalogue name.
 
 `<md:modelView/>` emits the hidden licence config; standalone pages can use `<md:licences/>`. Load `licences.js` and call `ecodataLicences.load()`. Bind selectors through `LicenceViewModel` (`new LicenceViewModel(observable)` for image codes, or add `'url'` for survey URLs) and keep it under `transients`. Show `name` in the options and link the selected licence with `acronym`. New uploads inherit the survey licence; unknown saved values are not replaced.
