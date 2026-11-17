@@ -183,7 +183,7 @@ describe("ImageViewModel Spec", function () {
             image.licence('Custom terms');
             expect(image.transients.licence.acronym()).toBe('Custom terms');
             image.licence(historical.acronym);
-            expect(image.transients.licence.warning()).toContain('not in the allowlist');
+            expect(image.transients.licence.warning()).toContain('This licence is no longer supported.');
             expect(ecodataLicences.options().length).toBe(1);
             select.value = catalogue[0].acronym;
             select.dispatchEvent(new Event('change'));
