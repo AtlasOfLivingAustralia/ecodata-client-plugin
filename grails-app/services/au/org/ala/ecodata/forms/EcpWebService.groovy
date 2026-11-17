@@ -27,6 +27,7 @@ import okio.BufferedSink
 import org.apache.http.HttpStatus
 import org.grails.web.converters.exceptions.ConverterException
 import org.springframework.http.MediaType
+import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.MultipartFile
 
 import javax.annotation.PostConstruct
@@ -181,7 +182,8 @@ class EcpWebService {
                 addUserId = true
             }
 
-            if (addUserId) {
+            // userService needs the current request, which doesn't exist at startup or in background jobs.
+            if (addUserId && RequestContextHolder.getRequestAttributes()) {
                 def user = getUserService().getUser()
                 if (user) {
                     conn.setRequestProperty(grailsApplication.config.getProperty('app.http.header.userId'), user.userId)
@@ -353,14 +355,13 @@ class EcpWebService {
      *
      * @param url the URL to call.
      * @param timeout optional timeout on the call.
-     * @param includeAuth false to send no token or user id, e.g. for public APIs called outside a request.
      * @return Map containing the status code (statusCode), optionally a response (resp) or an error (error).
      */
-    Map getJson2(String url, Integer timeout = null, boolean includeAuth = true) {
+    Map getJson2(String url, Integer timeout = null) {
         HttpURLConnection conn = null
         Map result = null
         try {
-            conn = includeAuth ? configureConnection(url, true, timeout) : configureConnection(url, AUTHORIZATION_HEADER_TYPE_NONE, timeout)
+            conn = configureConnection(url, true, timeout)
 
             String responseCharset = getCharset(conn)
             JsonSlurper parser = new JsonSlurper()

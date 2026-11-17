@@ -63,7 +63,7 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         context.refresh()
 
         then:
-        1 * webService.getJson2('https://collections.test.ala.org.au/ws/licence', 5000, false) >> response
+        1 * webService.getJson2('https://collections.test.ala.org.au/ws/licence', 5000) >> response
 
         when:
         def licences = context.getBean(LicenceService).licences
@@ -89,7 +89,7 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         List licences = service.licences
 
         then:
-        1 * webService.getJson2(_, 5000, false) >> { throw new UnknownHostException('DNS lookup failed') }
+        1 * webService.getJson2(_, 5000) >> { throw new UnknownHostException('DNS lookup failed') }
         licences*.url as Set == defaultUrls
     }
 
@@ -103,7 +103,7 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         def second = service.licences
 
         then:
-        1 * webService.getJson2('https://collections.test.ala.org.au/ws/licence', 5000, false) >>
+        1 * webService.getJson2('https://collections.test.ala.org.au/ws/licence', 5000) >>
                 [statusCode: 200, resp: [attribution, duplicate, historical]]
         first*.url as Set == defaultUrls
         first.find { it.url == attribution.url } == attribution
@@ -121,7 +121,7 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         service.licences
 
         then:
-        1 * webService.getJson2(endpoint, 5000, false) >>
+        1 * webService.getJson2(endpoint, 5000) >>
                 [statusCode: 200, resp: [attribution]]
 
         where:
@@ -135,7 +135,7 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         List licences = service.licences
 
         then:
-        1 * webService.getJson2(_, 5000, false) >> response
+        1 * webService.getJson2(_, 5000) >> response
         licences.find { it.url == LicenceService.DEFAULT_LICENCE }.acronym == 'CC-BY 4.0 (Int)'
         licences*.url as Set == defaultUrls
         licences*.url.unique().size() == licences.size()
@@ -166,7 +166,7 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         List second = service.licences
 
         then:
-        1 * webService.getJson2(_, 5000, false) >> [statusCode: 200, resp: [historical, attribution]]
+        1 * webService.getJson2(_, 5000) >> [statusCode: 200, resp: [historical, attribution]]
         first == [historical]
         second == [attribution]
         service.allLicences.contains(historical)
@@ -180,7 +180,7 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         def licences = service.licences
 
         then:
-        1 * webService.getJson2(_, 5000, false) >> [statusCode: 200, resp: [historical, attribution]]
+        1 * webService.getJson2(_, 5000) >> [statusCode: 200, resp: [historical, attribution]]
         licences == []
         service.allLicences.contains(historical)
     }
@@ -192,7 +192,7 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         service.grailsApplication = Stub(GrailsApplication) {
             getConfig() >> config
         }
-        webService.getJson2(_, 5000, false) >> [statusCode: 200, resp: [historical, attribution]]
+        webService.getJson2(_, 5000) >> [statusCode: 200, resp: [historical, attribution]]
 
         expect:
         service.licences*.url as Set == expected
@@ -221,7 +221,7 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
     void "uses CC BY 4.0 only for an absent configured default and preserves unrecognised values"() {
         given:
         grailsApplication.config.licences.default = configured
-        webService.getJson2(_, 5000, false) >> [statusCode: 200, resp: [attribution]]
+        webService.getJson2(_, 5000) >> [statusCode: 200, resp: [attribution]]
 
         expect:
         service.defaultLicence == expected
@@ -240,7 +240,7 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         given:
         grailsApplication.config.licences.allowlist = [historical.url]
         grailsApplication.config.licences.default = LicenceService.DEFAULT_LICENCE
-        webService.getJson2(_, 5000, false) >> [statusCode: 200, resp: [historical, attribution]]
+        webService.getJson2(_, 5000) >> [statusCode: 200, resp: [historical, attribution]]
 
         expect:
         service.defaultLicence == LicenceService.DEFAULT_LICENCE
@@ -260,7 +260,7 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         List all = service.allLicences
 
         then:
-        1 * webService.getJson2(_, 5000, false) >> [error: 'timeout']
+        1 * webService.getJson2(_, 5000) >> [error: 'timeout']
         all == [historical]
         service.licences == [historical]
     }

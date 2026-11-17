@@ -42,7 +42,7 @@ class LicenceService {
         cacheService.get("licences:${url}", {
             Map result
             try {
-                result = ecpWebService.getJson2(url, 5000, false)
+                result = ecpWebService.getJson2(url, 5000)
             } catch (Exception e) {
                 log.warn("Unable to load licences from '${url}'. Using fallback licences.", e)
                 return fallback
