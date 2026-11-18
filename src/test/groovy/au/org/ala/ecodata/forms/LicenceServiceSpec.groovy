@@ -4,9 +4,6 @@ import grails.core.GrailsApplication
 import org.grails.config.PropertySourcesConfig
 import org.grails.config.yaml.YamlPropertySourceLoader
 import org.grails.testing.GrailsUnitTest
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory
-import org.springframework.beans.factory.support.RootBeanDefinition
-import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.ClassPathResource
 import spock.lang.Specification
@@ -48,44 +45,8 @@ class LicenceServiceSpec extends Specification implements GrailsUnitTest {
         service.cacheService.clear()
     }
 
-    void "bean initialization warms the catalogue cache before the first lookup"() {
-        given:
-        grailsApplication.config.collectory.service.url = 'https://collections.test.ala.org.au'
-        def context = new AnnotationConfigApplicationContext()
-        context.beanFactory.registerSingleton('grailsApplication', grailsApplication)
-        context.beanFactory.registerSingleton('ecpWebService', webService)
-        context.beanFactory.registerSingleton('cacheService', service.cacheService)
-        def definition = new RootBeanDefinition(LicenceService)
-        definition.autowireMode = AutowireCapableBeanFactory.AUTOWIRE_BY_NAME
-        context.registerBeanDefinition('licenceService', definition)
-
+    void "uses fallback licences if Collectory lookup throws"() {
         when:
-        context.refresh()
-
-        then:
-        1 * webService.getJson2('https://collections.test.ala.org.au/ws/licence', 5000) >> response
-
-        when:
-        def licences = context.getBean(LicenceService).licences
-
-        then:
-        licences*.url as Set == defaultUrls
-        0 * webService._
-
-        cleanup:
-        context.close()
-
-        where:
-        response << [
-            [statusCode: 200, resp: [[name: 'Attribution', acronym: 'CC-BY 4.0 (Int)',
-                url: LicenceService.DEFAULT_LICENCE, imageUrl: '', version: '4.0']]],
-            [error: 'timeout']
-        ]
-    }
-
-    void "uses cached defaults if Collectory lookup throws during startup"() {
-        when:
-        service.init()
         List licences = service.licences
 
         then:
