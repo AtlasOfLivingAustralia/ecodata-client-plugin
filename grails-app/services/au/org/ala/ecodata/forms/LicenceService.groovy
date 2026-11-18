@@ -3,8 +3,6 @@ package au.org.ala.ecodata.forms
 import grails.core.GrailsApplication
 import groovy.util.logging.Slf4j
 
-import javax.annotation.PostConstruct
-
 @Slf4j
 class LicenceService {
     static final String DEFAULT_LICENCE = 'https://creativecommons.org/licenses/by/4.0/'
@@ -12,11 +10,6 @@ class LicenceService {
     GrailsApplication grailsApplication
     EcpWebService ecpWebService
     def cacheService
-
-    @PostConstruct
-    void init() {
-        getLicences()
-    }
 
     List getLicences() {
         List allowlist = grailsApplication.config.getProperty('licences.allowlist', List)
