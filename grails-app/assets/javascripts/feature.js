@@ -451,6 +451,15 @@ ecodata.forms.maps.featureMap = function (options) {
         });
 
         featureCollection.features = featureList;
+        if (!ALA.MapUtils.validateGeoJSON(featureCollection)) {
+            featureCollection = ALA.MapUtils.repairGeoJSON(featureCollection);
+            if (!ALA.MapUtils.validateGeoJSON(featureCollection)) {
+                alert("The geometry is invalid. It cannot be used as attempting to correct it has not fixed the problem.");
+                return;
+            }
+        }
+
+        self.clearProperties(featureCollection);
         // Leaflet geoman plugin can handle MultiPolygon
         self.setGeoJSON(featureCollection);
     };
