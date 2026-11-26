@@ -180,7 +180,7 @@ ecodata.forms.maps.featureMap = function (options) {
         weight: 4,
         fillOpacity: 0.2,
         color: "#0f0"
-    };
+    }, PRECISION = 8;
 
 
 
@@ -204,6 +204,7 @@ ecodata.forms.maps.featureMap = function (options) {
             displayScale: true,
             addGeometryFromLocalFile: true,
             simplifyImportedShapes: true,
+            draggableMarkers: false,
             simplifyOptions: {
                 tolerance: 0.0001
             },
@@ -317,7 +318,7 @@ ecodata.forms.maps.featureMap = function (options) {
 
         function createEditableSiteModel (layer) {
             if (!layer.feature) {
-                layer.feature = layer.toGeoJSON();
+                layer.feature = layer.toGeoJSON(PRECISION);
             }
 
             var defaultName = layer.feature.properties && layer.feature.properties.name || 'New works area',
@@ -335,7 +336,7 @@ ecodata.forms.maps.featureMap = function (options) {
         }
 
         function updateStatistics() {
-            var geoJson = self.drawnItems.toGeoJSON();
+            var geoJson = self.drawnItems.toGeoJSON(PRECISION);
             self.areaHa(ecodata.forms.utils.areaHa(geoJson));
             self.lengthKm(ecodata.forms.utils.lengthKm(geoJson, true));
         }
@@ -410,6 +411,10 @@ ecodata.forms.maps.featureMap = function (options) {
 
             layer.setOpacity(0);
         }
+
+        layer.eachLayer && layer.eachLayer(function (l) {
+            hideLayer(l);
+        });
     }
 
     function showLayer(layer) {
@@ -427,6 +432,10 @@ ecodata.forms.maps.featureMap = function (options) {
             else
                 layer.setOpacity(1.0);
         }
+
+        layer.eachLayer && layer.eachLayer(function (l) {
+            showLayer(l);
+        });
     }
 
     self.copyFeature = function (feature) {
@@ -442,6 +451,15 @@ ecodata.forms.maps.featureMap = function (options) {
         });
 
         featureCollection.features = featureList;
+        if (!ALA.MapUtils.validateGeoJSON(featureCollection)) {
+            featureCollection = ALA.MapUtils.repairGeoJSON(featureCollection);
+            if (!ALA.MapUtils.validateGeoJSON(featureCollection)) {
+                alert("The geometry is invalid. It cannot be used as attempting to correct it has not fixed the problem.");
+                return;
+            }
+        }
+
+        self.clearProperties(featureCollection);
         // Leaflet geoman plugin can handle MultiPolygon
         self.setGeoJSON(featureCollection);
     };
