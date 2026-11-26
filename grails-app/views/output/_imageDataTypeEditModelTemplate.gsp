@@ -52,16 +52,17 @@
                     <div class="row mb-2">
                         <div class="col-sm-4 text-start">
                             <label class="control-label">Licence: <i class="fa fa-question-circle"
-                                                                    data-bind="popover:{content:'The licence tells others how they may use this image. New images default to the survey data sharing licence. CC0 places the image in the public domain. Attribution (BY) requires credit. Noncommercial (NC) does not allow commercial use. Share Alike (SA) requires adaptations to use the same licence.', placement:'top'}">&nbsp;</i>
+                                                                    data-bind="popover:{content:'The licence tells others how they may use this image. New images default to the survey data sharing licence. CC0 places the image in the public domain. Attribution (BY) requires credit. Noncommercial (NC) does not allow commercial use. Share Alike (SA) requires adaptations to use the same licence. NoDerivatives (ND) does not allow modified versions to be shared.', placement:'top'}">&nbsp;</i>
                             </label>
                         </div>
                         <div class="col-sm-8">
-                            <select id="licence" data-bind="value: licence, options: transients.licenceOptions, optionsText: ecodataLicences.shortNameFor, optionsValue: 'value', valueAllowUnset: true" class="form-select form-select-sm col-sm-12">
+                            <select id="licence" data-bind="value: transients.licence.selection, options: transients.licence.options, optionsText: 'name', optionsValue: 'acronym', valueAllowUnset: true" class="form-select form-select-sm col-sm-12">
                             </select>
                             <p class="form-text my-2">
-                                <a data-bind="visible: transients.licenceUrl, attr: {href: transients.licenceUrl}" class="selected-licence-link me-2" target="_blank" rel="noopener noreferrer"><span data-bind="text: ecodataLicences.shortNameFor({value: licence()})"></span> <i class="fas fa-external-link-alt fa-sm" aria-hidden="true"></i></a>
+                                <a data-bind="visible: transients.licence.url, attr: {href: transients.licence.url}" class="selected-licence-link me-2" target="_blank" rel="noopener noreferrer"><span data-bind="text: transients.licence.acronym"></span> <i class="fas fa-external-link-alt fa-sm" aria-hidden="true"></i></a>
                                 <a href="${message(code: 'project.details.creativeCommons.helpUrl', default: 'https://creativecommons.org/cc-licenses/')}" target="_blank" rel="noopener noreferrer">About CC licences <i class="fas fa-external-link-alt fa-sm" aria-hidden="true"></i></a>
                             </p>
+                            <p class="text-warning" role="status" data-bind="visible: transients.licence.warning, text: transients.licence.warning"></p>
                         </div>
                     </div>
                 </g:if>

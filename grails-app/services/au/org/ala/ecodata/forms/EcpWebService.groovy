@@ -27,6 +27,7 @@ import okio.BufferedSink
 import org.apache.http.HttpStatus
 import org.grails.web.converters.exceptions.ConverterException
 import org.springframework.http.MediaType
+import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.MultipartFile
 
 import javax.annotation.PostConstruct
@@ -181,7 +182,8 @@ class EcpWebService {
                 addUserId = true
             }
 
-            if (addUserId) {
+            // userService needs the current request, which doesn't exist at startup or in background jobs.
+            if (addUserId && RequestContextHolder.getRequestAttributes()) {
                 def user = getUserService().getUser()
                 if (user) {
                     conn.setRequestProperty(grailsApplication.config.getProperty('app.http.header.userId'), user.userId)

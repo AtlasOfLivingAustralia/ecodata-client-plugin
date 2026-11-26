@@ -1,0 +1,39 @@
+licences:
+    default: https://creativecommons.org/licenses/by/4.0/
+    # Used when the Collectory catalogue is unavailable; their URLs are also the default allowlist.
+    fallback:
+        - name: Creative Commons Zero
+          acronym: CC0
+          url: https://creativecommons.org/publicdomain/zero/1.0/
+          imageUrl: ''
+          version: '1.0'
+        - name: Creative Commons Attribution (International)
+          acronym: CC-BY 4.0 (Int)
+          url: https://creativecommons.org/licenses/by/4.0/
+          imageUrl: ''
+          version: '4.0'
+        - name: Creative Commons Attribution-Share Alike (International)
+          acronym: CC-BY-SA 4.0 (Int)
+          url: https://creativecommons.org/licenses/by-sa/4.0/
+          imageUrl: ''
+          version: '4.0'
+        - name: Creative Commons Attribution-NoDerivatives (International)
+          acronym: CC-BY-ND 4.0 (Int)
+          url: https://creativecommons.org/licenses/by-nd/4.0/
+          imageUrl: ''
+          version: '4.0'
+        - name: Creative Commons Attribution-Noncommercial (International)
+          acronym: CC-BY-NC 4.0 (Int)
+          url: https://creativecommons.org/licenses/by-nc/4.0/
+          imageUrl: ''
+          version: '4.0'
+        - name: Creative Commons Attribution-Noncommercial-Share Alike (International)
+          acronym: CC-BY-NC-SA 4.0 (Int)
+          url: https://creativecommons.org/licenses/by-nc-sa/4.0/
+          imageUrl: ''
+          version: '4.0'
+        - name: Creative Commons Attribution-Noncommercial-NoDerivatives (International)
+          acronym: CC-BY-NC-ND 4.0 (Int)
+          url: https://creativecommons.org/licenses/by-nc-nd/4.0/
+          imageUrl: ''
+          version: '4.0'

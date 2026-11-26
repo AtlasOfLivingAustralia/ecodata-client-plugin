@@ -26,12 +26,19 @@ class ModelTagLibSpec extends Specification implements TagLibUnitTest<ModelTagLi
     def "licence catalogue is emitted before the bound form content"() {
         given:
         mockTagLib(HelperTagLib)
+        def helper = applicationContext.getBean(HelperTagLib)
+        helper.licenceService = Stub(LicenceService) {
+            getLicences() >> [[name: 'Attribution', acronym: 'CC-BY 4.0 (Int)', url: LicenceService.DEFAULT_LICENCE, imageUrl: '', version: '4.0']]
+            getAllLicences() >> [[name: 'Attribution', acronym: 'CC-BY 4.0 (Int)', url: LicenceService.DEFAULT_LICENCE, imageUrl: '', version: '4.0']]
+            getDefaultLicence() >> LicenceService.DEFAULT_LICENCE
+        }
+        helper.metaClass.getAsset = { -> [assetPath: { Map attrs -> "/assets/${attrs.src}" }] }
 
         when:
         String html = applyTemplate('<md:modelView model="${model}"/>', [model: [viewModel: [], dataModel: []]])
 
         then:
-        html.contains('Creative Commons Attribution 4.0 International')
+        html.contains('CC-BY 4.0 (Int)')
         html.indexOf('data-ecodata-licences') < html.indexOf('class="model-form"')
         html.substring(html.indexOf('class="model-form"')).count('data-ecodata-licences') == 0
     }

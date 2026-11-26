@@ -44,24 +44,19 @@ grails run-app
 ```
 
 ### Licences
-Defaults are packaged in `src/main/resources/ecodata-client-plugin/licences.json`. To override them, set `licences.file` to a mounted JSON file. The file is read on each render; missing or invalid files fall back to packaged defaults.
-
-Entries require `value` and `name`; `shortName`, HTTP(S) `url`, and `aliases` are optional. Aliases must refer to the same licence version.
+The plugin fetches `${collectory.service.url}/ws/licence` (production by default) and caches results for a day. Configure Collectory, the default, or the allowlist externally:
 
 ```yaml
+collectory:
+  service:
+    url: https://collections.test.ala.org.au
 licences:
-  file: /etc/biocollect/licences.json
+  default: https://creativecommons.org/licenses/by/4.0/
+  allowlist:
+    - https://creativecommons.org/licenses/by/4.0/
+    - https://creativecommons.org/licenses/by-nc/3.0/au/
 ```
 
-The file contains a non-empty JSON array. See [src/main/resources/ecodata-client-plugin/licences.json](src/main/resources/ecodata-client-plugin/licences.json) for a reference on how to format the JSON.
+The default is CC-BY 4.0 and may be a URL or acronym. The default and `licences.fallback` (CC0 and all six CC 4.0 licences: BY, BY-SA, BY-ND, BY-NC, BY-NC-SA, BY-NC-ND) ship in the plugin's `plugin.yml`; host apps can override either. Failed catalogue fetches use the fallback licences, and the allowlist defaults to their URLs; a configured allowlist replaces it. Existing values outside the list are retained and warned about; known historical values use their catalogue name.
 
-`<md:modelView/>` emits the catalogue automatically, outside conditional and deferred content. Standalone pages should render `<md:licences/>` there instead. Its closed, hidden JSON element avoids executable scripts interfering with Knockout bindings.
-
-Include `licences.js` alongside Knockout and call `ecodataLicences.load()` to read the catalogue. The helper provides:
-- `options()` and `optionsFor(value)`: the observable catalogue, or a copy including an unlisted current value.
-- `find(value)` and `valueFor(value)`: lookup by code/alias; `valueFor` also loads the catalogue and returns the stored code.
-- `descriptionFor(value)`, `shortNameFor(option)`, and `urlFor(value)`: display text and safe links.
-
-Use `optionsText: ecodataLicences.shortNameFor` with `optionsValue: 'value'` for images or `'url'` for BioCollect survey settings. Keep derived UI fields under `transients` as `ko.pureComputed` values to exclude them from saves.
-
-Only new uploads without a supplied licence inherit a matching survey licence. Saved images retain their licence, including an unset value; unlisted values remain selectable.
+`<md:modelView/>` emits the hidden licence config; standalone pages can use `<md:licences/>`. Load `licences.js` and call `ecodataLicences.load()`. Bind selectors through `LicenceViewModel` (`new LicenceViewModel(observable)` for image codes, or add `'url'` for survey URLs) and keep it under `transients`. Show `name` in the options and link the selected licence with `acronym`. New uploads inherit the survey licence; unknown saved values are not replaced.
